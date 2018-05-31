@@ -19,4 +19,12 @@ the comments sign `//` from the start of the line.
 * Option to expand the Chat window
 * Shows discreet work counters
 
+## Track Character Stats
 
+`stats_tracker.user.js` implements the following features:
+
+* Tracks character's stats in the background, and writes to stat-specific logs as each stat regenerates.
+* Detects & reports buffs currently applicable to the character.
+   * Until Genotype, VIP status, etc. are known, it discreetly asks the user to navigate to the [character details](https://alpha.taustation.space/) page to collect that information.
+   * Note: In progress: Detect relevant character skills (e.g., `Healthcare 2`).
+* Provides simple UI to let the user a) enable/disable stat tracking temporarily, b) copy collected logs to the clipboard, c) clear logs collected so far, and d) remove all session data associated with this userscript.
