@@ -28,3 +28,11 @@ the comments sign `//` from the start of the line.
    * Until Genotype, VIP status, etc. are known, it discreetly asks the user to navigate to the [character details](https://alpha.taustation.space/) page to collect that information.
    * Note: In progress: Detect relevant character skills (e.g., `Healthcare 2`).
 * Provides simple UI to let the user a) enable/disable stat tracking temporarily, b) copy collected logs to the clipboard, c) clear logs collected so far, and d) remove all session data associated with this userscript.
+
+## Tau Station Bank Helper
+
+`bank_helper.js` implements a single feature, at the "Bank" area only:
+
+Whenever your credits "on hand" are greater than the amount you'd always like to keep at hand, it'll prefill the "deposit" textbox with the excess cash.
+
+Note that this does *not* automatically deposit the credits. It simply fills the box for you.
