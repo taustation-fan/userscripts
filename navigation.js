@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name     taustation_extended_nav
 // @namespace https://github.com/moritz/
-// @description Navigationi extension for taustation.space
+// @description Navigation extension for taustation.space
 // @match https://alpha.taustation.space/*
 // @version  1
 // @grant    none
@@ -85,13 +85,14 @@ function gs_taustation_enhance() {
     });
 
     // show the number of the discreet work (counter per station)
-    function show_discreet_counter() {  
-        if ( !window.location.pathname.match('^(/area/discreet-work|/character/details/)') ) {  
-            return;  
-        }  
-        var flow = $('[id^=mission-].mission-flow');  
-        var discr_num = flow.prop('id').replace( /^.*-(\d+)$/, '$1' );  
-        flow.find('h3').text( flow.find('h3').text() + ' Mission No. ' + discr_num );  
+    function show_discreet_counter() {
+        // contributed by Perleone
+        if ( !window.location.pathname.match('^(/area/discreet-work|/character/details/)') ) {
+            return;
+        }
+        var flow = $('[id^=mission-].mission-flow');
+        var discr_num = flow.prop('id').replace( /^.*-(\d+)$/, '$1' );
+        flow.find('h3').text( flow.find('h3').text() + ' Mission No. ' + discr_num );
    }
 
     show_discreet_counter();
