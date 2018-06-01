@@ -5,7 +5,7 @@
 // @match https://alpha.taustation.space/*
 // @version  1
 // @grant    none
-// @require http://code.jquery.com/jquery-latest.js
+// @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 
 function show_hotel_room() {
