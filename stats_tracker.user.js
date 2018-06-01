@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         stats_tracker
-// @namespace    https://github.com/taustation-fan/userscripts/raw/master/stats_tracker.user.js
-// @version      1.0
+// @namespace    https://github.com/taustation-fan/userscripts/
+// @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/stats_tracker.user.js
+// @version      1.1
 // @description  To learn how player stats regenerate over time, this script periodically collects stats values, and stores the info only in a box within the current webpage (in a hidden <div>). To save, click the "Copy" button to copy the data into the clipboard, then save it to a file.
 // @match        https://alpha.taustation.space/*
 // @grant        none
-// @require      http://code.jquery.com/jquery-latest.js
+// @require      https://code.jquery.com/jquery-3.3.1.slim.js
 // ==/UserScript==
 
 //////////////////////////////
@@ -44,8 +45,11 @@ var stats       = {}; // Keys: prefix + "stats_"       + stat name;
 var stat_logs   = {}; // Keys: prefix + "stat_logs_"   + stat name;
 
 // buff_messages is on all pages ("Well fed"); others (except location) are on player details page, aka website root.
-var buffs_table = { buff_messages:[], location:"", genotype:"[genotype]" }; // Key: prefix + "buffs_table_" + buffs_table key
-var buffs_summary = '';  // E.g.: # Baseline + VIP + Hotel + Healthcare 2   // (not saved to localStorage)
+// Keys: prefix + "buffs_table_" + buffs_table key
+var buffs_table = { buff_messages:[], buff_msgs_summary:"",
+                    skills:[],        skills_summary:"",
+                    location:"",      genotype:"[genotype]",  vip:"" };
+var buffs_summary = '';  // E.g.: # Baseline + VIP + Healthcare 2 + Hotel   // (not saved to localStorage)
 
 //
 // State that we need to persist in JS.
@@ -61,6 +65,7 @@ var all_stats = { 'strength':'',
                   'intelligence':'',
                   'social':'' };
 
+var skills_granting_regen_buffs = { 'Healthcare':'' };
 
 // Main entry -- set up the UI, decide whether to enable the tracker, and switch it on/off.
 function τST_stats_tracker_main() {
@@ -373,11 +378,12 @@ function τST_stats_tracker_main() {
     {
         if (localStorage[storage_key_prefix + 'buffs_table_vip']      == undefined ||
             localStorage[storage_key_prefix + 'buffs_table_genotype'] == undefined ||
+            localStorage[storage_key_prefix + 'buffs_table_skills']   == undefined ||
             (stat && ( stat_logs[stat].includes(vip_placeholder) ||
-                       stat_logs[stat].includes(genotype_placeholder) )))
+                       stat_logs[stat].includes(genotype_placeholder) ||
+                       stat_logs[stat].includes(skills_placeholder) )))
         {
-            // disabled_reason = 'Need player info; please click player name.';
-            disabled_reason = 'Need Genotype; please click player name.';
+            disabled_reason = 'Missing buffs; please click player name.';
             τSST_update_disabled_reason();
         } else if (disabled_reason) {
             disabled_reason = undefined;
@@ -613,12 +619,73 @@ function τST_stats_tracker_main() {
         // Other than the above scenario, buff updates are stored only when actually updating a stat log.
     }
 
-    // Buff check: Skills learned from the University. (E.g., Healthcare X)
+    var skills_placeholder = '[skills]';
+
+    // Buff check: Skills learned from the University. (E.g., Healthcare 2)
     function τSST_detect_buff_skills() {
+        buffs_table.skills_summary = localStorage[storage_key_prefix + 'buffs_table_skills'];
+
+        var skills_node = $("#character_skills");
+        if (skills_node.length) {
+            var player_skills = {};
+            skills_node.find("tbody").find("tr")
+                       .map(function() {
+                           player_skills[$(this).find("td:first").text()] =
+                               $(this).find("td:nth-of-type(2)").text();
+                           return this;
+                       });
+
+            for (var skill in skills_granting_regen_buffs) {
+                if (player_skills.hasOwnProperty(skill)) {
+                    buffs_table.skills.push(skill + " " + player_skills[skill]);
+                }
+            }
+
+            buffs_table.skills_summary = '';
+            if (buffs_table.skills.length > 0) {
+                buffs_table.skills_summary = buffs_table.skills.join(' + ');
+            }
+        }
+
+        // If the Skills were just discovered for the first time, update our logs accordingly.
+        // If they has actually changed, note the fact for our callers.
+        if (buffs_table.skills_summary != localStorage[storage_key_prefix  + 'buffs_table_skills']) {
+            var first_discovery = false;
+            for (var stat in all_stats) {
+
+                var this_log = localStorage[storage_key_prefix + 'stat_logs_' + stat];
+                if (! this_log) {
+                    first_discovery = true;
+                } else if (this_log.includes(skills_placeholder) ||
+                           ! localStorage.hasOwnProperty(storage_key_prefix  + 'buffs_table_skills')) {
+                    if (! buffs_table.skills_summary || ! buffs_table.skills_summary.length) {
+                        this_log = this_log.replace(' + ' + skills_placeholder, '');
+                    } else if (! this_log.includes(skills_placeholder)) {
+                        this_log = this_log.replace(/(vip\?\]|VIP)/, '$1 + ' + buffs_table.skills_summary);
+                    } else {
+                        this_log = this_log.replace(skills_placeholder, buffs_table.skills_summary);
+                    }
+                    first_discovery = true;
+                }
+                localStorage.setItem(storage_key_prefix + 'stat_logs_' + stat, this_log);
+            }
+
+            if (first_discovery) {
+                // Technically, this didn't change; this is just the first time we could detect it.
+                localStorage.setItem(storage_key_prefix + 'buffs_table_skills', buffs_table.skills_summary);
+            } else {
+                // We already had a real value, so this has actually changed.
+                buffs_changed = true;
+            }
+        }
+
+        // Buff updates are stored only when actually updating a stat log.
     }
 
     // Buff check: "Well fed"
     function τSST_detect_buff_well_fed() {
+        buffs_table.buff_msgs_summary = localStorage[storage_key_prefix + 'buffs_table_buff_messages'];
+        
         var page_buffs_node = $(".buff-messages").find(".timer-message");
         if (page_buffs_node.length) {
             var buffs_list = buffs_table.buff_messages;
@@ -683,8 +750,12 @@ function τST_stats_tracker_main() {
             buffs_summary += " + " + buffs_table.vip;
         }
 
-        if (buffs_table.buff_messages.length > 0) {
-            buffs_summary += " + " + buffs_table.buff_messages.join(" + ");
+        if (buffs_table.buff_msgs_summary) {
+            buffs_summary += " + " + buffs_table.buff_msgs_summary;
+        }
+
+        if (buffs_table.skills_summary && buffs_table.skills_summary.length) {
+            buffs_summary += " + " + buffs_table.skills_summary;
         }
 
         if (buffs_table.location) {
@@ -705,9 +776,14 @@ function τST_stats_tracker_main() {
             buffs_table.vip = vip_placeholder;
         }
 
-        // TODO: Skills.
-
         localStorage.setItem(storage_key_prefix + 'buffs_table_buff_messages', buffs_table.buff_msgs_summary);
+
+        // "" is a valid value for skills; since JS evaluates 'if ("")' as false, we need to check specifically for undefined here.
+        if (buffs_table.skills_summary != undefined && buffs_table.skills_summary != skills_placeholder) {
+            localStorage.setItem(storage_key_prefix + 'buffs_table_skills', buffs_table.skills_summary);
+        } else {
+            buffs_table.skills_summary = skills_placeholder;
+        }
 
         if (buffs_table.location) {
             localStorage.setItem(storage_key_prefix + 'buffs_table_location', buffs_table.location);
