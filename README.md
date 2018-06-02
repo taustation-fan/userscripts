@@ -43,5 +43,5 @@ Note that this does *not* automatically deposit the credits. It simply fills the
 listing into a single row and update the quantity column accordingly.
 
 This way, your storage report will take only 2 rows to let you know that
-you have 145 Nanowires and 17 Paris Sabres at Yard of Gadani rather than
+you have 145 Nanowires and 17 Paris Sabres at Yards of Gadani rather than
 taking 25 rows to tell you.
