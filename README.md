@@ -45,3 +45,10 @@ listing into a single row and update the quantity column accordingly.
 This way, your storage report will take only 2 rows to let you know that
 you have 145 Nanowires and 17 Paris Sabres at Yards of Gadani rather than
 taking 25 rows to tell you.
+
+## Compact Stats
+
+`compact_stats.js` will make the panel with character stats - both general
+numbers like XP, credits etc and the current stats - look much more compact
+than by default. This function also adds a counter to the next stats 'tick',
+although it starts working only after one 'tick' actually occurs.
