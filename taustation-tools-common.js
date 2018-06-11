@@ -23,7 +23,7 @@ var tST_region; // Container for misc. Tau Station tools' UI.
 var player_name;
 
 function tST_main() {
-    add_css_link('https://github.com/taustation-fan/userscripts/raw/master/taustation-tools.css');
+    add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
     tST_add_base_UI();
 }
 
