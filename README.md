@@ -52,3 +52,11 @@ taking 25 rows to tell you.
 numbers like XP, credits etc and the current stats - look much more compact
 than by default. This function also adds a counter to the next stats 'tick',
 although it starts working only after one 'tick' actually occurs.
+
+## Hide irrelevant career tasks
+
+`hide_tasks.js` will hide all the career tasks from all the "TASKS" tabs
+in the game, except for the tasks explicitly listed in the script body.
+Use with caution! This scrip requires manual updates to be adjusted to
+the current career type and career rank/level of the player. By default it's
+configured for high-rank Clone Technician.
