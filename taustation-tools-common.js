@@ -147,7 +147,7 @@ function tST_add_base_UI() {
     function download_html_to_file(html_data, filename, append_timestamp) {
         // Reuse TauStation's central CSS file. (This way, we link to the current
         // version of the file -- e.g., '.../main.css?=41'.)
-        var css_ref = $('head > link[href^="/static/css/main.css"]');
+        var css_ref = $('head > link[href^="/static/css/main.css"]').clone();
         css_ref.attr('href', document.location.origin + css_ref.attr('href'));
 
         var output_html = '<html>\n<head>\n' +
