@@ -60,3 +60,11 @@ in the game, except for the tasks explicitly listed in the script body.
 Use with caution! This scrip requires manual updates to be adjusted to
 the current career type and career rank/level of the player. By default it's
 configured for high-rank Clone Technician.
+
+## Combat Log
+
+`combat-log.user.js` saves any combat-related activity to a log, pruning it
+to present the same information in a more concise manner. A simple UI is
+provided, to Show/Hide the Combat Log window (similar to the Chat window)
+or Clear the log. The Combat Log window also provides a Download button
+to save the log to a local file on your computer.
