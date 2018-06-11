@@ -1,0 +1,287 @@
+/*
+CSS formatting that supports .../taustation-tools-common.js & related UserScripts.
+
+ - name         taustation-tools.css
+ - namespace    https://github.com/taustation-fan/userscripts/
+ - downloadURL  https://github.com/taustation-fan/userscripts/raw/master/taustation-tools.css
+ - version      0.1
+ - description  Common CSS formatting shared by my Tau Station userscripts.
+ - author       Mark Schurman (https://github.com/quasidart)
+ - match        https://alpha.taustation.space/*
+ - grant        CC-BY-SA
+
+Disclaimer:
+These are quick-and-dirty one-off scripts, and do not reflect the author's style or quality of work when developing production-ready software.
+*/
+
+/*
+Regions for UI added by userscripts.
+*/
+
+/* Top-level region, containing individual userscripts' UI regions.
+   (Generally only one per page, unless scripts need to add UI in different areas.) */
+.tST-container {
+    display: flow-root;
+    border: 1px solid #13628b;
+    background-color: #242634;
+    margin: 5px 1px;
+}
+
+/* Region for an individual userscript. (Specific to each userscript.) */
+.tST-section {
+    padding-top: 5px;
+    padding-bottom: 0;
+    padding-left: 3px;
+    padding-right: 3px;
+    border: 1px solid #13628b;
+    margin: 1px;
+}
+
+/*
+A pop-over box, floating over page content, anchored in the browser's frame. (Doesn't scroll with page.)
+Includes CSS classes for areas within window.
+*/
+.tST-floating-box {
+    position: fixed;
+    top: .5em;
+    right: .5em;
+    width: 30em;
+    height: 30em;
+    max-height: 90vh;
+    border: 2px solid #08a1ec;
+    margin: 0 .3em;
+    z-index: 800;
+    outline: 0;
+}
+
+.tST-floatbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 1.6em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    border-width: 2px;
+    user-select: none;
+}
+.tST-title {
+    display: flex;
+    margin: .5em auto .5em;
+    vertical-align: middle;
+    line-height: 1em;
+    bottom: .375em;
+    right: 1em;
+    left: 1em;
+    text-align: center;
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+    padding-right: 1em;
+    padding-left: 1em;
+}
+
+.tST-floatbox-scrollable-content {
+    height: calc(100% - 4.6em);
+    max-height: calc(100% - 4.6em);
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin: .3em;
+    padding: .5em;
+    position: relative;
+}	
+
+.tST-floatbox-footer {
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+    padding-right: 0;
+    padding-left: 0.1em;
+}
+
+/*
+A row that contains controls (e.g., buttons, <a ...>-link buttons, sliders, etc.) and/or text.
+*/
+.tST-control-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: .5em;
+    padding-right: .5em;
+ /* padding-top: .2em;
+    padding-bottom: .2em; */
+    padding-top: 0;
+    padding-bottom: 0;
+    height: auto;
+    margin: 2px;
+}
+
+.tST-row {
+    position: relative;
+    display: inline-block;
+    height: 21px;
+    bottom: 5px;
+}
+
+.tST-user-msg {
+    font-size: 75%;
+}
+
+.warning {
+    font-style: italic;
+}
+
+.centered {
+    height: 100%;
+    display: -webkit-flexbox;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-align: center;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    justify-content: center;
+}
+
+/*
+Styles to represent an <a ...></a> link as a button.
+*/
+a.tST-button {
+    position: relative;
+    /* height: 2.875em; */
+    /* width: 38%; */
+    margin-left: 2%;       
+    margin-right: 2%;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+    /* bottom: 5px; */
+    padding: .2em .2em;
+    color: #d1e6dd;
+    cursor: pointer;
+    text-align: center;
+    font-size: 90%;
+    text-decoration: none;
+}
+
+/* Normal: Blue border & highlight. */
+a.tST-button {
+    border: 1px solid #13628b;
+    background-color: #14181b;
+}
+a.tST-button:hover {
+    background-color: #14374a;
+}
+
+/* Normal, but attention-catching: Green border & highlight. */
+a.tST-clear {
+    border: 1px solid #279702;
+    padding: .2em .3em;
+}
+a.tST-clear:hover {
+    background-color: #144b01;
+}
+
+/* Warning button: Orange border & highlight. */
+a.tST-reset {
+    border: 1px solid #df7d27;
+}
+a.tST-reset:hover {
+    background-color: #c24004;
+}
+
+/* Visually distinguish a button that has been "disabled". */
+a.tST-button-disabled, a.tST-button-disabled:hover {
+    padding-left: 0.1em;
+    padding-right: 0.3em;
+    background-color: transparent;
+    font-style: italic;
+    cursor: inherit;
+    border-style: dashed;
+}
+
+/* Hide a UI element from view. */
+.tST-hidden {
+    display: none;
+    border: 0;
+    height: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+Toggle slide-switch: Boolean control representing an off/on state.
+*/
+/* Implicit area that contains the various parts of the switch. */
+.tST-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 21px;
+    bottom: -1px;
+}
+
+.tST-switch input { display:none; } /* Hide the underlying checkbox. */
+
+/* Text label when switch is present. */
+.tST-switch-desc {
+    bottom: 4px;
+    font-size: 95%;
+}
+
+/* Text label that replaces switch (e.g., when switch is removed by code). */
+.tST-switch-desc-solo {
+    font-size: 95%;
+}
+
+/* The visible area/channel within which the slider knob moves. */
+.tST-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: transparent;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border: 1px solid #187db4; /* #13628b; */
+    margin: 1px;
+}
+
+/* The knob that moves within the slider area. */
+.tST-slider:before {
+    position: absolute;
+    content: "";
+    height: 13px;
+    width: 13px;
+    left: 4px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+/* When enabled, the slider area/channel background changes from transparent to a filled-in color. */
+input:checked + .tST-slider {
+    background-color: #1e517b;
+}
+
+input:focus + .tST-slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+/* Animation: Clicking the control makes the knob slide from one end to the other. */
+input:checked + .tST-slider:before {
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
+}
+
+/* Use round corners on the slider area/channel. */
+.tST-slider.tST-round {
+    border-radius: 16px;
+}
+
+/* Use round corners on the slider knob. */
+.tST-slider.tST-round:before {
+    border-radius: 50%;
+}
