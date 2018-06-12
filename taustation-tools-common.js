@@ -127,9 +127,17 @@ function tST_add_base_UI() {
     }
 
     function gct_numeric_to_time(time_value) {
+        time_value = time_value.toString();
+        time_value = "0000000000".substr(0, 10 - time_value.length) + time_value;
         return time_value.toString().replace(/^([0-9]*)([0-9]{2})([0-9]{2})([0-9]{3})$/g, "$1.$2/$3:$4");
     }
-
+    
+    function get_gct_time_delta(time_start, time_end) {
+        var time_delta = gct_numeric_to_time(gct_time_to_numeric(time_end) - gct_time_to_numeric(time_start));
+        return 'D' + time_delta.replace(/^0*(\.|([1-9][0-9]*\.))/, '$2')
+                               .replace(/^0*(\/|([1-9][0-9]*\/))/, '$1');
+    }
+    
 //
 // endregion Helper methods: Interact with GCT-based time from the web page.
 ////////////////////
