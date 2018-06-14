@@ -3,7 +3,7 @@
 // @namespace https://github.com/moritz/
 // @description Navigation extension for taustation.space
 // @match https://alpha.taustation.space/*
-// @version  1
+// @version  1.1
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
@@ -54,8 +54,7 @@ function gs_taustation_enhance() {
     // new feature: Once the chat is shown,
     // clicking on "CHAT" will increase the size of the chat window
     var is_fullpage_chat = false;
-    var old_width = 0;
-    var old_height = 0;
+    var old_style;
 
     function fullpage_chat() {
         $('#chat').width($(document).width() - 40);
@@ -64,8 +63,12 @@ function gs_taustation_enhance() {
     }
 
     function normal_chat() {
-        $('#chat').width(old_width);
-        $('#chat').height(old_height);
+        // Future-proofing, in case they ever add a style attrib to this.
+        if (old_style) {
+            $('#chat').attr('style', old_style);
+        } else {
+            $('#chat').removeAttr('style');
+        }
         $('.page-container').show();
     }
 
@@ -76,9 +79,8 @@ function gs_taustation_enhance() {
         }
         else {
             is_fullpage_chat = true;
-            if (old_width == 0) {
-                old_width = $('#chat').width();
-                old_height = $('#chat').height();
+            if (! old_style) {
+                old_style = $('#chat').attr('style');
             }
             fullpage_chat();
         }
@@ -91,9 +93,11 @@ function gs_taustation_enhance() {
             return;
         }
         var flow = $('[id^=mission-].mission-flow');
-        var discr_num = flow.prop('id').replace( /^.*-(\d+)$/, '$1' );
-        flow.find('h3').text( flow.find('h3').text() + ' Mission No. ' + discr_num );
-   }
+        if (flow.prop('id')) {
+            var discr_num = flow.prop('id').replace( /^.*-(\d+)$/, '$1' );
+            flow.find('h3').text( flow.find('h3').text() + ' Mission No. ' + discr_num );
+        }
+    }
 
     show_discreet_counter();
     show_hotel_room();
