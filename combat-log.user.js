@@ -2,7 +2,7 @@
 // @name         Tau Station: Combat Log
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/combat-log.user.js
-// @version      1.1
+// @version      1.2
 // @description  Records a log of any combat you're involved in.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -18,7 +18,8 @@
 // Temporarily disable stat tracking while any of the following pages are showing.
 var tSCL_config = {
     'debug': false,
-    'remove_hidden_content': false     // True: Deletes all "visuallyhidden"/"hidden"-style content from the log.
+    'remove_hidden_content': false,     // True: Deletes all "visuallyhidden"/"hidden"-style content from the log.
+    'show_when_in_combat': true         // True: Combat Log UI indicates when it is recording combat.
 };
 
 //
@@ -59,8 +60,14 @@ function tST_combat_log_main() {
 
     function tSCL_add_UI() {
         // Add the section for this script's UI (vs. sibling scripts).
-        tST_region.append('<div id="tSCL-region" class="tST-section tST-control-bar">Combat Log:\n</div>\n')
+        tST_region.append('<div id="tSCL-region" class="tST-section tST-control-bar">Combat Log\n</div>\n')
         var tSCL_area = $("#tSCL-region");
+
+        // - Add a button pair: Show/Hide the combat log pop-over window.
+        if (tSCL_config.show_when_in_combat) {
+            tSCL_area.append('<span id="tSCL_status" class="tST-user-msg" style="font-style:italic;"></span>\n');
+        }
+        nodes.status = $('#tSCL_status');   // Bug prevention: If the above is skipped, ensure this remains a valid jQuery object (albeit an "empty" one).
 
         // - Add a button pair: Show/Hide the combat log pop-over window.
         tSCL_area.append('<a id="tSCL_show_combat_log" class="tST-button" title="Show Combat log window">Show</a>\n');
@@ -127,11 +134,12 @@ function tST_combat_log_main() {
     }
 
     function tSCL_combat_log_pending() {
-        return (localStorage[storage_key_prefix + 'combat_log']);
+        return localStorage.hasOwnProperty(storage_key_prefix + 'combat_log');  // Better perf than actually manipulating the large saved text string.
     }
 
     function completely_disable_show_button() {
-        nodes.show_button.addClass('tST-button-disabled').attr('title', 'Combat log is currently empty.');
+        nodes.show_button .addClass('tST-button-disabled').attr('title', 'Combat log is currently empty.');
+        nodes.clear_button.addClass('tST-button-disabled').attr('title', 'Combat log is currently empty.');
     }
 
     function tSCL_show_combat_log_window(show_window) {
@@ -151,6 +159,13 @@ function tST_combat_log_main() {
                 log_data = "";
             }
             present_log_in_container(log_data, nodes.combat_log.contents);
+
+            // If the chat log is already up, show this on top of it; otherwise, show chat log on top.
+            if ($('#chat').attr('class') != 'collapsed') {
+                nodes.combat_log.window.css('z-index', $('#chat').css('z-index') + 1)
+            } else {
+                nodes.combat_log.window.css('z-index', $('#chat').css('z-index') - 1)
+            }
             nodes.combat_log.window.removeClass('tST-hidden');
 
             window.addEventListener("keyup", tSCL_close_log_on_Escape_key);
@@ -176,6 +191,21 @@ function tST_combat_log_main() {
         }
     }
 
+    function tSCL_show_combat_status(in_combat) {
+        if (tSCL_config.show_when_in_combat) {
+            if      (in_combat == undefined) {
+                var log_exists = tSCL_combat_log_pending();
+                if (! log_exists)        { text = '(empty)';       color = '#e2faf060'; } // dark grey (no log), via alpha channel
+                else                     { text = '(idle)';        color = '#e2faf0';   } // "White"   (default)
+            }
+            else if (in_combat)          { text = '(in combat)';   color = '#df7d27';   } // Orange    (warning)
+            else if (in_combat == false) { text = '(combat over)'; color = '#08a1ec';   } // Blue      (finished, win or loss)
+
+            nodes.status.css({ 'color': color });
+            nodes.status.text(text);
+        }
+    }
+
 //
 // endregion UI-related code.
 ////////////////////
@@ -197,20 +227,30 @@ function tST_combat_log_main() {
         combat_log_scratch = nodes.combat_log.scratch;
         combat_log = localStorage[storage_key_prefix + 'combat_log'];
 
+        var player_name    = $('#player-name').text();
         var main_content   = $('#main-content');
         var area_messages  = main_content.find('#area-messages');
         var other_messages = main_content.find('.messages');
+        var all_messages_text = area_messages.text() + '\n' + other_messages.text();
 
         var combat_round;
 
+        // When being attacked:
+        // (- Continue: hits, misses, etc.)
+        //  - Ignore: "tried to flee", "too slow to get away!", "You have defeated {player} in combat!" (log looting, which happens on the next page)
+        //  - End: "You got away!", "{opponent} fled." "{player} lost and {was / you were} sent to the sickbay.", "took {amount} credits from", ...?
+        var being_attacked = localStorage[storage_key_prefix + 'being_attacked'];
+
         if (combat_area.length ||
-            (random_encounter.length &&
-             ! random_encounter.find('.random-encounter-cooldown').length) ||
-            area_messages.text().includes($('#player-name').text() + ' attacked '))
+            (random_encounter.length && ! random_encounter.find('.random-encounter-cooldown').length) ||
+            (being_attacked && ! all_messages_text.match(' (sent to the sickbay|got away|fled|have defeated|lost|took [0-9.]+ credits from)')) ||
+            all_messages_text.match('(' + player_name + ' attacked | attacked ' + player_name + ')'))
         {
             if (tSCL_config.debug) {
                 console.log('tSCL_process_combat_round(): Starting / continuing combat.');
             }
+
+            tSCL_show_combat_status(true);
 
             // Prepare for this log entry.
             combat_round = tSCL_prepare_log_entry();
@@ -241,14 +281,16 @@ function tST_combat_log_main() {
             // Tweak the visual appearance of the log, to help readability.
             tSCL_update_css_in_log(combat_area);
 
-            // Save all actions in our scratch combat_log, not just the latest.
+            // Save all actions in our scratch combat_log, not just the one we're appending.
             localStorage.setItem(storage_key_prefix + 'combat_log', nodes.combat_log.scratch.html());
-            combat_log_scratch.html('');
+            nodes.combat_log.scratch.html('');    // No longer needed; clean up after ourselves.
 
         } else if (localStorage[storage_key_prefix + 'combat_round'] != undefined) {
             if (tSCL_config.debug) {
                 console.log('tSCL_process_combat_round(): Combat finished.');
             }
+
+            tSCL_show_combat_status(false);
 
             combat_round = tSCL_prepare_log_entry();
             combat_log_scratch = combat_log_scratch.find('div.combat-round:last-of-type');
@@ -261,11 +303,17 @@ function tST_combat_log_main() {
                                       '    <h3 class="combat-end" id="combat-end-' + combat_session + '">Combat ended: ' + get_gct_time() + '</h3>\n' +
                                       '</a>\n\n'
                                     );
+            // Save all actions in our scratch combat_log, not just the one we're appending.
             localStorage.setItem(storage_key_prefix + 'combat_log', nodes.combat_log.scratch.html());
+            nodes.combat_log.scratch.html('');    // No longer needed; clean up after ourselves.
 
             localStorage.removeItem(storage_key_prefix + 'combat_round');
             localStorage.removeItem(storage_key_prefix + 'combat_session');
             localStorage.removeItem(storage_key_prefix + 'combat_saw_player_tables');
+            localStorage.removeItem(storage_key_prefix + 'being_attacked');
+        } else {
+            // Not inside nor exiting combat.
+            tSCL_show_combat_status(undefined);
         }
     }
 
@@ -301,8 +349,23 @@ function tST_combat_log_main() {
             combat_log_scratch.append('<div id="combat-session-' + combat_session + '" class="combat-session"></div>');
             combat_log_scratch = combat_log_scratch.find('div.combat-session:last-of-type');
 
+            // Provide a more descriptive title than "Combat session #n", if possible.
+            var session_title = 'Combat session #' + combat_session;
+
+            var main_content   = $('#main-content');
+            var message_groups = [ main_content.find('#area-messages').text(),
+                                   main_content.find('.messages').text() ];
+            for (var index in message_groups) {
+                var msgs = message_groups[index];
+                if (msgs.match(player_name + ' attacked (.+)\.')) {
+                    session_title = 'Attacked ' + msgs.match(player_name + ' attacked (.+)\.')[1];
+                } else if (msgs.match('(.+) attacked ' + player_name + '\.')) {
+                    session_title = 'Attacked by ' + msgs.match('(.+) attacked ' + player_name + '\.')[1];
+                }
+            }
+ 
             combat_log_scratch.prepend('<a name="combat-session-' + combat_session + '" href="#combat-log-toc">\n' +
-                                       '    <h1>Combat session #' + combat_session + '</h1>\n' +
+                                       '    <h1 class="combat-session-title">' + session_title + '</h1>\n' +
                                        '</a>\n' +
                                        '<h3 class="combat-start" id="combat-start-' + combat_session + '">Combat started: ' + get_gct_time() + '</h3>\n');
         } else {
@@ -368,7 +431,13 @@ function tST_combat_log_main() {
         var attack_form = combat_area.find('form[name="attack"]');
         if (attack_form.length) {
             combat_log_scratch.append(attack_form.html());
+        } else {
+            // No combat <form>? We're likely being attacked by someone else.
+            localStorage.setItem(storage_key_prefix + 'being_attacked', true);
         }
+
+        // When defending, we can only get the weapons involved from messages. (Already appended, above.)
+        var page_messages = main_content.find('.messages');
 
         // Report which weapons were used.
         if (combat_round > 0) {
@@ -377,7 +446,13 @@ function tST_combat_log_main() {
             for (var actor in actor_table) {
                 var weapon_name = "";
 
+                // When attacking: Can be found in '.combat-log' (unless they missed).
                 var weapon_node = page_combat_log.find('li:contains(' + actor_table[actor] + ')');
+                if (! weapon_node.length) {
+                    // When defending: Can be found in '.messages' (unless they missed).
+                    weapon_node = page_messages.filter(function() { return $(this).text().match(/^.* hit .* with (.+), reducing .*$/) ||
+                                                                           $(this).text().match(/^Your weapon, (.+), took .*$/); });
+                }
                 if (weapon_node.length) {
                     weapon_name = weapon_node.text().replace(/^.* hit .* with (.+), reducing .*$/, "$1")
                                                     .replace(/^Your weapon, (.+), took .*$/, "$1")
@@ -551,10 +626,17 @@ function present_log_in_container(log, container) {
         var session_number = $(this).find('a').attr('name').replace(/^combat-session-(\d+)$/, '$1');
         var session_start  = $(this).find('h3.combat-start').text().replace(/^ *Combat started: /, "");
         var session_end    = $(this).find('h3.combat-end').text().replace(/^ *Combat ended: /, "");
-        var session_delta  = get_gct_time_delta(session_start, session_end);
+        var session_delta  = (session_end.length ? get_gct_time_delta(session_start, session_end) : undefined);
 
-        toc.append('<li><a href="#combat-session-' + session_number + '">Combat session #' + session_number + '</a>\n' +
-                   '<span style="font-size:90%; font-style:italic">(at ' + session_start + ', for ' +
-                   '<a href="#combat-end-' + session_number + '">' + session_delta + '</a>)</span></li>\n');
+        var session_title  = $(this).find('.combat-session-title').text();
+        if (! session_title.length) {
+            session_title = 'Combat session #' + session_number;
+        }
+
+        toc.append('<li><a href="#combat-session-' + session_number + '">' + session_title + '</a>\n' +
+                   '<span style="font-size:90%; font-style:italic">(at ' + session_start +
+                   (session_delta ? ', for <a href="#combat-end-' + session_number + '">' + session_delta + '</a>'
+                                  : ', ongoing') +
+                   ')</span></li>\n');
     });
 }
