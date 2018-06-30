@@ -57,7 +57,7 @@ although it starts working only after one 'tick' actually occurs.
 
 `hide_tasks.js` will hide all the career tasks from all the "TASKS" tabs
 in the game, except for the tasks explicitly listed in the script body.
-Use with caution! This scrip requires manual updates to be adjusted to
+Use with caution! This script requires manual updates to be adjusted to
 the current career type and career rank/level of the player. By default it's
 configured for high-rank Clone Technician.
 
