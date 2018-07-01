@@ -39,7 +39,7 @@ Note that this does *not* automatically deposit the credits. It simply fills the
 
 ## Compact Storage
 
-`compact_storage.js` will merge duplicate items in "CORTECHS" -> "Storage"
+`compact_storage.user.js` will merge duplicate items in "CORTECHS" -> "Storage"
 listing into a single row and update the quantity column accordingly.
 
 This way, your storage report will take only 2 rows to let you know that
