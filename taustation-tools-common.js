@@ -2,7 +2,7 @@
 // @name         taustation-tools-common
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js
-// @version      0.1
+// @version      0.2
 // @description  Common code shared by my Tau Station userscripts.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -13,17 +13,25 @@
 // Disclaimer:
 // These are quick-and-dirty one-off scripts, and do not reflect the author's style or quality of work when developing production-ready software.
 //
+// Changelist:
+//  - v0.1: Initial commit.
+//  - v0.2: New: Icons for client scripts (clicking icon shows/hides each script's UI)
+//
 
 $(document).ready(tST_main);
 
 //
 // UI variables.
 //
-var tST_region; // Container for misc. Tau Station tools' UI.
+var tST_region;         // Container for misc. Tau Station tools' UI.
+var tST_icons;          // Container for icons to show/collapse the above tools' UI.
+var panes_visible = {}; // Indicates whether each given script's UI pane is visible or not.
+
+var tST_nodes = {};
 var player_name;
 
 function tST_main() {
-    add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
+    add_css_link('https://rawgit.com/taustation-fan/userscripts/dev/combat-log/taustation-tools.css');
     tST_add_base_UI();
 }
 
@@ -34,7 +42,71 @@ function tST_add_base_UI() {
         $('.stats-container').before('<div id="tST-container" class="tST-container">\n</div>\n');
         tST_region = $("#tST-container");
     }
+
+    // Also, add an area where the client scripts can place their icons.
+    tST_icons = $('#tST-icons-region');
+    if (! tST_icons.length) {
+        $('.avatar-links.avatar-messages').before(`<ul id="tST-icons-region" class="avatar-links avatar-messages" style="float: left;">\n</ul>\n`);
+        tST_icons = $('#tST-icons-region');
+    }
 }
+
+////////////////////
+// region Helper methods for icons, used by related scripts during setup.
+//
+
+    function tST_add_icon(icon_id, script_pane_id, icon_html) {
+        tST_add_icon_in_container(icon_id, script_pane_id, '#tST-container', icon_html);
+    }
+
+    function tST_add_icon_in_container(icon_id, script_pane_id, script_pane_container, icon_html) {
+        tST_icons.append(icon_html);
+        tST_nodes[icon_id] = tST_icons.find(icon_id);
+
+        expand_collapse_pane(panes_visible[icon_id], icon_id, script_pane_id, script_pane_container);
+        tST_nodes[icon_id].click(function() {
+            console.log('Click!');
+            panes_visible[icon_id] = ! panes_visible[icon_id];
+            expand_collapse_pane(panes_visible[icon_id], icon_id, script_pane_id, script_pane_container);
+        });
+
+        tST_nodes[icon_id].hover(function() { console.log('Hover: enter!'); expand_collapse_pane(true,                   icon_id, script_pane_id, script_pane_container); },
+                                 function() { console.log('Hover: leave!'); expand_collapse_pane(panes_visible[icon_id], icon_id, script_pane_id, script_pane_container); } );
+    }
+
+    function expand_collapse_pane(show_pane, icon_name, region_name, container_name) {
+        console.log('expand_collapse_pane(' + show_pane + ', ' + icon_name + ', ' + region_name + ', ' + container_name + ')');
+
+        if (! container_name) {
+            container_name = '#tST-container';
+        }
+
+        if (show_pane) {
+            $(icon_name).addClass('tST-icon-link--showing-window');
+            $(container_name).removeClass('tST-hidden')
+            $(region_name).removeClass('tST-hidden');
+        } else {
+            $(region_name).addClass('tST-hidden');
+            $(icon_name).removeClass('tST-icon-link--showing-window');
+
+            if (! any_panes_visible()) {
+                $(container_name).addClass('tST-hidden');
+            }
+        }
+    }
+
+    function any_panes_visible() {
+        var any_visible = false;
+        for (var key in panes_visible) {
+            any_visible |= panes_visible[key];
+        }
+
+        return any_visible;
+    }
+
+//
+// endregion Helper methods for icons, used by related scripts during setup.
+////////////////////
 
 
 ////////////////////
