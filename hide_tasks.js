@@ -24,7 +24,7 @@ function taustation_hide_tasks() {
         "Complete the clone center's payroll": 1,
         "Create a premium clone": 1,
     };
-    $("td[data-label='Task']").each(function(i,el){
+    $('div.tab-content-career').find("td[data-label='Task']").each(function(i,el){
         if (visibleTasks[el.innerHTML] != 1) {
             $(el).parent().hide();
         }
