@@ -2,7 +2,7 @@
 // @name         Tau Station: General Monitor
 // @namespace    https://github.com/quasidart/tau-station-tools/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/general-monitor.user.js
-// @version      0.3
+// @version      0.4
 // @description  Monitors the page, reacting based on the information available (including scheduling notifications, updating item text based on player details, etc.).
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -17,8 +17,9 @@
 //
 // Changelist:
 //  - v0.1: Notification when Stats are fully refilled.
-//  - v0.2: Update Stim name to include % boost to Stat(s) X(,Y,Z), given character's Stats & Medical Stim skill level.
-//  - v0.3: Update Stim details to show effective % toxicity, given character's Level (Tier).
+//  - v0.2: Enhance Stim info: Show % effect on current player (toxicity given player's Tier, boost to Stat(s) X(,Y,Z) given player's Stats & Medical Stim skill level, etc.)
+//  - v0.3: Notification before shuttle departure / on arrival, when Brig / Sick Bay confinement ends, before Hotel Room reservation expires, and/or when player gains Experience or Bonds.
+//  - v0.4: Notification: Checks if stats change again (& reschedules if needed); if multiple tabs, only one tab schedules notifications.
 //
 
 //////////////////////////////
@@ -27,24 +28,39 @@
 
 // Temporarily disable stat tracking while any of the following pages are showing.
 var tSM_config = {
-    'debug': false,
+    'debug': true,
+    'also_notify_console': true,        // Also shows all notifications in browser's JavaScript Console log.
+    'reuse_notification_delta': 60,     // When scheduling, reuse existing notification if it's within N seconds of new notification.
 
-    'show_stats_notification': true, // Show notification when all Stats have regenerated to 100%.
-    'also_notify_console': true,     // Also show Stat notifications in browser's JavaScript Console log?
-    'stats_rescan_period': 15,      // # of minutes to wait to see if new notifications need to be scheduled.
+    // Notifications for misc. events.
+    'notify_stats_refilled': true,      // Show notification when all Stats have regenerated to 100%.
+    'stats_rescan_period': 15,          // # of minutes to wait to see if new notifications need to be scheduled.
 
-    'show_stim_percentages': true    // Show Stims' effective boost & toxicity, based on player's Stats, Skills, and Level (Tier).
+    'notify_confinement_timer': true,   // Show notification when your confinement in the Brig or Sick Bay is finished.
+    'notify_hotel_timer': true,         // Show notification before your Hotel reservation is set to expire.
+    'notify_shuttle_timers': true,      // Show notification before a shuttle is about to depart, and when it arrives at its destination.
+
+    'notify_experience_increase': true, // Show notification when player experience increases.
+    'notify_bonds_increase': true,      // Show notification when player gains Bonds.
+
+    // Inline webpage text tweaks.
+    'show_stim_percentages': true       // Show Stims' effective boost & toxicity, based on player's Stats, Skills, and Level (Tier).
 };
 
 //
 // End: User Configuration.
 //////////////////////////////
 
+var next_rescan_delta = tSM_config['stats_rescan_period'] * 60 * 1000;
 
 $(document).ready(do_main);
 
 async function do_main() {
     'use strict';
+
+    if (! sessionStorage.tS_id) {
+        sessionStorage.tS_id = Math.random() * 0x0FFFFFFFFFFFFFFF;
+    }
 
     if (tSM_config.show_stim_percentages) {
         store_skills_if_present();
@@ -53,40 +69,237 @@ async function do_main() {
 
     set_up_notifications();
 
-    notifications.next_rescan_timestamp = new Date(Date.now() + tSM_config['stats_rescan_period'] * 60 * 1000);
-    window.setInterval(set_up_notifications, tSM_config['stats_rescan_period'] * 60 * 1000);
+    notifications.timestamps.next_rescan = new Date(Date.now() + next_rescan_delta);
+    window.setInterval(set_up_notifications, next_rescan_delta);
 }
 
 //////////////////////////////
-// region Notification: All Stats regenerated to 100%.
+// #region Notifications
 //
 
-function set_up_notifications() {
-    notifications.next_rescan_timestamp = new Date(Date.now() + tSM_config['stats_rescan_period'] * 60 * 1000);
+var notifications = {};
+notifications.handles    = {}
+notifications.timestamps = {};
 
-    if (! notifications.stats_refilled) {
-        notify_when_stats_refilled();
+var during_init = true;
+function set_up_notifications() {
+    notifications.timestamps.next_rescan = new Date(Date.now() + next_rescan_delta);
+
+    if (! localStorage.tSM_notifications_tab ||
+        localStorage.tSM_notifications_tab == sessionStorage.tS_id)
+    {
+        localStorage.setItem('tSM_notifications_tab', sessionStorage.tS_id); // Claim (or reassert) ownership.
+
+        if (tSM_config.notify_stats_refilled) {
+            notify_when_stats_refilled();
+        }
+
+        if (tSM_config.notify_experience_increase) {
+            notify_when_experience_increases();
+        }
+
+        if (tSM_config.notify_bonds_increase) {
+            notify_when_bonds_increase();
+        }
+
+        if (tSM_config.notify_hotel_timer
+            && window.location.pathname.startsWith('/area/hotel-rooms/enter-room')) {
+            notify_hotel_reservation_expiration();
+        }
+
+        // These events are only applicable when the page first loads.
+        if (during_init) {
+            if (tSM_config.notify_shuttle_timers) {
+                notify_shuttle_departing_soon();
+                notify_shuttle_arriving_soon();
+            }
+
+            if (tSM_config.notify_confinement_timer) {
+                notify_confinement_release();
+            }
+        }
+    } else {
+        debug('General Monitor: Another tab is handling notifications.')
     }
+
+    during_init = false;
 }
 
-var notifications = {};
-
 function notify_when_stats_refilled() {
+    // First, calculate when this notification should happen (if at all).
     var max_time = 0;
 
     $('.player-stats .time-to-full').each(function () {
-        var value = this.getAttribute('data-seconds-refill');
+        var value = this.getAttribute('data-seconds-refill') / 1;
         if (max_time < value) {
             max_time = value;
         }
     });
 
     if (max_time > 0) {
-        set_notification(max_time * 1000, 'Your stats have fully regenerated!', "info", 'stats_refilled');
-        debug('Scheduled notification in ' + max_time + ' seconds: "Your stats have fully regenerated!"');
+        var message = 'Your stats have fully regenerated!';
+        set_notification(max_time * 1000, message, "info", 'stats_refilled');
     }
     else {
-        debug('Stats are full; no notification needed.');
+        debug('General Monitor: Stats are full; no notification needed.');
+    }
+}
+
+function notify_shuttle_departing_soon() {
+    var severity = 'warning';
+
+    // Scan for the following:
+    //   <div class="timer global-timer" role="region" aria-label="Shuttle countdown"
+    // -->    data-seconds-left="534" data-timer-type="shuttle">
+    var shuttle_warning_node = $('div.global-timer[data-timer-type="shuttle"]');
+    if (shuttle_warning_node.length == 0) {
+        debug('General Monitor: Not waiting for shuttle; no notification needed.');
+    } else {
+        var seconds_remaining = shuttle_warning_node.attr('data-seconds-left');
+
+        // If we're already where we need to be, no notification is needed.
+        if (window.location.pathname.startsWith('/area/local-shuttles')) {
+            return;
+        }
+        // Otherwise, show the notification _before_ the timer expires.
+        else {
+            ({ seconds_remaining, severity } = choose_early_notification_time(seconds_remaining, severity));
+        }
+
+        var message = 'Shuttle departing soon!';
+        set_notification(seconds_remaining * 1000, message, severity, 'shuttle_departing');
+    }
+}
+
+function choose_early_notification_time(seconds_remaining, severity) {
+    // If it's several minutes from now, have it fire 1.5 minutes before departure time.
+    if (seconds_remaining > 120) {
+        seconds_remaining -= 90;
+    }
+    // If it's almost time, notify right now, unless we're already in the right location.
+    else if (seconds_remaining < 20) {
+        seconds_remaining = 0; // Time's almost up -- notify right now!
+        severity = 'error'; // Get the user's attention.
+    }
+    // Otherwise, notify ~20 seconds before 
+    else {
+        seconds_remaining -= 20;
+    }
+    return { seconds_remaining, severity };
+}
+
+function notify_shuttle_arriving_soon() {
+    var severity = 'warning';
+
+    // Scan for the following:
+    //   [ insert relevant <div ...> here ]
+    var arrival_warning_node = $('div.global-timer[data-timer-type="travel"]');
+    if (arrival_warning_node.length == 0) {
+        debug('General Monitor: Not currently traveling; no notification needed.');
+    } else {
+        var seconds_remaining = arrival_warning_node.attr('data-seconds-left');
+
+        var message = 'Arrived at destination!\n(Travel finished.)';
+        set_notification(seconds_remaining * 1000, message, severity, 'travel_arriving');
+    }
+}
+
+function notify_confinement_release() {
+    var severity = 'warning';
+
+    // Scan for the following:
+    //  <div class="timer global-timer" role="region" aria-label="Confinement countdown"
+    // -->    data-seconds-left="3221" data-timer-type="immobile">
+    var timer_node = $('div.global-timer[data-timer-type="immobile"]');
+    if (timer_node.length == 0) {
+        debug('General Monitor: Not currently confined; no notification needed.');
+    } else {
+        var seconds_remaining = timer_node.attr('data-seconds-left');
+
+        var confinement_area  = window.location.pathname.replace('/area/', '');
+        if        (confinement_area == 'sickbay') { confinement_area = 'Sick Bay'; }
+        else if (confinement_area == 'brig')    { confinement_area   = 'the Brig'; }
+
+        var message = '"I\'m free!"\n\nReleased from confinement in ' + confinement_area + '.';
+        set_notification(seconds_remaining * 1000, message, severity, 'confinement_released');
+    }
+}
+
+function notify_hotel_reservation_expiration() {
+    var severity = 'warning';
+
+    // Scan for the following:
+    //  <div class="timer timer-room" role="region" aria-label="Time left in room"
+    // -->   data-seconds-left="699469" data-timer-type="room">
+    var timer_node = $('div.timer-room[data-timer-type="room"]');
+    if (timer_node.length == 0) {
+        debug('General Monitor: Hotel room not visible; no notification needed.');
+    } else {
+        var seconds_remaining = timer_node.attr('data-seconds-left');
+
+        ({ seconds_remaining, severity } = choose_early_notification_time(seconds_remaining, severity));
+
+        // If the room is reserved for more than a day, there's no need to schedule the notification.
+        // (If this page isn't being reloaded, the player's most likely active in another tab / browser.)
+        if (seconds_remaining > (60 * 60 * 24)) {
+            if (during_init) {
+                debug('General Monitor: Hotel room is booked for over 1 day; notification is unnecessary.')
+            }
+            return;
+        }
+
+        var qualifier = "";
+        if      (seconds_remaining > 120) { qualifier = "will expire very soon."; }
+        else if (seconds_remaining >  20) { qualifier = "is about to expire!"; }
+        else                              { qualifier = "is nearly expired!"; }
+
+        var message = 'Your Hotel room ' + qualifier + '\n\nExtend your reservation, to be safe.';
+        set_notification(seconds_remaining * 1000, message, severity, 'hotel_expiration');
+    }
+}
+
+function notify_when_experience_increases() {
+    if (during_init) {
+        debug('General Monitor: Monitoring player\'s experience gains.');
+    }
+
+    var old_experience = localStorage['tSM_experience'] || 0;
+    var cur_experience = $('.experience').find('.amount').text().replace('%', '').trim() / 1;
+
+    var old_level = localStorage['tSM_level'] || 0;
+    var cur_level = $('.level').find('.amount').text().trim() / 1;
+
+    if (cur_level > old_level && old_level > 0) {
+        localStorage.setItem('tSM_level', cur_level);
+        cur_experience += 100;  // % experience rolled over (past 100%), so undo the rollover to let comparisons & subtraction work.
+    }
+    if (cur_experience > old_experience) {
+        localStorage.setItem('tSM_experience', cur_experience);
+
+        if (old_experience == 0) {
+            set_notification(0, 'Starting experience monitor:\nLevel ' + cur_level + ', ' + cur_experience + '% experience.', "info", 'experience_increased');
+        } else {
+            var experience_gain = Math.trunc((cur_experience - old_experience) * 10) / 10;
+            set_notification(0, 'You\'ve gained ' + experience_gain + '% experience.', "info", 'experience_increased');
+        }
+    }
+}
+
+function notify_when_bonds_increase() {
+    if (during_init) {
+        debug('General Monitor: Monitoring player\'s Bonds account.');
+    }
+
+    var old_bonds = localStorage['tSM_bonds'] || 0;
+    var cur_bonds = $('.bonds').find('.amount').text().replace(',', '').trim() / 1;
+
+    if (cur_bonds > old_bonds) {
+        localStorage.setItem('tSM_bonds', cur_bonds);
+
+        if (old_bonds > 0) {
+            var bonds_gain = cur_bonds - old_bonds;
+            set_notification(0, 'Gained ' + bonds_gain + ' Bonds.', "info", 'bonds_increased');
+        }
     }
 }
 
@@ -98,12 +311,39 @@ function set_notification(delay, message, severity, notification_key) {
         notification_key = "";  // Scratch key, ignored by the rest of the script.
     }
 
+    if (notification_key.length && notifications.timestamps[notification_key]) {
+        var old_notification_timestamp = notifications.timestamps[notification_key];
+        var cur_notification_timestamp = Date.now() + delay;
+
+        var timestamp_delta = Math.floor(Math.abs(cur_notification_timestamp - old_notification_timestamp) / 1000);
+        if (timestamp_delta < tSM_config.reuse_notification_delta) {
+            debug('General Monitor: \'' + notification_key + '\': Reusing close-enough notification at ' + new Date(old_notification_timestamp) + ' (only ~' + timestamp_delta + ' seconds off).');
+            return;
+        } else {
+            // Clear the old notification, since we now know it'll appear too early.
+            debug('General Monitor: \'' + notification_key + '\': Clearing prior notification, since notification now needs to happen at a different time.\n' +
+                  '  - Was at: ' + new Date(old_notification_timestamp) + '\n' +
+                  '  - Now at: ' + new Date(cur_notification_timestamp) + '.');
+            window.clearTimeout(notifications.handles[notification_key]);
+
+            notifications.handles   [notification_key] = undefined;
+            notifications.timestamps[notification_key] = undefined;
+        }
+    }
+
+    if (delay > 0) {
+        debug('General Monitor: \'' + notification_key + '\': Scheduled notification in ' + (delay / 1000) + ' seconds: "' + message.replace(/\n/g, '\n    ') + '"');
+    }
+
     if (Push.Permission.has()) {
-        notifications[notification_key] = window.setTimeout(() => set_notification_helper(message, severity, notification_key), delay);
+        notifications.handles   [notification_key] = window.setTimeout(() => set_notification_helper(message, severity, notification_key), delay);
+        notifications.timestamps[notification_key] = Date.now() + delay;
     }
     else {
         Push.Permission.request(
-            function () { notifications[notification_key] = window.setTimeout(() => set_notification_helper(message, severity, notification_key), delay); },
+            function () { notifications.handles   [notification_key] = window.setTimeout(() => set_notification_helper(message, severity, notification_key), delay);
+                          notifications.timestamps[notification_key] = Date.now() + delay;
+                        },
             function () { alert('Need notification permissions to send notification.\nNotification attempted:\n\n' +
                                 'severity: ' + severity + '\n' + message); }
         )
@@ -116,7 +356,7 @@ function set_notification_helper(message, severity, notification_key) {
     if (severity.length) {
         if (severity == "info") {
             title = '✅ ' + title + ' ✅';
-        } else if (severity == "warning") {
+        } else if (severity == "warning" || severity == "warn") {
             title = '⚠️ ' + title + ' ⚠️';
         } else if (severity == 'error') {
             title = '🛑 ' + title + ' 🛑';
@@ -126,11 +366,14 @@ function set_notification_helper(message, severity, notification_key) {
     }
 
     if (tSM_config.also_notify_console) {
+        var console_message = "";
         if (severity != title) {
-            console.log('Showing notification: (' + severity + ')\n\n' + title + '\n' + message);
+            console_message = 'Showing notification: (' + severity + ')\n\n' + title + '\n' + message;
         } else {
-            console.log('Showing notification:\n\n' + title + '\n' + message);
+            console_message = 'Showing notification:\n\n' + title + '\n' + message;
         }
+        console_message = 'General Monitor: at ' + (new Date()) + '\n' + console_message;
+        console.log(console_message.replace(/\n/g, '\n    '));
     }
 
     Push.create(title, {
@@ -145,11 +388,11 @@ function set_notification_helper(message, severity, notification_key) {
 }
 
 //
-// endregion Notification: All Stats regenerated to 100%.
+// #endregion Notification: All Stats regenerated to 100%.
 //////////////////////////////
 
 //////////////////////////////
-// region Stims: Show effective % Stat boost & Toxicity.
+// #region Stims: Show effective % Stat boost & Toxicity.
 //
 
 var skills_table = {};
@@ -223,7 +466,8 @@ function show_stim_percentages(isModal) {
 
     // Don't do unnecessary work -- this won't scan for stat totals & parse the skills JSON, unless we need to use them. 
     if (! stims_found.length) {
-        debug('General Monitor: add_stim_percentages(isModal = ' + isModal + '): No matching stim names found!');
+        var fn_call_desc = (isModal ? 'add_stim_percentages(isModal = ' + isModal + '): ' : '')
+        debug('General Monitor: ' + fn_call_desc + 'No stim names found; no text to update.');
     } else {
         get_stat_totals();
 
@@ -265,22 +509,14 @@ function update_stim_name(stim_parent_node) {
     var stim_node = $(stim_parent_node).find('a:contains(" Stim, v")');
     
     // - In inventory or shop (including modal panel w/ details).
-    if (! stim_node.length) {
-        stim_node = $(stim_parent_node).find('span.name:contains(" Stim, v")');
-    }
-    if (! stim_node.length) {
-        stim_node = $(stim_parent_node).find('h2.form-heading:contains(" Stim, v")');
-    }
+    if (! stim_node.length) { stim_node = $(stim_parent_node).find('span.name:contains(" Stim, v")'); }
+    if (! stim_node.length) { stim_node = $(stim_parent_node).find('h2.form-heading:contains(" Stim, v")'); }
 
     // - In site's top-level information page for the item (".../item/foo").
-    if (! stim_node.length) {
-        stim_node = $(stim_parent_node).find('h1.name:contains(" Stim, v")');
-    }
+    if (! stim_node.length) { stim_node = $(stim_parent_node).find('h1.name:contains(" Stim, v")'); }
 
     // - In messages to the player.
-    if (! stim_node.length) {
-        stim_node = $(stim_parent_node).find('li:contains(" Stim, v")');
-    }
+    if (! stim_node.length) { stim_node = $(stim_parent_node).find('li:contains(" Stim, v")'); }
 
     if (! stim_node.length) {
         console.info('General Monitor: FYI: Didn\'t find HTML tag containing stim name -- please update code to handle the following HTML:\n' +
@@ -521,7 +757,7 @@ var total_stim_boosts_table = {
 }
 
 //
-// endregion Stims: Show effective % Stat boost & Toxicity.
+// #endregion Stims: Show effective % Stat boost & Toxicity.
 //////////////////////////////
 
 function debug(msg) {
