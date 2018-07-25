@@ -2,7 +2,7 @@
 // @name         Tau Station: Combat Log
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/combat-log.user.js
-// @version      1.2
+// @version      1.2.1
 // @description  Records a log of any combat you're involved in.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -10,6 +10,15 @@
 // @require      https://code.jquery.com/jquery-3.3.1.slim.js
 // @require      https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js
 // ==/UserScript==
+//
+// Disclaimer:
+// These are quick-and-dirty one-off scripts, and do not reflect the author's style or quality of work when developing production-ready software.
+//
+// Changelist:
+//  - v1.0: Initial commit.
+//  - v1.1: Misc. refinements.
+//  - v1.2: Support logging "being attacked".
+//  - v1.2.1: Fix issue appearing with 2018-07-25's Wednesday update: In Chat window, messages frame was displaying zero text when this script was enabled.
 
 //////////////////////////////
 // Begin: User Configuration.
@@ -106,7 +115,8 @@ function tST_combat_log_main() {
     </div>
 </div>
 `;
-        $('.banner').before(combat_log_window_html);
+        // Note: 2018-07-25's Wednesday update (incl. Chat channels) now want zero ".content" elements before the the Chat window's "div.content" element. (Issue: Chat messages frame will appear empty.)
+        $('section#chat').after(combat_log_window_html);
         nodes.combat_log = {};
         nodes.combat_log.window   = $('#combat_log_window');
         nodes.combat_log.scratch  = $('#combat_log_scratch');
