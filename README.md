@@ -68,3 +68,14 @@ to present the same information in a more concise manner. A simple UI is
 provided, to Show/Hide the Combat Log window (similar to the Chat window)
 or Clear the log. The Combat Log window also provides a Download button
 to save the log to a local file on your computer.
+
+## Icon bar
+
+`icon_bar.js` adds some icons to the icon bar (next to email, settings,
+...). Comment out any icons you don't want in the `INSTALL` function.
+Script includes CSS tweaks to reduce padding around buttons so that more
+fit, adjust if desired.
+
+* button_well_fed: Fork and Knife icon, displayed if currently "Well-Fed" (hides well-fed banner until you hover or click on icon)
+* button_goto_hotel: Bed icon, go to hotel room (needs two clicks)
+* button_goto_ship: Spaceship icon, go to ship (needs two clicks, and must set to your ship's serial number!)
