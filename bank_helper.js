@@ -17,11 +17,11 @@
     var amt_min_credits_on_hand = 2000;
 
     // How much money in the bank
-    var bank_qsa = document.querySelectorAll('.bank-details-container .dl-container dd.even:nth-of-type(4)');
-    if (typeof(bank_qsa) === 'undefined') {
+    var bank_ele = document.querySelectorAll('.bank-details-container .dl-container .credits');
+    if (!bank_ele) {
         return;
     }
-    var credits_in_bank = parseFloat(bank_qsa[0].innerHTML.replace(/,/g,''));
+    var credits_in_bank = parseFloat(bank_ele.innerHTML.replace(/,/g,''));
 
     // How much money is on me:
     var on_me_qsa = document.querySelectorAll('.player-info .credit-container.player-info--amount-container span.amount');
