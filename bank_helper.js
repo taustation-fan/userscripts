@@ -21,14 +21,14 @@
     if (typeof(bank_qsa) === 'undefined') {
         return;
     }
-    var credits_in_bank = parseFloat(bank_qsa[0].innerHTML.replace(',',''));
+    var credits_in_bank = parseFloat(bank_qsa[0].innerHTML.replace(/,/g,''));
 
     // How much money is on me:
     var on_me_qsa = document.querySelectorAll('.player-info .credit-container.player-info--amount-container span.amount');
     if (typeof(on_me_qsa) === 'undefined') {
         return;
     }
-    var credits_on_me = parseFloat(on_me_qsa[0].innerHTML.replace(',',''));
+    var credits_on_me = parseFloat(on_me_qsa[0].innerHTML.replace(/,/g,''));
 
     // If you've got too many credits, deposit them!
     if (credits_on_me > amt_min_credits_on_hand) {
