@@ -79,3 +79,10 @@ fit, adjust if desired.
 * button_well_fed: Fork and Knife icon, displayed if currently "Well-Fed" (hides well-fed banner until you hover or click on icon)
 * button_goto_hotel: Bed icon, go to hotel room (needs two clicks)
 * button_goto_ship: Spaceship icon, go to ship (needs two clicks, and must set to your ship's serial number!)
+
+## Discreet Helper
+
+`discreet_helper.js` automatically converts mission locations (Inn, Ruins,
+Gym, etc.) into clickable links that lead directly to that location's
+"People" tab
+clickable links
