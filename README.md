@@ -86,3 +86,12 @@ fit, adjust if desired.
 Gym, etc.) into clickable links that lead directly to that location's
 "People" tab
 clickable links
+
+## Storage Tracker
+
+`storage-tracker.user.js` augments the Public Market to show which items you
+already own. First visit "Coretechs > Storage" to store all your items into
+your browser's persistent localStorage. Then when you view
+"Market > Public Marker", each listing includes the quantity you already own.
+Hover your mouse over the quantity to view on which stations your items are
+stored. Remember to revisit "Coretechs > Storage" after storing any new items.
