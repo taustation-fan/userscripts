@@ -4,7 +4,6 @@
 // @description Extension to add quick-link icons to the icon bar at taustation.space
 // @match       https://alpha.taustation.space/*
 // @version     1
-// @grant       GM_addStyle
 // @author      duelafn
 // ==/UserScript==
 
@@ -12,14 +11,19 @@ function INSTALL() {
     button_well_fed();              // Fork and Knife icon: Displayed if currently "Well-Fed"
     button_goto_hotel();            // Bed icon: go to hotel room (needs two clicks)
 //  button_goto_ship("003-AA010");  // Spaceship icon: go to ship (needs two clicks, and set serial number!)
+
+    var head = document.getElementsByTagName('head')[0];
+    if (head) {
+        head.appendChild(tag(
+            'style',
+            { 'type': 'text/css' },
+            `
+            /* Reduce spacing between action buttons */
+            .avatar-links li + li { margin-left: 0em; }     /* Default: 0.5em */
+            .avatar-messages li a .fa { padding: 0.2em; }   /* Default: 0.3em */
+        `));
+    }
 }
-
-
-GM_addStyle ( `
-/* Reduce spacing between action buttons */
-.avatar-links li + li { margin-left: 0em; }     /* Default: 0.5em */
-.avatar-messages li a .fa { padding: 0.2em; }   /* Default: 0.3em */
-`);
 
 
 // Helper function
