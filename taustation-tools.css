@@ -49,7 +49,7 @@ Each script adds its icon to the list; click an icon to show/hide the given scri
     list-style-type: none;
     margin-top: 0;
     margin-bottom: 0;
-    padding: 0.3em;
+    padding: 0.25em;
     display: flex;
 }
 
@@ -69,7 +69,7 @@ Each script adds its icon to the list; click an icon to show/hide the given scri
 .tST-icons-list-entry {
     height: 20px;
     width: 20px;
-    margin: 0.3em;
+    margin: 0.25em;
 }
 
 /*
