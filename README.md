@@ -95,3 +95,9 @@ your browser's persistent localStorage. Then when you view
 "Market > Public Marker", each listing includes the quantity you already own.
 Hover your mouse over the quantity to view on which stations your items are
 stored. Remember to revisit "Coretechs > Storage" after storing any new items.
+
+## Verbose Inventory
+
+`verbose-inventory.user.js` will cause full item names to be shown in the
+player's inventory & storage space. It also widens the spacing between rows
+(where necessary), to make room for the extra text.
