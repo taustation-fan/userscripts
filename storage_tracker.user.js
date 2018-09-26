@@ -75,8 +75,15 @@ function tSStorageTracker_coretechs_storage() {
     $(".content-section > table > tbody > tr").each(function() {
         var star     = $(this).find("td").eq(0).text();
         var station  = $(this).find("td").eq(1).text();
-        var name     = $(this).find("td").eq(2).text();
+        var name     = $(this).find("td").eq(2).find("a").attr("href");
         var quantity = $(this).find("td").eq(3).text();
+        var regex    = /\/item\//;
+
+        if ( name === undefined ) {
+            return;
+        }
+        name = name.replace( regex, "" );
+
         if ( !(name in items) ) {
             items[name] = new Object;
         }
@@ -111,9 +118,12 @@ function tSStorageTracker_area_public_market() {
     // Each item
     $(".market-list > li").each(function() {
         var dl       = $(this).find("dl").first();
-        var name     = $(dl).find("dd").first().text();
+        var name     = $(dl).find("dd > a").attr("href");
         var appendTo = $(dl).find("div").eq(1);
         var content  = "0";
+        var regex    = /\/item\//;
+
+        name = name.replace( regex, "" );
 
         if ( name in items ) {
             var count = 0;
