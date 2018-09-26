@@ -54,7 +54,7 @@ function tSStorageTracker_main() {
         tSStorageTracker_load_from_storage();
         tSStorageTracker_area_public_market();
     }
-    else if ( page_path.startsWith('/area/vendors/character/') ) {
+    else if ( page_path.startsWith('/area/vendors/') ) {
         // tSStorageTracker_init();
         tSStorageTracker_load_from_storage();
         tSStorageTracker_area_vendor();
@@ -184,7 +184,7 @@ function tSStorageTracker_area_vendor() {
         if ( content == 0 ) {
             content = "None in Storage";
         }
-        
+
         $(button).attr( "title", content );
     });
 }
