@@ -10,9 +10,7 @@
 
 function gs_taustation_enhance() {
     // show area links for the most common sub-areas
-    $('#game_navigation_areas a[href="/travel/area/inn"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/bar">Bar</a> / <a href="/area/hotel-rooms/enter-room">Room</a> / <a href="/travel/area/lounge">Lounge</a> </li>');
-    $('#game_navigation_areas a[href="/travel/area/market"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/vendors">Vendors</a> / <a href="/travel/area/electronic-market">Public</a> / <a href="/travel/area/storage">Storage</a> </li>');
-    $('#game_navigation_areas a[href="/travel/area/port"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/shipping-bay">Shipping</a> / <a href="/travel/area/docks">Docks</a> / <a href="/travel/area/local-shuttles">Shuttles</a> </li>');
+    add_sub_area_nav_links();
 
     // hide bond spending options without confirmation dialog.
     // remove the leading "//" from a line to enable it:
@@ -54,6 +52,19 @@ function gs_taustation_enhance() {
     //
     // END OF USER-CONFIGURATION
     //
+
+    function add_sub_area_nav_links() {
+        var current_station = $(".description-container .station").text();
+        var port_links = '<li class="area "> <a style="padding-left: 2em" href="/travel/area/shipping-bay">Shipping</a> / <a href="/travel/area/docks">Docks</a>';
+        if ( current_station.match(/jump gate/i) !== null ) {
+            port_links += ' / <a href="/travel/area/interstellar-shuttles">Interstellar</a>';
+        }
+        port_links += ' / <a href="/travel/area/local-shuttles">Shuttles</a> </li>';
+
+        $('#game_navigation_areas a[href="/travel/area/inn"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/bar">Bar</a> / <a href="/area/hotel-rooms/enter-room">Room</a> / <a href="/travel/area/lounge">Lounge</a> </li>');
+        $('#game_navigation_areas a[href="/travel/area/market"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/vendors">Vendors</a> / <a href="/travel/area/electronic-market">Public</a> / <a href="/travel/area/storage">Storage</a> </li>');
+        $('#game_navigation_areas a[href="/travel/area/port"]').parent('li').after(port_links);
+    }
 
     var is_fullpage_chat = false;
     var old_style;
