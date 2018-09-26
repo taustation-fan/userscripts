@@ -21,12 +21,12 @@ var localStorageKeyDate  = "userscript_storage_tracker_date";
 // End: User Configuration.
 //////////////////////////////
 
-$(document).ready(storage_tracker_main);
+$(document).ready(tSStorageTracker_main);
 
-function storage_tracker_main() {
+function tSStorageTracker_main() {
     'use strict';
 
-    if ( !storage_tracker_storage_available() ) {
+    if ( !tSStorageTracker_storage_available() ) {
         console.log("localStorage not available");
         return;
     }
@@ -34,14 +34,14 @@ function storage_tracker_main() {
     var page_path = window.location.pathname;
 
     if ( page_path.startsWith('/coretechs/storage') ) {
-        storage_tracker_coretechs_storage();
+        tSStorageTracker_coretechs_storage();
     }
     else if ( page_path.startsWith('/area/electronic-market') ) {
-        storage_tracker_area_public_market();
+        tSStorageTracker_area_public_market();
     }
 }
 
-function storage_tracker_coretechs_storage() {
+function tSStorageTracker_coretechs_storage() {
     var date  = (new Date).toISOString();
     var items = new Object;
     $(".content-section > table > tbody > tr").each(function() {
@@ -68,7 +68,7 @@ function storage_tracker_coretechs_storage() {
     localStorage.setItem( localStorageKeyDate, date );
 }
 
-function storage_tracker_area_public_market() {
+function tSStorageTracker_area_public_market() {
     var items = localStorage.getItem( localStorageKeyItems );
     var date  = localStorage.getItem( localStorageKeyDate );
 
@@ -115,7 +115,7 @@ function storage_tracker_area_public_market() {
     });
 }
 
-function storage_tracker_storage_available() {
+function tSStorageTracker_storage_available() {
     // example copied from https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
     var type="localStorage";
 
