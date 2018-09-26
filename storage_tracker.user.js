@@ -9,17 +9,14 @@
 // @require      https://code.jquery.com/jquery-3.3.1.slim.js
 // ==/UserScript==
 
-//////////////////////////////
-// Begin: User Configuration.
 //
-
-// key to use for localStorage;
-var localStorageKeyItems = "userscript_storage_tracker_items";
-var localStorageKeyDate  = "userscript_storage_tracker_date";
+// localStorage-related variables.
+//
+var storage_key_prefix = "tSStorage_"; // Actual prefix includes player name: e.g., "tSStorageTracker_PlayerName_".
+var player_name;
+var coretechs_storage;
 
 //
-// End: User Configuration.
-//////////////////////////////
 
 $(document).ready(tSStorageTracker_main);
 
@@ -31,14 +28,37 @@ function tSStorageTracker_main() {
         return;
     }
 
+    // Get the player's name, to let us store different session data for different player characters.
+    if (! player_name) {
+        player_name = $('#player-name').text();
+        if (player_name.length > 0) {
+            storage_key_prefix += player_name + "_";
+        }
+    }
+
     var page_path = window.location.pathname;
 
     if ( page_path.startsWith('/coretechs/storage') ) {
+        // tSStorageTracker_init();
+        tSStorageTracker_load_from_storage();
         tSStorageTracker_coretechs_storage();
     }
     else if ( page_path.startsWith('/area/electronic-market') ) {
+        // tSStorageTracker_init();
+        tSStorageTracker_load_from_storage();
         tSStorageTracker_area_public_market();
     }
+}
+
+function tSStorageTracker_load_from_storage() {
+    coretechs_storage = localStorage.getItem( storage_key_prefix + "_coretechs_storage" );
+
+    if ( !coretechs_storage ) {
+        console.log("No stored items found - visit Coretechs / Storage first");
+        return;
+    }
+
+    coretechs_storage = JSON.parse( coretechs_storage );
 }
 
 function tSStorageTracker_coretechs_storage() {
@@ -64,20 +84,14 @@ function tSStorageTracker_coretechs_storage() {
             items[name][star][station] = +quantity;
         }
     });
-    localStorage.setItem( localStorageKeyItems, JSON.stringify(items) );
-    localStorage.setItem( localStorageKeyDate, date );
+    coretechs_storage = new Object;
+    coretechs_storage.items = items;
+    coretechs_storage.date  = date;
+    localStorage.setItem( storage_key_prefix + "_coretechs_storage", JSON.stringify(coretechs_storage) );
 }
 
 function tSStorageTracker_area_public_market() {
-    var items = localStorage.getItem( localStorageKeyItems );
-    var date  = localStorage.getItem( localStorageKeyDate );
-
-    if ( !items ) {
-        console.log("No stored items found - visit Coretechs / Storage first");
-        return;
-    }
-
-    items = JSON.parse( items );
+    var items = coretechs_storage.items;
 
     // Add header
     $(".market-list-column-labels > div").eq(1).after("<div><span>Owned</span></div>");
