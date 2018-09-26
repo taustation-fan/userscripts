@@ -7,6 +7,7 @@
 // @match        https://alpha.taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.slim.js
+// @require      https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js
 // ==/UserScript==
 
 //
@@ -15,6 +16,11 @@
 var storage_key_prefix = "tSStorage_"; // Actual prefix includes player name: e.g., "tSStorageTracker_PlayerName_".
 var player_name;
 var coretechs_storage;
+
+// UI variables.
+var tST_region; // Container for misc. Tau Station tools' UI.
+var tSStorage_region;
+var tSStorage_region_coretechs_storage;
 
 //
 
@@ -64,6 +70,8 @@ function tSStorageTracker_load_from_storage() {
 function tSStorageTracker_coretechs_storage() {
     var date  = (new Date).toISOString();
     var items = new Object;
+    var seen  = new Array;
+
     $(".content-section > table > tbody > tr").each(function() {
         var star     = $(this).find("td").eq(0).text();
         var station  = $(this).find("td").eq(1).text();
@@ -83,11 +91,15 @@ function tSStorageTracker_coretechs_storage() {
             // new in station
             items[name][star][station] = +quantity;
         }
+        seen[name] = 1;
     });
     coretechs_storage = new Object;
     coretechs_storage.items = items;
     coretechs_storage.date  = date;
     localStorage.setItem( storage_key_prefix + "_coretechs_storage", JSON.stringify(coretechs_storage) );
+
+    var count = Object.keys(seen).length;
+    tSStorageTracker_update_UI("Saved " + count + " unique items to localStorage");
 }
 
 function tSStorageTracker_area_public_market() {
@@ -127,6 +139,40 @@ function tSStorageTracker_area_public_market() {
             "</div>"
         );
     });
+}
+
+function tSStorageTracker_add_UI() {
+    console.log("tSStorageTracker_add_UI");
+
+    add_css_link("https://github.com/taustation-fan/userscripts/raw/master/taustation-tools.css");
+
+    tST_region = $("#tST-container");
+    if (! tST_region.length) {
+        $('.stats-container').before('<div id="tST-container" class="tST-container">\n</div>\n');
+        tST_region = $("#tST-container");
+    }
+
+    // Add the section for this script's UI (vs. sibling scripts).
+    tSStorage_region = $("#tSStorage-region");
+    if (! tSStorage_region.length) {
+        tSStorage_region = $('<div id="tSStorage-region" class="tST-section ">\n</div>\n').appendTo(tST_region);
+    }
+
+    tSStorage_region_coretechs_storage = $("#tSStorage-coretechs-storage");
+    if (! tSStorage_region_coretechs_storage.length) {
+        $('<span>Storage Tracker: </span>').appendTo(tSStorage_region);
+        tSStorage_region_coretechs_storage = $('<span id="tSStorage-coretechs-storage"></span>').appendTo(tSStorage_region);
+    }
+}
+
+function tSStorageTracker_update_UI(message) {
+    console.log("tSStorageTracker_update_UI");
+
+    if ( tSStorage_region_coretechs_storage === undefined ) {
+        tSStorageTracker_add_UI();
+    }
+
+    tSStorage_region_coretechs_storage.html(message);
 }
 
 function tSStorageTracker_storage_available() {
