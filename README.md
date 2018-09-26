@@ -59,7 +59,7 @@ although it starts working only after one 'tick' actually occurs.
 in the game, except for the tasks explicitly listed in the script body.
 Use with caution! This script requires manual updates to be adjusted to
 the current career type and career rank/level of the player. By default it's
-configured for high-rank Clone Technician.
+configured for high-rank Clone Technician.imp
 
 ## Combat Log
 
@@ -101,3 +101,14 @@ stored. Remember to revisit "Coretechs > Storage" after storing any new items.
 `verbose-inventory.user.js` will cause full item names to be shown in the
 player's inventory & storage space. It also widens the spacing between rows
 (where necessary), to make room for the extra text.
+
+## Describe Stims
+
+`describe-stims.user.js` will update each visible Stim name to include both
+the stats it affects and the percentage boost it would add (based on your max
+stat values & your level in the relevant Medical Stim skills). When a Stim's
+details pane is shown, this also shows the effective toxicity (based on its tier,
+your tier, and the aforementioned skill levels). It can also optionally show full
+item names in the inventory & Storage pages, so that you can see what each Stim
+does without having to click on any of them. (This script incorporates all of
+`verbose-inventory.user.js`; you only need one script or the other, not both.)
