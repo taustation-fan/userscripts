@@ -11,7 +11,7 @@
 function gs_taustation_enhance() {
     // show area links for the most common sub-areas
     $('#game_navigation_areas a[href="/travel/area/inn"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/bar">Bar</a> / <a href="/area/hotel-rooms/enter-room">Room</a> / <a href="/travel/area/lounge">Lounge</a> </li>');
-    $('#game_navigation_areas a[href="/travel/area/market"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/vendors">Vendors</a> / <a href="/travel/area/storage">Storage</a> / <a href="/travel/area/electronic-market">Public</a> </li>');
+    $('#game_navigation_areas a[href="/travel/area/market"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/vendors">Vendors</a> / <a href="/travel/area/electronic-market">Public</a> / <a href="/travel/area/storage">Storage</a> </li>');
     $('#game_navigation_areas a[href="/travel/area/port"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/shipping-bay">Shipping</a> / <a href="/travel/area/docks">Docks</a> / <a href="/travel/area/local-shuttles">Shuttles</a> </li>');
 
     // hide bond spending options without confirmation dialog.
