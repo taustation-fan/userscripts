@@ -12,7 +12,7 @@ the comments sign `//` from the start of the line.
 
 ## Navigation
 
-`navigation.js` implements the following features:
+`navigation.user.js` implements the following features:
 
 * Adds navigation links to sub-areas (for example: Storage, Public Market and Vendors below *Market*)
 * Optionally removes buttons that let you spend bonds without confirmation dialogs
@@ -31,7 +31,7 @@ the comments sign `//` from the start of the line.
 
 ## Tau Station Bank Helper
 
-`bank_helper.js` implements a single feature, at the "Bank" area only:
+`bank_helper.user.js` implements a single feature, at the "Bank" area only:
 
 Whenever your credits "on hand" are greater than the amount you'd always like to keep at hand, it'll prefill the "deposit" textbox with the excess cash.
 
@@ -48,14 +48,14 @@ taking 25 rows to tell you.
 
 ## Compact Stats
 
-`compact_stats.js` will make the panel with character stats - both general
+`compact_stats.user.js` will make the panel with character stats - both general
 numbers like XP, credits etc and the current stats - look much more compact
 than by default. This function also adds a counter to the next stats 'tick',
 although it starts working only after one 'tick' actually occurs.
 
 ## Hide irrelevant career tasks
 
-`hide_tasks.js` will hide all the career tasks from all the "TASKS" tabs
+`hide_tasks.user.js` will hide all the career tasks from all the "TASKS" tabs
 in the game, except for the tasks explicitly listed in the script body.
 Use with caution! This script requires manual updates to be adjusted to
 the current career type and career rank/level of the player. By default it's
@@ -71,7 +71,7 @@ to save the log to a local file on your computer.
 
 ## Icon bar
 
-`icon_bar.js` adds some icons to the icon bar (next to email, settings,
+`icon_bar.user.js` adds some icons to the icon bar (next to email, settings,
 ...). Comment out any icons you don't want in the `INSTALL` function.
 Script includes CSS tweaks to reduce padding around buttons so that more
 fit, adjust if desired.
@@ -82,7 +82,7 @@ fit, adjust if desired.
 
 ## Discreet Helper
 
-`discreet_helper.js` automatically converts mission locations (Inn, Ruins,
+`discreet_helper.user.js` automatically converts mission locations (Inn, Ruins,
 Gym, etc.) into clickable links that lead directly to that location's
 "People" tab
 clickable links
