@@ -54,6 +54,11 @@ function tSStorageTracker_main() {
         tSStorageTracker_load_from_storage();
         tSStorageTracker_area_public_market();
     }
+    else if ( page_path.startsWith('/area/vendors/character/') ) {
+        // tSStorageTracker_init();
+        tSStorageTracker_load_from_storage();
+        tSStorageTracker_area_vendor();
+    }
 }
 
 function tSStorageTracker_load_from_storage() {
@@ -148,6 +153,39 @@ function tSStorageTracker_area_public_market() {
                 "</dd>" +
             "</div>"
         );
+    });
+}
+
+function tSStorageTracker_area_vendor() {
+    var items = coretechs_storage.items;
+
+    // Each item
+    $(".vendor > .inventory > section[data-inventory-section=carried] > .slots > .slot").each(function() {
+        var button = $(this).find("button").first();
+        var name   = $(button).attr("data-item-name");
+        var content  = "0";
+
+        if ( name in items ) {
+            var count = 0;
+            var text  = "";
+            for ( var star in items[name] ) {
+                for ( var station in items[name][star] ) {
+                    var this_count = +items[name][star][station];
+                    count += this_count;
+                    if ( text.length ) {
+                        text += ", ";
+                    }
+                    text += station + " (" + this_count + ")";
+                }
+            }
+            content = count + " (" + text + ")";
+        }
+
+        if ( content == 0 ) {
+            content = "None in Storage";
+        }
+        
+        $(button).attr( "title", content );
     });
 }
 
