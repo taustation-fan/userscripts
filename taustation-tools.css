@@ -4,7 +4,7 @@ CSS formatting that supports .../taustation-tools-common.js & related UserScript
  - name         taustation-tools.css
  - namespace    https://github.com/taustation-fan/userscripts/
  - downloadURL  https://github.com/taustation-fan/userscripts/raw/master/taustation-tools.css
- - version      0.1
+ - version      0.2
  - description  Common CSS formatting shared by my Tau Station userscripts.
  - author       Mark Schurman (https://github.com/quasidart)
  - match        https://alpha.taustation.space/*
@@ -12,6 +12,10 @@ CSS formatting that supports .../taustation-tools-common.js & related UserScript
 
 Disclaimer:
 These are quick-and-dirty one-off scripts, and do not reflect the author's style or quality of work when developing production-ready software.
+
+Changelist:
+ - v0.1: Initial commit.
+ - v0.2: New: Icons for client scripts (clicking icon shows/hides each script's UI)
 */
 
 /*
@@ -35,6 +39,37 @@ Regions for UI added by userscripts.
     padding-right: 3px;
     border: 1px solid #13628b;
     margin: 1px;
+}
+
+/*
+An icon bar, that appears in the left half of the sidebar's row of right-justified icons.
+Each script adds its icon to the list; click an icon to show/hide the given script's UI.
+*/
+.tST-icons-list {
+    list-style-type: none;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0.25em;
+    display: flex;
+}
+
+.tST-icon-link {
+    display: flex;
+    border: 1px solid #0000;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.tST-icon-link--showing-window,
+.tST-icon-link:hover {
+    border: 1px solid #187db4;
+    outline: -webkit-focus-ring-color auto 5px;
+}
+
+.tST-icons-list-entry {
+    height: 20px;
+    width: 20px;
+    margin: 0.25em;
 }
 
 /*
