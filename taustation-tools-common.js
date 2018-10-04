@@ -51,7 +51,7 @@ var tST_nodes = {};
 var player_name;
 
 async function tST_main() {
-    add_css_link('https://rawgit.com/taustation-fan/userscripts/dev/combat-log/taustation-tools.css');
+    add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
     tST_add_base_UI();
 }
 
