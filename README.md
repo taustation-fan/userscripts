@@ -102,13 +102,17 @@ stored. Remember to revisit "Coretechs > Storage" after storing any new items.
 player's inventory & storage space. It also widens the spacing between rows
 (where necessary), to make room for the extra text.
 
-## Describe Stims
+## Stim Summary in Item Names
 
-`describe-stims.user.js` will update each visible Stim name to include both
-the stats it affects and the percentage boost it would add (based on your max
-stat values & your level in the relevant Medical Stim skills). When a Stim's
+`stim-summary-in-item-name.user.js` will update each visible Stim name to include
+both the stats it affects and the percentage boost it would add (based on your
+max stat values & your level in the relevant Medical Stim skills). When a Stim's
 details pane is shown, this also shows the effective toxicity (based on its tier,
 your tier, and the aforementioned skill levels). It can also optionally show full
 item names in the inventory & Storage pages, so that you can see what each Stim
 does without having to click on any of them. (This script incorporates all of
 `verbose-inventory.user.js`; you only need one script or the other, not both.)
+
+   _(Note: The old, deprecated name for this userscript was `describe-stims.user.js`;
+   if you have that version installed, please uninstall it & reinstall the userscript
+   using its new file name.)_
