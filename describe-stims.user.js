@@ -3,7 +3,7 @@
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/stim-summary-in-item-name.user.js
 // @version      1.0.1
-// @description  [NOTE - Please force an Update, to switch to this userscript's new file name.] Show full, multi-line stim name (+ %stat effects) in Inventory / Storage / etc.; also updates item details pane to show %stat & %toxin effects. Calculates percentages using Medical Stims skill level & player-vs.-stim Tiers, based on formulae at https://tauguide.de/#so-whats-the-gain-stat-boost & https://tauguide.de/#medical-stim-toxicity-calculation-formula .
+// @description  [NOTE - Please force an update, to switch to this userscript's new file name.] Show full, multi-line stim name (+ %stat effects) in Inventory / Storage / etc.; also updates item details pane to show %stat & %toxin effects. Calculates percentages using Medical Stims skill level & player-vs.-stim Tiers, based on formulae at https://tauguide.de/#so-whats-the-gain-stat-boost & https://tauguide.de/#medical-stim-toxicity-calculation-formula .
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
 // @grant        none
@@ -20,13 +20,16 @@
 //  - v1.0.1: Renamed from "describe-stims.user.js" to "stim-summary-in-item-name.user.js" -- easier to spot if someone scans the list of file names for Stim-related userscripts.
 //  - v1.0.2: Fixed duplicate item frames on updated items. (Included here; however, this copy is intentionally marked as 1 revision lower, so the next update will move away from this old userscript filename.)
 //
+// TODO:
+//  - Support Military-grade stims. (Requires building another total_stim_boosts_table table (Military stims use different {"vX.Y.ZZZ": boost_value} pairs), plus some code updates.)
+//
 
 //////////////////////////////
 // Begin: User Configuration.
 //
 
 var tSDS_config = {
-     'debug': true,
+     'debug': false,
      'show_verbose_inventory': true, // Show full, multi-line item names (without truncating) in Inventory & Storage (item views): Increases row spacing to make room for long item names & Stim descriptions added by this script.
 };
 
@@ -92,7 +95,8 @@ function get_stat_totals() {
 
 var regex_stim_name_only = new RegExp(/(.*[\s'"]*)(Minor|Standard|Strong) ((Strength|Agility|Stamina|Intelligence|Social|Multi) (Stim,) (v\d\.[123])\.(\d\d\d))([\s'"]*[^%]*)/, "ig");
 function match_stim_item_names() {
-    var text_to_match = ($(this).text() || this.innerText || this.textContent).trim();
+    var text_to_match = ($(this).text() || this.innerText || this.textContent).trim()
+                            .replace(/(Base Toxicity[^%]*)%/, '$1'); // Some "/item/[stim]" pages include a "%" in the Toxicity line.
     return (  text_to_match.match(regex_stim_name_only) &&
             ! text_to_match.includes('%'));
 }
@@ -339,8 +343,12 @@ function calculate_stat_effects_and_rename_stim(stim_parent_node, stim_name, sta
         if (output.endsWith(', ')) {
             output = output.substr(0, output.length - 2);
         }
-
-        output = stim_name.replace(regex_stim_name_only, '$1' + stim_potency + ' $3  (' + output + ')  $8');
+        var joiner = '';
+        if (window.location.pathname.match('^(/coretechs/storage|/item/.*-stim-.*)')) {
+            joiner = '<br>\n';
+        }
+ 
+        output = stim_name.replace(regex_stim_name_only, '$1' + stim_potency + ' $3' + joiner + '&nbsp; (' + output + ')  $8');
     }
 
     debug(' -i- Describe Stims: --> New stim name:  "' + output + '"');
