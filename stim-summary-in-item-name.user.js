@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Tau Station: Describe Stims
 // @namespace    https://github.com/taustation-fan/userscripts/
-// @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/describe-stims.user.js
-// @version      0.4
-// @description  Updates Stim names & details, to describe all affected stats & percentage boost for each (accounting for Medical Stims skill level).
+// @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/stim-summary-in-item-name.user.js
+// @version      1.0.2
+// @description  Show full, multi-line stim name (+ %stat effects) in Inventory / Storage / etc.; also updates item details pane to show %stat & %toxin effects. Calculates percentages using Medical Stims skill level & player-vs.-stim Tiers, based on formulae at https://tauguide.de/#so-whats-the-gain-stat-boost & https://tauguide.de/#medical-stim-toxicity-calculation-formula .
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
 // @grant        none
@@ -17,6 +17,8 @@
 //
 // Changelist:
 //  - v1.0: Updates Stim names, as well as any detailed Stim item info present on the page; also shows full item names in the inventory & in Storage. If user clicks on a Stim to show details, the inserted Details section is updated as well.
+//  - v1.0.1: Renamed from "describe-stims.user.js" to "stim-summary-in-item-name.user.js" -- easier to spot if someone scans the list of file names for Stim-related userscripts.
+//  - v1.0.2: Fixed duplicate item frames on updated items.
 //
 
 //////////////////////////////
@@ -25,7 +27,7 @@
 
 var tSDS_config = {
      'debug': true,
-     'show_verbose_inventory': true,
+     'show_verbose_inventory': true, // Show full, multi-line item names (without truncating) in Inventory & Storage (item views): Increases row spacing to make room for long item names & Stim descriptions added by this script.
 };
 
 //
@@ -400,13 +402,14 @@ function show_verbose_inventory() {
 
     // Preparation: Tweak the page's current styling so that it looks correct when we're finished.
 
-    // The Combat Belt shows item rarity frames differently than Equipped & in-Backpack items,
-    // resulting in unusual layout after we're done. Instead, tweak combat belt items to be like
+    // The Combat Belt & Storage show item rarity frames differently than Equipped & in-Backpack
+    // items, resulting in unusual layout after we're done. Instead, tweak these items to be like
     // equipped/backpack items.
     //
     inventory.find('div.slot.item-framed-img').each(function() {
         if (! $(this).find('button .item-framed-img').length) {
             var rarity = this.getAttribute('class').replace('slot', '').replace('item-framed-img', '').trim();
+            $(this).removeClass(rarity);
             $(this).find('button img').wrap('<div class="item-framed-img ' + rarity + '"></div>');
         }
     });
