@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         [ OLD SCRIPT: Force an update, to switch to the new file name: "stim-summary-in-item-name.user.js" ] Tau Station: Show Stim effects
+// @name         Tau Station: Show Stim effects
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/stim-summary-in-item-name.user.js
-// @version      1.0.1
-// @description  [NOTE - Please force an update, to switch to this userscript's new file name.] Show full, multi-line stim name (+ %stat effects) in Inventory / Storage / etc.; also updates item details pane to show %stat & %toxin effects. Calculates percentages using Medical Stims skill level & player-vs.-stim Tiers, based on formulae at https://tauguide.de/#so-whats-the-gain-stat-boost & https://tauguide.de/#medical-stim-toxicity-calculation-formula .
+// @version      1.0.2
+// @description  Show full, multi-line stim name (+ %stat effects) in Inventory / Storage / etc.; also updates item details pane to show %stat & %toxin effects. Calculates percentages using Medical Stims skill level & player-vs.-stim Tiers, based on formulae at https://tauguide.de/#so-whats-the-gain-stat-boost & https://tauguide.de/#medical-stim-toxicity-calculation-formula .
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
 // @grant        none
@@ -18,7 +18,7 @@
 // Changelist:
 //  - v1.0: Updates Stim names, as well as any detailed Stim item info present on the page; also shows full item names in the inventory & in Storage. If user clicks on a Stim to show details, the inserted Details section is updated as well.
 //  - v1.0.1: Renamed from "describe-stims.user.js" to "stim-summary-in-item-name.user.js" -- easier to spot if someone scans the list of file names for Stim-related userscripts.
-//  - v1.0.2: Fixed duplicate item frames on updated items. (Included here; however, this copy is intentionally marked as 1 revision lower, so the next update will move away from this old userscript filename.)
+//  - v1.0.2: Fixed duplicate item frames on updated items.
 //
 // TODO:
 //  - Support Military-grade stims. (Requires building another total_stim_boosts_table table (Military stims use different {"vX.Y.ZZZ": boost_value} pairs), plus some code updates.)
@@ -347,7 +347,7 @@ function calculate_stat_effects_and_rename_stim(stim_parent_node, stim_name, sta
         if (window.location.pathname.match('^(/coretechs/storage|/item/.*-stim-.*)')) {
             joiner = '<br>\n';
         }
- 
+
         output = stim_name.replace(regex_stim_name_only, '$1' + stim_potency + ' $3' + joiner + '&nbsp; (' + output + ')  $8');
     }
 
