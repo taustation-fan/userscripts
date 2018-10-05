@@ -19,7 +19,7 @@
 //  - v1.0: Updates Stim names, as well as any detailed Stim item info present on the page; also shows full item names in the inventory & in Storage. If user clicks on a Stim to show details, the inserted Details section is updated as well.
 //  - v1.0.1: Renamed from "describe-stims.user.js" to "stim-summary-in-item-name.user.js" -- easier to spot if someone scans the list of file names for Stim-related userscripts.
 //  - v1.0.2: Fixed duplicate item frames on updated items. (Included here; however, this copy is intentionally marked as 1 revision lower, so the next update will move away from this old userscript filename.)
-//
+// 
 // TODO:
 //  - Support Military-grade stims. (Requires building another total_stim_boosts_table table (Military stims use different {"vX.Y.ZZZ": boost_value} pairs), plus some code updates.)
 //
