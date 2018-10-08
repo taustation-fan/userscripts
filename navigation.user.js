@@ -9,7 +9,8 @@
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 
-// If you've started one or more Career paths, set them to true below.
+// If you've started one or more Career paths, set them to true here,
+// and uncomment "show_change_career_links();" in the function below.
 var show_careers = {
     'trader':             false,    // Business
     'opportunist':        false,    // Criminal
@@ -61,7 +62,7 @@ function gs_taustation_enhance() {
     modify_chat();
 
     // Make it easy to change between the careers you've chosen.
-    show_change_career_links();
+    // show_change_career_links();
 
     //
     // END OF USER-CONFIGURATION
