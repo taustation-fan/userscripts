@@ -2,11 +2,22 @@
 // @name     taustation_extended_nav
 // @namespace https://github.com/moritz/
 // @description Navigation extension for taustation.space
+// @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.1
+// @version  1.2
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
+
+// If you've started one or more Career paths, set them to true below.
+var show_careers = {
+    'trader':             false,    // Business
+    'opportunist':        false,    // Criminal
+    'embassy_staff':      false,    // Law
+    'cloning_specialist': false,    // Medicine
+    'operative':          false,    // Special Services
+    'port_technician':    false     // Technologist
+};
 
 function gs_taustation_enhance() {
     // show area links for the most common sub-areas
@@ -48,6 +59,9 @@ function gs_taustation_enhance() {
     // new feature: Once the chat is shown,
     // clicking on "CHAT" will increase the size of the chat window
     modify_chat();
+
+    // Make it easy to change between the careers you've chosen.
+    show_change_career_links();
 
     //
     // END OF USER-CONFIGURATION
@@ -120,7 +134,40 @@ function gs_taustation_enhance() {
         $('.area-hotel-rooms h1').append( ' ⇒ ' + $('.zone-notice').text() ).css('background-color', 'blue');
     }
 
+    function show_change_career_links() {
+        // If no careers have been selected (see show_careers above),
+        // don't display this addition.
+        var careers_selected = false;
+        for (var x in show_careers) {
+            careers_selected = careers_selected | show_careers[x];
+        }
+        if (! careers_selected) {
+            return;
+        }
 
+        if ($('#employment_panel').find('.employment-title').length) {
+            // A career is currently active: Show the link to leave your career.
+            $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
+                .after('<li class="area"><span style="padding-left: 2em">→</span> <a href="/character/quit-career">Change career</a></li>\n');
+        } else {
+            // No careers are currently active: Show only the careers that the
+            // player has chosen to pursue (see show_careers above).
+            var careers = [];
+            var prefix  = '/area/career-advisory/start-career/';
+            if (show_careers.trader)             { careers.push('<a href="' + prefix + 'trader">Trader</a>'); }
+            if (show_careers.opportunist)        { careers.push('<a href="' + prefix + 'opportunist">Opportunist</a>'); }
+            if (show_careers.embassy_staff)      { careers.push('<a href="' + prefix + 'embassy-staff">Embassy</a>'); }
+            if (show_careers.cloning_specialist) { careers.push('<a href="' + prefix + 'cloning-specialist">Cloning</a>'); }
+            if (show_careers.operative)          { careers.push('<a href="' + prefix + 'operative">Operative</a>'); }
+            if (show_careers.port_technician)    { careers.push('<a href="' + prefix + 'port-technician">Port Tech</a>'); }
 
+            // People typically have only 1-2 careers (so far); the list we
+            // end up with should be short, so just show it on one line.
+            // (For 3+ careers, two or more lines would look better.)
+            var careers_shown = careers.join(' / ');
+            $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
+                .after('<li class="area"><span style="padding-left: 2em">→ Start:</span>\n' + careers_shown + '\n</li>\n');
+        }
+    }
 }
 $(document).ready(gs_taustation_enhance);
