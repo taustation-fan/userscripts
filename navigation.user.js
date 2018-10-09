@@ -150,6 +150,13 @@ function gs_taustation_enhance() {
             // A career is currently active: Show the link to leave your career.
             $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
                 .after('<li class="area"><span style="padding-left: 2em">→</span> <a href="/character/quit-career">Change career</a></li>\n');
+        } else if (! $(".description-container .name").text().match(/career advisory/i)) {
+            // No careers are currently active, but we can only change careers
+            // inside Career Advisory: Show a link to Career Advisory. (Same as
+            // the page's "start a career" link, but in the same place on-page
+            // as the career-change links above & below.)
+            $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
+                .after('<li class="area"><span style="padding-left: 2em">→ Go to</span> <a href="/area/career-advisory">Career Advisory</a></li>\n');
         } else {
             // No careers are currently active: Show only the careers that the
             // player has chosen to pursue (see show_careers above).
