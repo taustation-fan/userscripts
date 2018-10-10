@@ -19,7 +19,7 @@
     'use strict';
     var places;
     function refresh_directions() {
-        if (!$('.narrative-direction').length) {
+        if (!$('.narrative-direction, .mission-updates').length) {
             return;
         }
         if (typeof places === 'undefined') {
@@ -32,7 +32,7 @@
                 }
             });
         }
-        $('.narrative-direction:not([data-discreethelper="done"])').each(function(idx,nd) {
+        $('.narrative-direction:not([data-discreethelper="done"]), .mission-updates').each(function(idx,nd) {
             var text = $(nd).html();
             // "tag" as already looked at
             $(nd).attr('data-discreethelper', 'done');
