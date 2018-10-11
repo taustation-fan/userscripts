@@ -69,6 +69,10 @@ provided, to Show/Hide the Combat Log window (similar to the Chat window)
 or Clear the log. The Combat Log window also provides a Download button
 to save the log to a local file on your computer.
 
+   _(Note: The Combat Log script works well in Chrome, and in 
+   ["Firefox for Android"](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox_for_Android),
+   but currently needs work to collect cleaner logs when run in native Firefox._
+
 ## Icon bar
 
 `icon_bar.user.js` adds some icons to the icon bar (next to email, settings,
