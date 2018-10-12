@@ -2,7 +2,7 @@
 // @name         Tau Station: Combat Log
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/combat-log.user.js
-// @version      1.3
+// @version      1.3.1
 // @description  Records a log of any combat you're involved in.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -22,6 +22,7 @@
 //  - v1.2: Support logging "being attacked".
 //  - v1.2.1: Fix issue appearing with 2018-07-25's Wednesday update: In Chat window, messages frame was displaying zero text when this script was enabled.
 //  - v1.3: Add an icon to control UI (via taustation-tools-common.js's Icons code); also, improved in-combat detection logic.
+//  - v1.3.1: Fix for "attacker fled" scenario.
 //
 
 //////////////////////////////
@@ -383,16 +384,13 @@ async function tST_combat_log_main() {
                 debug('tSCL_process_combat_round(): ' + (in_combat ? 'In' : 'Not in') + ' combat: Saw combat-ending text.');
             }
             // You can be attacked in any room -- but while defending, you can't move freely between rooms (unless you have fled).
-            if (being_attacked) {
-                if (localStorage[storage_key_prefix + 'combat_prev_room']
-                    && localStorage[storage_key_prefix + 'combat_prev_room'] != window.location.pathname) {
-                    debug('tSCL_process_combat_round(): Not in combat: No longer being attacked; able to move freely between rooms (or just fled).');
-                    in_combat = false;
-                } else {
-                    debug('tSCL_process_combat_round(): In combat? Was being attacked; tracking room movement to check if it\'s over.');
-                    localStorage[storage_key_prefix + 'combat_prev_room'] = window.location.pathname;
-                    in_combat = true;
-                }
+            if (localStorage[storage_key_prefix + 'combat_prev_room']
+                && localStorage[storage_key_prefix + 'combat_prev_room'] != window.location.pathname) {
+                debug('tSCL_process_combat_round(): Not in combat: Able to move freely between rooms (or just fled).');
+                in_combat = false;
+            } else {
+                debug('tSCL_process_combat_round(): In combat? Tracking room movement to detect if the player flees.');
+                localStorage[storage_key_prefix + 'combat_prev_room'] = window.location.pathname;
             }
 
             //

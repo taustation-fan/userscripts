@@ -2,7 +2,7 @@
 // @name         Tau Station: Show Stim effects
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/stim-summary-in-item-name.user.js
-// @version      1.0.2
+// @version      1.1
 // @description  Show full, multi-line stim name (+ %stat effects) in Inventory / Storage / etc.; also updates item details pane to show %stat & %toxin effects. Calculates percentages using Medical Stims skill level & player-vs.-stim Tiers, based on formulae at https://tauguide.de/#so-whats-the-gain-stat-boost & https://tauguide.de/#medical-stim-toxicity-calculation-formula .
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -19,6 +19,7 @@
 //  - v1.0: Updates Stim names, as well as any detailed Stim item info present on the page; also shows full item names in the inventory & in Storage. If user clicks on a Stim to show details, the inserted Details section is updated as well.
 //  - v1.0.1: Renamed from "describe-stims.user.js" to "stim-summary-in-item-name.user.js" -- easier to spot if someone scans the list of file names for Stim-related userscripts.
 //  - v1.0.2: Fixed duplicate item frames on updated items.
+//  - v1.1: Added support for Stims shown during combat, and optimized jQuery calls that find stim nodes & text.
 //
 // TODO:
 //  - Support Military-grade stims. (Requires building another total_stim_boosts_table table (Military stims use different {"vX.Y.ZZZ": boost_value} pairs), plus some code updates.)
@@ -48,6 +49,17 @@ async function do_main() {
 
     // If configured above, expand the inventory to show full item names.
     show_verbose_inventory();
+
+    // If the Combat Log userscript is also active, attach another click() handler to
+    // its "Show combat log" button. (Delayed, in case it's run after this userscript.)
+    window.setTimeout(function() {
+        $('.side-bar > #tST-container #tSCL-region a#tSCL_show_combat_log').click(async function() {
+            // Give it half a second to populate & show the window.
+            window.setTimeout(function () {
+                show_stim_percentages();
+            }, 500);
+        });
+    }, 1000);
 }
 
 
@@ -95,8 +107,13 @@ function get_stat_totals() {
 
 var regex_stim_name_only = new RegExp(/(.*[\s'"]*)(Minor|Standard|Strong) ((Strength|Agility|Stamina|Intelligence|Social|Multi) (Stim,) (v\d\.[123])\.(\d\d\d))([\s'"]*[^%]*)/, "ig");
 function match_stim_item_names() {
-    var text_to_match = ($(this).text() || this.innerText || this.textContent).trim()
-                            .replace(/(Base Toxicity[^%]*)%/, '$1'); // Some "/item/[stim]" pages include a "%" in the Toxicity line.
+    var element = this;
+    var text_to_match = ($(element).text() || element.innerText || element.textContent);
+    if (! text_to_match) {
+        return false;
+    }
+    
+    text_to_match = text_to_match.trim().replace(/(Base Toxicity[^%]*)%/, '$1'); // Some "/item/[stim]" pages include a "%" in the Toxicity line.
     return (  text_to_match.match(regex_stim_name_only) &&
             ! text_to_match.includes('%'));
 }
@@ -108,30 +125,38 @@ var modal_scanner_attempts;
 
 function show_stim_percentages(isModal) {
     // Add only the selectors we anticipate needing, to reduce unnecessary scanning.
-    var stim_node_selectors = [];
-    stim_node_selectors.push('ul.messages');
+    var stim_parent_selectors = [];
+    stim_parent_selectors.push('ul.messages');
 
     if (isModal) {
-        stim_node_selectors.push('section.modal:has(div.header-info:has(span.name))',
+        stim_parent_selectors.push('section.modal:has(div.header-info:has(span.name))',
                                  'form.buy-form');
     }
 
-    if (window.location.pathname.endsWith('/coretechs/storage')) {
-        stim_node_selectors.push('table.table-base td[data-label="Name"]:has(a)');
+    if (window.location.pathname.startsWith('/coretechs/storage')) {
+        stim_parent_selectors.push('table.table-base td[data-label="Name"]:has(a)');
 
-    } else if (window.location.pathname.includes('/item/')) {
-        stim_node_selectors.push('section.item-detailed');
+    } else if (window.location.pathname.startsWith('/item/')) {
+        stim_parent_selectors.push('section.item-detailed');
+
+    } else if (window.location.pathname.startsWith('/combat/')) {
+        stim_parent_selectors.push('.combat-belt--content--inner');
+
     } else {
-        stim_node_selectors.push('div.slot');
+        stim_parent_selectors.push('div.slot');
+    }
+
+    // This adds the same selector as '/combat/' above, but can apply regardless of the URL (including the others above).
+    if (! window.location.pathname.startsWith('/combat/') &&
+        ($('#main-content div.area-combat').length ||
+         $('body > #combat_log_window')    .length)) {
+        stim_parent_selectors.push('.combat-belt--content--inner');
     }
 
     debug('Describe Stims: add_stim_percentages(isModal = ' + isModal + '): Using jQuery selectors: {\n - "' +
-          stim_node_selectors.join('"\n - "') + '"\n}');
+          stim_parent_selectors.join('"\n - "') + '"\n}');
 
-    var stims_found = [];
-    for (var ii = 0; ii < stim_node_selectors.length; ii++) {
-        $(stim_node_selectors[ii]).filter(match_stim_item_names).each(function() { stims_found.push(this); });
-    }
+    var stims_found = $(stim_parent_selectors.join(', ')).filter(match_stim_item_names);
 
     // Don't do unnecessary work -- this won't scan for stat totals & parse the skills JSON, unless we need to use them.
     if (! stims_found.length) {
@@ -146,33 +171,31 @@ function show_stim_percentages(isModal) {
         get_stat_totals();
 
         skills_table = JSON.parse(localStorage.tSDS_skills);
-        for (var index = 0; index < stims_found.length; index++) {
-            update_stim_name(stims_found[index]);
+        update_stim_name(stims_found);
 
-            // If clicking on this brings up a modal details pane (inventory, store, etc.),
-            // update stim details in that pane as well.
-            if ($(stims_found[index]).hasClass('slot')) {
-                $(stims_found[index]).find('button.item.modal-toggle')
-                                     .click(async function()
+        // If clicking on this brings up a modal details pane (inventory, store, etc.),
+        // update stim details in that pane as well.
+        if ($(stims_found).hasClass('slot')) {
+            $(stims_found).find('button.item.modal-toggle')
+                            .click(async function()
+            {
+                debug('Describe Stims: Added click() handler to Stim in store/inventory slot.');
+                modal_scanner_attempts = 0;
+                modal_scanner_interval = setInterval(async function ()
                 {
-                    debug('Describe Stims: Added click() handler to Stim in store/inventory slot.');
-                    modal_scanner_attempts = 0;
-                    modal_scanner_interval = setInterval(async function ()
-                    {
-                        modal_scanner_attempts++;
+                    modal_scanner_attempts++;
 
-                        if ($('section.modal').length > 0) {
-                            clearInterval(modal_scanner_interval);
-                            debug('Describe Stims: Post-click(): Finding & updating text in modal section.');
-                            show_stim_percentages(true);
-                            show_verbose_inventory();
-                        } else if (modal_scanner_attempts > 5000 / modal_scanner_period) {
-                            clearInterval(modal_scanner_interval);
-                            debug('Describe Stims: Post-click(): Modal dialog taking too long to appear; aborting scan.');
-                        }
-                    }, modal_scanner_period)
-                });
-            }
+                    if ($('section.modal').length > 0) {
+                        clearInterval(modal_scanner_interval);
+                        debug('Describe Stims: Post-click(): Finding & updating text in modal section.');
+                        show_stim_percentages(true);
+                        show_verbose_inventory();
+                    } else if (modal_scanner_attempts > 5000 / modal_scanner_period) {
+                        clearInterval(modal_scanner_interval);
+                        debug('Describe Stims: Post-click(): Modal dialog taking too long to appear; aborting scan.');
+                    }
+                }, modal_scanner_period)
+            });
         }
     }
 }
@@ -180,20 +203,30 @@ function show_stim_percentages(isModal) {
 function update_stim_name(stim_parent_node) {
     // Find the HTML tag actually containing the stim name.
 
-    // - In Storage.
-    var stim_node = $(stim_parent_node).find('a:contains(" Stim, v")');
+    // Check for combat-applicable scenarios first, to minimize delay.
+    var stim_nodes = $(stim_parent_node).find('span.combat-belt--content--desc:contains(" Stim, v"),' +
+                                             'li:contains(" Stim, v")');
 
-    // - In inventory or shop (including modal panel w/ details).
-    if (! stim_node.length) { stim_node = $(stim_parent_node).find('span.name:contains(" Stim, v")'); }
-    if (! stim_node.length) { stim_node = $(stim_parent_node).find('h2.form-heading:contains(" Stim, v")'); }
+    if (! stim_nodes.length) {
+        var stim_node_selectors = [
+            // - In Storage.
+            'a:contains(" Stim, v")',
 
-    // - In site's top-level information page for the item (".../item/foo").
-    if (! stim_node.length) { stim_node = $(stim_parent_node).find('h1.name:contains(" Stim, v")'); }
+            // - In inventory or shop (including modal panel w/ details).
+            'span.name:contains(" Stim, v")',
+            'h2.form-heading:contains(" Stim, v")',
 
-    // - In messages to the player.
-    if (! stim_node.length) { stim_node = $(stim_parent_node).find('li:contains(" Stim, v")'); }
+            // - In site's top-level information page for the item (".../item/foo").
+            'h1.name:contains(" Stim, v")',
 
-    if (! stim_node.length) {
+            // - In messages to the player.
+            'li:contains(" Stim, v")'
+        ];
+
+        stim_nodes = $(stim_parent_node).find(stim_node_selectors.join(', '));
+    }
+
+    if (! stim_nodes.length) {
         console.info("Describe Stims: FYI: Didn't find HTML tag containing stim name -- please update code to handle the following HTML:\n" +
                      stim_parent_node.outerHTML);
         return;
@@ -201,15 +234,12 @@ function update_stim_name(stim_parent_node) {
 
     // For scenarios like "<stim_node><child_node>foo: </child_node> stim name here </stim_node>" (e.g., inventory),
     // update only the relevant #text child node, so actual-HTML-tag child-nodes aren't affected.
-    var stim_name_text_node = $(stim_node).contents().filter(function() { return (this.nodeName == "#text"); })
-                                                     .filter(match_stim_item_names)
+    var stim_name_text_node = stim_nodes.contents().filter(function() { return (this.nodeName == "#text"); })
+                                                   .filter(match_stim_item_names)
     if (! stim_name_text_node.length) {
-        console.info("Describe Stims: FYI: Didn't find #text Node containing actual stim name (inside the overall stim node) -- please update code to handle the following HTML:\n" +
-                     stim_name_text_node.outerHTML);
+        console.info("Describe Stims: FYI: Didn't find #text Node(s) containing actual stim name (inside the overall stim node(s)) -- please update code to handle the following HTML block(s):\n" +
+                     stim_nodes.html());
         return;
-    } else if (stim_name_text_node.length > 1) {
-        console.info("Describe Stims: FYI: Find multiple #text Nodes containing actual stim name (inside one overall stim node); updating them all -- but please determine if this is correct for this scenario, and if it isn't, update the code to handle the following HTML:\n" +
-                     stim_name_text_node.outerHTML);
     }
 
     $(stim_name_text_node).each(function() {
