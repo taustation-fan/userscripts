@@ -41,6 +41,7 @@ function add_shipping_options(){
             } else {
                 $(parent_ul).append('<li class="send-stuff-link"><a href="https://alpha.taustation.space/area/shipping-bay?gift_to_user=' + username + '">Send stuff</a></li>');
             }
+            $(parent_ul).append('<li class="add-friend-link"><a href="https://alpha.taustation.space/contact?contact_type=friend&new_contact_name=' + username + '">Add friend</a></li>');
         }
     });
 }
