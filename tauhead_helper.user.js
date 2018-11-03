@@ -306,7 +306,8 @@ var tSTauHeadHelper_actions = {
                     if ( name.match( /Base Toxicity/i ) ) {
                         let percent = value.match( /(\d+)\s*\%/ );
                         if ( percent ) {
-                            value = "0." + percent[1];
+                            value = percent[1]/100;
+                            value = value.toFixed(3);
                         }
                         response["item_component_medical.base_toxicity"] = value;
                     }
