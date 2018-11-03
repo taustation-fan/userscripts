@@ -2,7 +2,7 @@
 // @name         TauHead Helper
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_helper.user.js
-// @version      1.0
+// @version      1.1
 // @description  Add links to Post data to TauHead
 // @match        https://alpha.taustation.space/*
 // @grant        none
