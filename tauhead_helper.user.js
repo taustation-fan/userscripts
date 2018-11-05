@@ -234,7 +234,7 @@ var tSTauHeadHelper_actions = {
             let url       = $(details).find(".market-item--content--item dd a").first().attr("href");
             let quantity  = $(details).find(".market-item--content--qty dd").first().text();
             let price     = $(details).find(".market-item--content--price dd .currency-amount").first().text();
-            price = price.replace( /[^0-9]+/g, "" ); // strip non-digits ","
+            price = price.replace( /,/g, "" );
 
             let target_id   = $(details).find(".market-item--content--expand dd button").first().attr("data-area-toggle-target");
             let target      = $(this).find("#"+target_id);
