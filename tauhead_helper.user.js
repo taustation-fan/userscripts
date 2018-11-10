@@ -2,7 +2,7 @@
 // @name         TauHead Helper
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_helper.user.js
-// @version      1.2
+// @version      1.3
 // @description  Add links to Post data to TauHead
 // @match        https://alpha.taustation.space/*
 // @grant        none
@@ -812,15 +812,9 @@ function get_area_description_long() {
 function path_to_slug(path) {
     if (path.length) {
         path = path.replace( /.*\//, "" );
-        path = path.toLowerCase();
-        path = trim_ws_ends( path );
     }
 
-    else {
-        path = "";
-    }
-
-    return path;
+    return string_to_slug(path);
 }
 
 function slug_to_words(slug) {
@@ -840,6 +834,8 @@ function string_to_slug(str) {
     if (str.length) {
         str = str.toLowerCase();
         str = trim_ws_ends( str );
+        str = str.replace( /’/g, "" );
+        str = str.replace( /™/g, "tm" );
         str = str.replace( /\s+/g, "-" );
     }
     else {
