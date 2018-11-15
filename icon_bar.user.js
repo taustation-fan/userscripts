@@ -3,7 +3,7 @@
 // @namespace   https://github.com/taustation-fan
 // @description Extension to add quick-link icons to the icon bar at taustation.space
 // @match       https://alpha.taustation.space/*
-// @version     1
+// @version     2
 // @author      duelafn
 // ==/UserScript==
 
@@ -19,8 +19,13 @@ function INSTALL() {
             { 'type': 'text/css' },
             `
             /* Reduce spacing between action buttons */
-            .avatar-links li + li { margin-left: 0em; }     /* Default: 0.5em */
-            .avatar-messages li a .fa { padding: 0.2em; }   /* Default: 0.3em */
+            .avatar-links li + li { margin-left: 0em !important; }
+            .avatar-links li a { width: 1.75em; }
+            /* Vertical alignment of icons (varies on mobile, not sure how to fix) */
+            .avatar-links li .fa { margin-top: 0.8em; }
+            @media (min-width: 1080px) {
+                .avatar-links li .fa { margin-top: 0.33em; }
+            }
         `));
     }
 }
@@ -92,7 +97,9 @@ function button_well_fed() {
             if (idx > 0) { // skip header
                 if (tr.children[0].textContent === 'Well fed') {
                     var li = tag("li", { "class": "avatar-links--item" },
-                                 tag("span", { "class": "fa fa-cutlery", "style": "color: #66bb6a;" })
+                                 tag("a", { "href": "#", "class": "icon-link", "data-component": "tooltip-basic", "data-message": "Well fed" },
+                                     tag("span", { "class": "fa fa-cutlery", "style": "color: #66bb6a;" })
+                                    )
                                 );
 
                     li.onmouseover = function() { buff_div.style.display = display; };
