@@ -24,11 +24,9 @@
     var credits_in_bank = parseFloat(bank_ele.innerHTML.replace(/,/g,''));
 
     // How much money is on me:
-    var on_me_qsa = document.querySelectorAll('.player-info .credit-container.player-info--amount-container span.amount');
-    if (typeof(on_me_qsa) === 'undefined') {
-        return;
-    }
-    var credits_on_me = parseFloat(on_me_qsa[0].innerHTML.replace(/,/g,''));
+    let on_me_ele = document.querySelector('.player-info .credit-container-wallet a');
+    if (!on_me_ele) { return; }
+    let credits_on_me = parseFloat(on_me_ele.getAttribute("data-message").replace(/,/g,''));
 
     // If you've got too many credits, deposit them!
     if (credits_on_me > amt_min_credits_on_hand) {
