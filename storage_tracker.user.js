@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         storage_tracker
+// @name         Storage Tracker
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/storage_tracker.user.js
-// @version      1.1
+// @version      1.2
 // @description  Track Storage items, and show owned items in Public Market
 // @match        https://alpha.taustation.space/*
 // @grant        none
@@ -43,17 +43,14 @@ function tSStorageTracker_main() {
     var page_path = window.location.pathname;
 
     if ( page_path.startsWith('/coretechs/storage') ) {
-        // tSStorageTracker_init();
         tSStorageTracker_load_from_storage();
         tSStorageTracker_coretechs_storage();
     }
     else if ( page_path.startsWith('/area/electronic-market') ) {
-        // tSStorageTracker_init();
         tSStorageTracker_load_from_storage();
         tSStorageTracker_area_public_market();
     }
     else if ( page_path.startsWith('/area/vendors/') ) {
-        // tSStorageTracker_init();
         tSStorageTracker_load_from_storage();
         tSStorageTracker_area_vendor();
     }
@@ -64,10 +61,11 @@ function tSStorageTracker_main() {
 }
 
 function tSStorageTracker_load_from_storage() {
-    coretechs_storage = localStorage.getItem( storage_key_prefix + "_coretechs_storage" );
+    coretechs_storage = localStorage.getItem( storage_key_prefix + "_storage_tracker" );
 
     if ( !coretechs_storage ) {
         tSStorageTracker_update_UI("No stored items found - visit Coretechs / Storage first");
+        coretechs_storage = {};
         return;
     }
 
@@ -76,8 +74,8 @@ function tSStorageTracker_load_from_storage() {
 
 function tSStorageTracker_coretechs_storage() {
     var date  = (new Date).toISOString();
-    var items = new Object;
-    var seen  = new Array;
+    var items = {};
+    var count = {};
 
     $(".content-section > table > tbody > tr").each(function() {
         var star     = $(this).find("td").eq(0).text();
@@ -92,10 +90,10 @@ function tSStorageTracker_coretechs_storage() {
         name = name.replace( regex, "" );
 
         if ( !(name in items) ) {
-            items[name] = new Object;
+            items[name] = {};
         }
         if ( !(star in items[name]) ) {
-            items[name][star] = new Object;
+            items[name][star] = {};
         }
         if ( ( star in items[name] ) && ( station in items[name][star] ) ) {
             // already exists in this station - increase quantity
@@ -105,19 +103,28 @@ function tSStorageTracker_coretechs_storage() {
             // new in station
             items[name][star][station] = +quantity;
         }
-        seen[name] = 1;
+        if ( count[name] === undefined ) {
+            count[name] = +quantity;
+        }
+        else {
+            count[name] += +quantity;
+        }
     });
-    coretechs_storage = new Object;
-    coretechs_storage.items = items;
-    coretechs_storage.date  = date;
-    localStorage.setItem( storage_key_prefix + "_coretechs_storage", JSON.stringify(coretechs_storage) );
+    coretechs_storage.storage       = {};
+    coretechs_storage.storage.date  = date;
+    coretechs_storage.storage.items_by_location = items;
+    coretechs_storage.storage.item_totals       = count;
+    localStorage.setItem( storage_key_prefix + "_storage_tracker", JSON.stringify(coretechs_storage) );
 
-    var count = Object.keys(seen).length;
+    var count = Object.keys(count).length;
     tSStorageTracker_update_UI("Saved [" + count + "] unique items");
 }
 
 function tSStorageTracker_area_public_market() {
-    var items = coretechs_storage.items;
+    if ( coretechs_storage.storage === undefined )
+        return;
+
+    var items = coretechs_storage.storage.item_totals;
 
     // Add header
     $(".market-list-column-labels > div").eq(1).after("<div><span>Owned</span></div>");
@@ -133,19 +140,7 @@ function tSStorageTracker_area_public_market() {
         name = name.replace( regex, "" );
 
         if ( name in items ) {
-            var count = 0;
-            var text  = "";
-            for ( var star in items[name] ) {
-                for ( var station in items[name][star] ) {
-                    var this_count = +items[name][star][station];
-                    count += this_count;
-                    if ( text.length ) {
-                        text += ", ";
-                    }
-                    text += station + " (" + this_count + ")";
-                }
-            }
-            content = "<span title=\"" + text + "\">" + count + "</span>";
+            content = "<span>" + items[name] + "</span>";
         }
         $(appendTo).after(
             "<div class=\"market-item--content--col\">" +
@@ -171,7 +166,10 @@ function tSStorageTracker_inventory() {
 }
 
 function tSStorageTracker_decorate_item_slots(slots) {
-    var items = coretechs_storage.items;
+    if ( coretechs_storage.storage === undefined )
+        return;
+
+    var items = coretechs_storage.storage.item_totals;
 
     // Each item
     $(slots).each(function() {
@@ -180,14 +178,8 @@ function tSStorageTracker_decorate_item_slots(slots) {
         var content  = "0";
 
         if ( name in items ) {
-            var count = 0;
-            for ( var star in items[name] ) {
-                for ( var station in items[name][star] ) {
-                    var this_count = +items[name][star][station];
-                    count += this_count;
-                }
-            }
             // show quantity count in bottom-left of item button
+            let count = items[name];
             $('<span class="amount quantity-in-storage" style="right: 60%;">['+count+']</span>').appendTo(button);
         }
     });
