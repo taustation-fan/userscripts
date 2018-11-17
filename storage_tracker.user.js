@@ -159,32 +159,37 @@ function tSStorageTracker_update_localStorage_from_inventory() {
 }
 
 function tSStorageTracker_decorate_public_market() {
-    if ( coretechs_storage.storage === undefined )
-        return;
+    let storage = ( coretechs_storage.storage !== undefined ) ? coretechs_storage.storage.item_totals : {};
+    let carried = ( coretechs_storage.carried !== undefined ) ? coretechs_storage.carried.items       : {};
 
-    var items = coretechs_storage.storage.item_totals;
-
-    // Add header
-    $(".market-list-column-labels > div").eq(1).after("<div><span>Owned</span></div>");
+    // Add headers
+    $(".market-list-column-labels > div").eq(1).after('<div class="market-list-column-labels--qty"><span class="to-center">Stored</span></div>');
+    $(".market-list-column-labels > div").eq(1).after('<div class="market-list-column-labels--qty"><span class="to-center">Carried</span></div>');
 
     // Each item
     $(".market-list > li").each(function() {
         var dl       = $(this).find("dl").first();
         var name     = $(dl).find("dd > a").attr("href");
         var appendTo = $(dl).find("div").eq(1);
-        var content  = "0";
-        var regex    = /\/item\//;
+        name = name.replace( /\/item\//, "" );
 
-        name = name.replace( regex, "" );
+        let storage_count = ( name in storage ) ? storage[name] : 0;
+        let carried_count = ( name in carried ) ? carried[name] : 0;
 
-        if ( name in items ) {
-            content = "<span>" + items[name] + "</span>";
-        }
         $(appendTo).after(
-            "<div class=\"market-item--content--col\">" +
-                "<dt class=\"visuallyhidden\">Quantity Owned</dt>" +
+            "<div class=\"market-item--content--col market-item--content--qty\">" +
+                "<dt class=\"visuallyhidden\">Stored</dt>" +
                 "<dd>" +
-                    content +
+                    storage_count +
+                "</dd>" +
+            "</div>"
+        );
+
+        $(appendTo).after(
+            "<div class=\"market-item--content--col market-item--content--qty\">" +
+                "<dt class=\"visuallyhidden\">Carried</dt>" +
+                "<dd>" +
+                    carried_count +
                 "</dd>" +
             "</div>"
         );
@@ -193,33 +198,42 @@ function tSStorageTracker_decorate_public_market() {
 
 function tSStorageTracker_decorate_vendor() {
     tSStorageTracker_decorate_item_slots(
-        ".vendor > .inventory > section[data-inventory-section=carried] > .slots > .slot"
+        ".vendor > .inventory > section[data-inventory-section=carried] > .slots > .slot",
+        '5.5em',
+        '-5.5em'
     );
 }
 
 function tSStorageTracker_decorate_inventory() {
     tSStorageTracker_decorate_item_slots(
-        ".inventory > section[data-inventory-section=carried] > .slots > .slot"
+        ".inventory > section[data-inventory-section=carried] > .slots > .slot",
+        '4em',
+        '-4em'
     );
 }
 
-function tSStorageTracker_decorate_item_slots(slots) {
-    if ( coretechs_storage.storage === undefined )
-        return;
-
-    var items = coretechs_storage.storage.item_totals;
+function tSStorageTracker_decorate_item_slots(slots, container_offset, label_offset) {
+    let storage = ( coretechs_storage.storage !== undefined ) ? coretechs_storage.storage.item_totals : {};
+    let carried = ( coretechs_storage.carried !== undefined ) ? coretechs_storage.carried.items       : {};
 
     // Each item
     $(slots).each(function() {
+        $(this).css( 'margin-bottom', container_offset ); // vendor page needs 5.5em
+        // ^ inventory page needs 4.25em
         var button = $(this).find("button").first();
         var name   = $(button).attr("data-item-name");
         var content  = "0";
 
-        if ( name in items ) {
-            // show quantity count in bottom-left of item button
-            let count = items[name];
-            $('<span class="amount quantity-in-storage" style="right: 60%;">['+count+']</span>').appendTo(button);
-        }
+        // show quantity count in bottom-left of item button
+        let storage_count = ( name in storage ) ? storage[name] : 0;
+        let carried_count = ( name in carried ) ? carried[name] : 0;
+        // $('<span class="amount quantity-in-storage" style="right: 60%;">['+count+']</span>').appendTo(button);
+        let tag = '<span class="name" style="bottom: '+label_offset+';">'; // vendor page needs ~ 5.5em
+        // ^ inventory needs -4em
+        tag += 'Stored: '  + storage_count + '<br/>';
+        tag += 'Carried: ' + carried_count + '<br/>';
+        tag += '</span>';
+        button.append(tag);
     });
 }
 
