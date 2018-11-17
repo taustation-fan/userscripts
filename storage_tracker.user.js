@@ -2,7 +2,7 @@
 // @name         storage_tracker
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/storage_tracker.user.js
-// @version      1.0
+// @version      1.1
 // @description  Track Storage items, and show owned items in Public Market
 // @match        https://alpha.taustation.space/*
 // @grant        none
@@ -58,6 +58,10 @@ function tSStorageTracker_main() {
         // tSStorageTracker_init();
         tSStorageTracker_load_from_storage();
         tSStorageTracker_area_vendor();
+    }
+    else if ( page_path.startsWith('/character/inventory') ) {
+        tSStorageTracker_load_from_storage();
+        tSStorageTracker_inventory();
     }
 }
 
@@ -186,6 +190,27 @@ function tSStorageTracker_area_vendor() {
         }
 
         $(button).attr( "title", content );
+    });
+}
+
+function tSStorageTracker_inventory() {
+    var items = coretechs_storage.items;
+
+    // Each item in inventory
+    $(".inventory > section[data-inventory-section=carried] > .slots > .slot").each(function() {
+        let button = $(this).find("button.item").first();
+        let name   = $(button).attr("data-item-name");
+        if ( name in items ) {
+            let count = 0;
+            for ( var star in items[name] ) {
+                for ( var station in items[name][star] ) {
+                    var this_count = +items[name][star][station];
+                    count += this_count;
+                }
+            }
+            // show quantity count in bottom-left of item button
+            $('<span class="amount quantity-in-storage" style="right: 60%;">['+count+']</span>').appendTo(button);
+        }
     });
 }
 
