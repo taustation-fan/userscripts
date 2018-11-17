@@ -161,47 +161,28 @@ function tSStorageTracker_area_public_market() {
 }
 
 function tSStorageTracker_area_vendor() {
+    tSStorageTracker_decorate_item_slots(
+        ".vendor > .inventory > section[data-inventory-section=carried] > .slots > .slot"
+    );
+}
+
+function tSStorageTracker_inventory() {
+    tSStorageTracker_decorate_item_slots(
+        ".inventory > section[data-inventory-section=carried] > .slots > .slot"
+    );
+}
+
+function tSStorageTracker_decorate_item_slots(slots) {
     var items = coretechs_storage.items;
 
     // Each item
-    $(".vendor > .inventory > section[data-inventory-section=carried] > .slots > .slot").each(function() {
+    $(slots).each(function() {
         var button = $(this).find("button").first();
         var name   = $(button).attr("data-item-name");
         var content  = "0";
 
         if ( name in items ) {
             var count = 0;
-            var text  = "";
-            for ( var star in items[name] ) {
-                for ( var station in items[name][star] ) {
-                    var this_count = +items[name][star][station];
-                    count += this_count;
-                    if ( text.length ) {
-                        text += ", ";
-                    }
-                    text += station + " (" + this_count + ")";
-                }
-            }
-            content = count + " (" + text + ")";
-        }
-
-        if ( content == 0 ) {
-            content = "None in Storage";
-        }
-
-        $(button).attr( "title", content );
-    });
-}
-
-function tSStorageTracker_inventory() {
-    var items = coretechs_storage.items;
-
-    // Each item in inventory
-    $(".inventory > section[data-inventory-section=carried] > .slots > .slot").each(function() {
-        let button = $(this).find("button.item").first();
-        let name   = $(button).attr("data-item-name");
-        if ( name in items ) {
-            let count = 0;
             for ( var star in items[name] ) {
                 for ( var station in items[name][star] ) {
                     var this_count = +items[name][star][station];
