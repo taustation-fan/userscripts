@@ -13,7 +13,7 @@
 //
 // localStorage-related variables.
 //
-var storage_key_prefix = "tSStorage_"; // Actual prefix includes player name: e.g., "tSStorageTracker_PlayerName_".
+var storage_key_prefix = "tSStorage_"; // Actual prefix includes player name: e.g., "tSStorage_PlayerName_".
 var player_name;
 var coretechs_storage;
 
@@ -36,7 +36,8 @@ function tSStorageTracker_main() {
     if (! player_name) {
         player_name = $('#player-name').text();
         if (player_name.length > 0) {
-            storage_key_prefix += player_name + "_";
+            // If the user is part of a Syndicate or has VIP, drop the "[foo]" prefix/suffix.
+            script_prefix += player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, '$2') + "_";
         }
     }
 
