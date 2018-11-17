@@ -2,7 +2,7 @@
 // @name         Storage Tracker
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/storage_tracker.user.js
-// @version      1.2
+// @version      1.3
 // @description  Track Storage items, and show owned items in Public Market
 // @match        https://alpha.taustation.space/*
 // @grant        none
@@ -37,7 +37,7 @@ function tSStorageTracker_main() {
         player_name = $('#player-name').text();
         if (player_name.length > 0) {
             // If the user is part of a Syndicate or has VIP, drop the "[foo]" prefix/suffix.
-            script_prefix += player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, '$2') + "_";
+            storage_key_prefix += player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, '$2') + "_";
         }
     }
 
