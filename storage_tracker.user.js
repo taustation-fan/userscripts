@@ -43,24 +43,24 @@ function tSStorageTracker_main() {
     var page_path = window.location.pathname;
 
     if ( page_path.startsWith('/coretechs/storage') ) {
-        tSStorageTracker_load_from_storage();
-        tSStorageTracker_coretechs_storage();
+        tSStorageTracker_load_from_localStorage();
+        tSStorageTracker_update_localStorage_from_coretechs_storage();
     }
     else if ( page_path.startsWith('/area/electronic-market') ) {
-        tSStorageTracker_load_from_storage();
-        tSStorageTracker_area_public_market();
+        tSStorageTracker_load_from_localStorage();
+        tSStorageTracker_decorate_public_market();
     }
     else if ( page_path.startsWith('/area/vendors/') ) {
-        tSStorageTracker_load_from_storage();
-        tSStorageTracker_area_vendor();
+        tSStorageTracker_load_from_localStorage();
+        tSStorageTracker_decorate_vendor();
     }
     else if ( page_path.startsWith('/character/inventory') ) {
-        tSStorageTracker_load_from_storage();
-        tSStorageTracker_inventory();
+        tSStorageTracker_load_from_localStorage();
+        tSStorageTracker_decorate_inventory();
     }
 }
 
-function tSStorageTracker_load_from_storage() {
+function tSStorageTracker_load_from_localStorage() {
     coretechs_storage = localStorage.getItem( storage_key_prefix + "_storage_tracker" );
 
     if ( !coretechs_storage ) {
@@ -72,7 +72,7 @@ function tSStorageTracker_load_from_storage() {
     coretechs_storage = JSON.parse( coretechs_storage );
 }
 
-function tSStorageTracker_coretechs_storage() {
+function tSStorageTracker_update_localStorage_from_coretechs_storage() {
     var date  = (new Date).toISOString();
     var items = {};
     var count = {};
@@ -153,13 +153,13 @@ function tSStorageTracker_area_public_market() {
     });
 }
 
-function tSStorageTracker_area_vendor() {
+function tSStorageTracker_decorate_vendor() {
     tSStorageTracker_decorate_item_slots(
         ".vendor > .inventory > section[data-inventory-section=carried] > .slots > .slot"
     );
 }
 
-function tSStorageTracker_inventory() {
+function tSStorageTracker_decorate_inventory() {
     tSStorageTracker_decorate_item_slots(
         ".inventory > section[data-inventory-section=carried] > .slots > .slot"
     );
