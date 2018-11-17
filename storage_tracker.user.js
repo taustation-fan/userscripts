@@ -56,6 +56,7 @@ function tSStorageTracker_main() {
     }
     else if ( page_path.startsWith('/character/inventory') ) {
         tSStorageTracker_load_from_localStorage();
+        tSStorageTracker_update_localStorage_from_inventory();
         tSStorageTracker_decorate_inventory();
     }
 }
@@ -120,7 +121,44 @@ function tSStorageTracker_update_localStorage_from_coretechs_storage() {
     tSStorageTracker_update_UI("Saved [" + count + "] unique items");
 }
 
-function tSStorageTracker_area_public_market() {
+function tSStorageTracker_update_localStorage_from_inventory() {
+    var date  = (new Date).toISOString();
+    var items = {};
+
+    $("section[data-inventory-section='carried'] > .slots > .slot").each(function() {
+        let button   = $(this).find("button").first();
+        let name     = button.attr("data-item-name");
+        let quantity = button.find("span.amount");
+
+        if ( quantity.length ) {
+            let text = quantity.text();
+            let remove = quantity.find(".visuallyhidden").text();
+            text = text.replace( remove, "" );
+            quantity = text;
+        }
+        else {
+            quantity = 1;
+        }
+
+        if ( name in items ) {
+            // already got some - increase quantity
+            items[name] = +quantity + items[name];
+        }
+        else {
+            // new
+            items[name] = +quantity;
+        }
+    });
+    coretechs_storage.carried = {};
+    coretechs_storage.carried.items = items;
+    coretechs_storage.carried.date  = date;
+    localStorage.setItem( storage_key_prefix + "_storage_tracker", JSON.stringify(coretechs_storage) );
+
+    var count = Object.keys(items).length;
+    tSStorageTracker_update_UI("Saved [" + count + "] unique carried items");
+}
+
+function tSStorageTracker_decorate_public_market() {
     if ( coretechs_storage.storage === undefined )
         return;
 
