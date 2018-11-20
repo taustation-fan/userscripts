@@ -56,6 +56,7 @@ function gs_taustation_enhance() {
 
     // Highlight when safe in hotel-room
     show_hotel_room();
+    show_hotel_room_icon();
 
     // new feature: Once the chat is shown,
     // clicking on "CHAT" will increase the size of the chat window
@@ -134,6 +135,24 @@ function gs_taustation_enhance() {
             return;
         }
         $('.area-hotel-rooms h1').append( ' ⇒ ' + $('.zone-notice').text() ).css('background-color', 'blue');
+    }
+
+    function show_hotel_room_icon() {
+        if (
+            // we are at hotel-room area page
+            window.location.pathname.startsWith('/area/hotel-rooms/enter-room')
+            // or a non-area page with a location link back to inside the hotel-room
+            || $(".location-container a.navigation[href='/area/hotel-rooms/enter-room']")
+        ) {
+            let attrs = {
+                'class': 'fa fa-bed',
+                'style': 'margin-left: 0.5em;'
+            };
+            // player name on large screens
+            $('<span/>', attrs).appendTo('#player-name');
+            // player name on small screens
+            $('<span/>', attrs).appendTo('.avatar-links--item--player');
+        }
     }
 
     function show_change_career_links() {
