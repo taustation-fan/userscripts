@@ -120,3 +120,9 @@ does without having to click on any of them. (This script incorporates all of
    _(Note: The old, deprecated name for this userscript was `describe-stims.user.js`;
    if you have that version installed, please uninstall it & reinstall the userscript
    using its new file name.)_
+
+## Show Next Regeneration Tick
+
+`next-regen-tick.user.js`: The game shows countdown timers for each stat until
+full regeneration. But when is the _next_ regeneration tick due? This displays
+the duration in units. It will only be updated on mouseclick.
