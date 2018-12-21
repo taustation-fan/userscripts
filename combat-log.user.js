@@ -2,7 +2,7 @@
 // @name         Tau Station: Combat Log
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/combat-log.user.js
-// @version      1.3.1
+// @version      1.3.2
 // @description  Records a log of any combat you're involved in.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -385,7 +385,8 @@ async function tST_combat_log_main() {
             }
             // You can be attacked in any room -- but while defending, you can't move freely between rooms (unless you have fled).
             if (localStorage[storage_key_prefix + 'combat_prev_room']
-                && localStorage[storage_key_prefix + 'combat_prev_room'] != window.location.pathname) {
+                && localStorage[storage_key_prefix + 'combat_prev_room'] != window.location.pathname
+                && ! localStorage[storage_key_prefix + 'combat_prev_room'].startsWith('/combat')) {
                 debug('tSCL_process_combat_round(): Not in combat: Able to move freely between rooms (or just fled).');
                 in_combat = false;
             } else {
@@ -497,6 +498,7 @@ async function tST_combat_log_main() {
         } else if (! in_combat) {
             // Not inside nor exiting combat.
             debug('tSCL_process_combat_round(): Not inside nor exiting combat.');
+            localStorage.removeItem(storage_key_prefix + 'combat_prev_room');   // Clear this, so stale values don't affect in-combat detection above.
             tSCL_show_combat_status(undefined);
         }
     }
