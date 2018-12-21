@@ -66,7 +66,7 @@ function tST_add_base_UI() {
     // Also, add an area where the client scripts can place their icons.
     tST_icons = $('#tST-icons-region');
     if (! tST_icons.length) {
-        $('.avatar-links.avatar-messages').before(`<ul id="tST-icons-region" class="avatar-links avatar-messages" style="float: left;">\n</ul>\n`);
+        $('.social-navigation').before(`<ul id="tST-icons-region" class="avatar-links avatar-messages" style="float: left;">\n</ul>\n`);
         tST_icons = $('#tST-icons-region');
     }
 }
