@@ -55,11 +55,15 @@ although it starts working only after one 'tick' actually occurs.
 
 ## Hide irrelevant career tasks
 
-`hide_tasks.user.js` will hide all the career tasks from all the "TASKS" tabs
-in the game, except for the tasks explicitly listed in the script body.
-Use with caution! This script requires manual updates to be adjusted to
-the current career type and career rank/level of the player. By default it's
-configured for high-rank Clone Technician.imp
+`hide_tasks.user.js` will hide the career tasks from all the "TASKS" tabs
+in the game according to your preferences. This script shows the new button 
+"Edit task visibility" on each career page - it allows you to quickly reconfigure
+which tasks you want to hide and see what is their current difficulty. 
+
+
+   _(Note: This script uses localStorage to store the preferences, so they will be 
+   browser-specific and the script might not work in browsers that don't support
+   localStorage properly._
 
 ## Combat Log
 
