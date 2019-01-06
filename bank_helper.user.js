@@ -8,6 +8,18 @@
 // @grant        none
 // ==/UserScript==
 
+function parse_approx_credits(val) {
+    let m = val.match(/([\d.,]+)([km]*)/);
+    if (!m)  { return 0; }
+
+    let rv = parseFloat(m[1].replace(/,/g, ''));
+    if (!rv) { return 0; }
+
+    if (m[2] === 'k') { return 1000 * rv; }
+    if (m[2] === 'm') { return 1000000 * rv; }
+    return rv;
+}
+
 // @run-at document-end
 (function() {
     'use strict';
@@ -23,10 +35,10 @@
     }
     var credits_in_bank = parseFloat(bank_ele.innerHTML.replace(/,/g,''));
 
-    // How much money is on me:
-    let on_me_ele = document.querySelector('.player-info .credit-container-wallet a');
-    if (!on_me_ele) { return; }
-    let credits_on_me = parseFloat(on_me_ele.getAttribute("data-message").replace(/,/g,''));
+    // How much money is on me: (alas, only have truncated amounts available)
+    let on_me_ele = document.querySelector('.player-info .credit-container-wallet .wallet-amount');
+    if (!on_me_ele) { console.log("Can't tell how much in wallet"); return; }
+    let credits_on_me = parse_approx_credits(on_me_ele.textContent);
 
     // If you've got too many credits, deposit them!
     if (credits_on_me > amt_min_credits_on_hand) {
