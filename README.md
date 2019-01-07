@@ -95,6 +95,13 @@ Gym, etc.) into clickable links that lead directly to that location's
 "People" tab
 clickable links
 
+## Discreet Keyboard Navigation
+
+`discreet_keyboard_navigation.user.js` adds a keyboard shortcut (control-d)
+and optional icon (useful for mobile) to perform discreet work steps.
+Parses the page to jump to the correct station areas and talk to the right
+people. Some configuration options available in the script source.
+
 ## Storage Tracker
 
 `storage-tracker.user.js` augments the Public Market to show which items you
