@@ -111,9 +111,13 @@
         if (event.ctrlKey) {
             if (KEY_GOTO_HOTEL == event.key) {
                 window.location.href = hotel_href;
+                event.preventDefault();
+                event.stopPropagation();
             }
             if (ship_href && KEY_GOTO_SHIP == event.key) {
                 window.location.href = ship_href;
+                event.preventDefault();
+                event.stopPropagation();
             }
         }
     });
