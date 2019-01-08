@@ -129,14 +129,11 @@
             'style',
             { 'type': 'text/css' },
             `
-            /* Reduce spacing between action buttons */
+            /* Spacing between action buttons (icons) */
             .avatar-links li + li { margin-left: 0em !important; }
             .avatar-links li a { width: 1.75em; }
-            /* Vertical alignment of icons (varies on mobile, not sure how to fix) */
             .avatar-links li .fa { margin-top: 0.8em; }
-            @media (min-width: 1080px) {
-                .avatar-links li .fa { margin-top: 0.33em; }
-            }
+            @media (min-width: 1080px) { .avatar-links li .fa { margin-top: 0.33em; } }
         `));
     }
 

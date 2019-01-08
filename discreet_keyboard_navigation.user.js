@@ -50,7 +50,7 @@
         s.appendChild(document.createTextNode(`
             /* Spacing between action buttons (icons) */
             .avatar-links li + li { margin-left: 0em !important; }
-            .avatar-links li a { width: 2em; }
+            .avatar-links li a { width: 1.75em; }
             .avatar-links li .fa { margin-top: 0.8em; }
             @media (min-width: 1080px) { .avatar-links li .fa { margin-top: 0.33em; } }
         `));
