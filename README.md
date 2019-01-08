@@ -79,14 +79,15 @@ to save the log to a local file on your computer.
 
 ## Icon bar
 
-`icon_bar.user.js` adds some icons to the icon bar (next to email, settings,
-...). Comment out any icons you don't want in the `INSTALL` function.
-Script includes CSS tweaks to reduce padding around buttons so that more
-fit, adjust if desired.
+`icon_bar.user.js` adds some icons to the icon bar (next to email,
+settings, ...). Set any icons you don't want to empty string "" in the
+configuration section. Script includes Control-h and Control-s keyboard
+shortcuts and CSS tweaks to reduce padding around icons so that they all
+fit.
 
-* button_well_fed: Fork and Knife icon, displayed if currently "Well-Fed" (hides well-fed banner until you hover or click on icon)
-* button_goto_hotel: Bed icon, go to hotel room (needs two clicks)
-* button_goto_ship: Spaceship icon, go to ship (needs two clicks, and must set to your ship's serial number!)
+* ICON_HOTEL: Bed icon, go to hotel room (needs two clicks)
+* ICON_SHIP: Spaceship icon, go to ship (needs two clicks, and must set to your ship's serial number!)
+* ICON_WELL_FED: Fork and Knife icon, displayed if currently "Well-Fed" (hides well-fed banner until you hover or click on icon)
 
 ## Discreet Helper
 

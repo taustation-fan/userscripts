@@ -3,17 +3,124 @@
 // @namespace   https://github.com/taustation-fan
 // @description Extension to add quick-link icons to the icon bar at taustation.space
 // @match       https://alpha.taustation.space/*
-// @version     2
+// @version     3
 // @author      duelafn
 // ==/UserScript==
 
-function INSTALL() {
-    button_well_fed();              // Fork and Knife icon: Displayed if currently "Well-Fed"
-    button_goto_hotel();            // Bed icon: go to hotel room (needs two clicks)
-//  button_goto_ship("003-AA010");  // Spaceship icon: go to ship (needs two clicks, and set serial number!)
+(function() {
+    'use strict';
 
+    let SHIP_ID = "000-AA005";               // Set to YOUR ship serial number
+
+    // Disable any key or icon by setting it to an empty string.
+    let KEY_GOTO_HOTEL = 'h';
+    let KEY_GOTO_SHIP  = 's';
+
+    // May set icon to any font-awesome 4 icon name.
+    let ICON_HOTEL    = 'fa-bed';            // Bed icon: go to hotel room (needs two clicks)
+    let ICON_SHIP     = 'fa-space-shuttle';  // Spaceship icon: go to ship (needs two clicks, and set serial number!)
+    let ICON_WELL_FED = 'fa-cutlery';        // Fork and Knife icon: Displayed if currently "Well-Fed"
+
+
+    // JUST IMPLEMENTATION BELOW, NOTHING MORE TO CONFIGURE!
+    // -----------------------------------------------------
+
+    // Helper functions
+    function tag() {
+        let ele = document.createElement(arguments[0]);
+        if (arguments.length > 1 && arguments[1]) {
+            for (let a in arguments[1]) { ele.setAttribute(a, arguments[1][a]); }
+        }
+        if (arguments.length > 2) {
+            for (let i = 2; i < arguments.length; i++) {
+                if (typeof arguments[i] === "string") {
+                    ele.insertAdjacentText('beforeend', arguments[i]);
+                } else {
+                    ele.insertAdjacentElement('beforeend', arguments[i]);
+                }
+            }
+        }
+        return ele;
+    }
+
+    function add_icon(icon, opt={}) {
+        let icons = document.querySelector(".avatar-links");
+        if (!icons) { return; }
+
+        let li = tag("li", { "class": "avatar-links--item" },
+                     tag("a", { "href": (opt["href"] || "#"), "class": "icon-link", "data-component": "tooltip-basic", "data-message": (opt["tip"] || "") },
+                         tag("span", { "class": "fa " + icon, "style": (opt["style"] || ""), "aria-hidden": "true" })
+                        )
+                    );
+        icons.insertAdjacentElement('beforeend', li);
+        return li;
+    }
+
+
+    // Fork and Knife icon: Displayed if currently "Well-Fed"
+    // Also hides the well-fed buff banner (shows it temporarily if you hover
+    // over the fork and knife, keeps it displayed if you click the icon).
+    if (ICON_WELL_FED) {
+        let buff_div = document.querySelector(".buff-messages");
+        if (!buff_div) { return; }
+        let display = buff_div.style.display;
+
+        let unknown = 0;
+        buff_div.querySelectorAll(".timer-message tr").forEach(
+            function(tr, idx, rs) {
+                if (idx > 0) { // skip header
+                    if (tr.children[0].textContent === 'Well fed') {
+                        let icon = add_icon(ICON_WELL_FED, { "tip": "Well fed", "style": "color: #66bb6a;" });
+                        if (icon) {
+                            icon.onmouseover = function() { buff_div.style.display = display; };
+                            icon.onmouseout  = function() { if (unknown == 0) { buff_div.style.display = "none"; } };
+                            icon.onclick     = function() { unknown = unknown ? 0 : 1; };
+                        }
+                    }
+
+                    else { unknown += 1; }
+                }
+            }
+        );
+
+        if (unknown == 0) {
+            buff_div.style.display = 'none';
+        }
+    }
+
+    let hotel_href;
+    if (document.querySelector('.game-navigation a[href="/area/docks/leave_ship"]')) {
+        hotel_href = "/area/docks/leave_ship";
+    } else {
+        hotel_href = "/area/hotel-rooms/enter-room";
+    }
+    if (ICON_HOTEL) {
+        add_icon(ICON_HOTEL, { "href": hotel_href, "tip": "GoTo Room" });
+    }
+
+    let ship_href;
+    if (SHIP_ID && SHIP_ID != "000-AA005") {
+        ship_href = location.pathname.endsWith("/area/docks") ? "/area/docks/board_ship/" + SHIP_ID : "/area/docks";
+        if (ICON_SHIP) {
+            add_icon(ICON_SHIP, { "href": ship_href, "tip": "GoTo Ship" });
+        }
+    }
+
+    // Listen for Control-* then perform action
+    document.addEventListener('keydown', (event) => {
+        if (event.ctrlKey) {
+            if (KEY_GOTO_HOTEL == event.key) {
+                window.location.href = hotel_href;
+            }
+            if (ship_href && KEY_GOTO_SHIP == event.key) {
+                window.location.href = ship_href;
+            }
+        }
+    });
+
+    // CSS needed to make room for the additional icons
     var head = document.getElementsByTagName('head')[0];
-    if (head) {
+    if (head && (ICON_HOTEL || ICON_SHIP || ICON_WELL_FED)) {
         head.appendChild(tag(
             'style',
             { 'type': 'text/css' },
@@ -28,96 +135,5 @@ function INSTALL() {
             }
         `));
     }
-}
 
-
-// Helper function
-function tag(name, attr, content) {
-    var ele = document.createElement(name);
-    if (attr) {
-        for (var a in attr) { ele.setAttribute(a, attr[a]); }
-    }
-    if (content) {
-        if (typeof content === "string") {
-            ele.textContent = content;
-        } else {
-            ele.insertAdjacentElement('beforeend', content);
-        }
-    }
-    return ele;
-}
-
-// Bed icon: go to hotel room (needs two clicks)
-function button_goto_hotel() {
-    'use strict';
-
-    var icons = document.querySelector(".avatar-links");
-    if (!icons) { return; }
-
-    var li = tag("li", { "class": "avatar-links--item" },
-                 tag("a", { "href": "/area/hotel-rooms/enter-room", "class": "icon-link", "data-component": "tooltip-basic", "data-message": "GoTo Room" },
-                     tag("span", { "class": "fa fa-bed" })
-                    )
-                );
-    icons.insertAdjacentElement('beforeend', li);
-}
-
-// Spaceship icon: go to ship (needs two clicks)
-function button_goto_ship(serial) {
-    'use strict';
-
-    var icons = document.querySelector(".avatar-links");
-    if (!icons) { return; }
-
-    var href = location.pathname.endsWith("/area/docks") ? "/area/docks/board_ship/" + serial : "/area/docks";
-    var li = tag("li", { "class": "avatar-links--item" },
-                 tag("a", { "href": href, "class": "icon-link", "data-component": "tooltip-basic", "data-message": "GoTo Ship" },
-                     tag("span", { "class": "fa fa-space-shuttle" })
-                    )
-                );
-    icons.insertAdjacentElement('beforeend', li);
-}
-
-// Fork and Knife icon: Displayed if currently "Well-Fed"
-// Also hides the well-fed buff banner (shows it temporarily if you hover
-// over the fork and knife, keeps it displayed if you click the icon).
-function button_well_fed() {
-    'use strict';
-
-    var icons = document.querySelector(".avatar-links");
-    if (!icons) { return; }
-
-    var buff_div = document.querySelector(".buff-messages");
-    if (!buff_div) { return; }
-    var display = buff_div.style.display;
-
-    var unknown = 0;
-    buff_div.querySelectorAll(".timer-message tr").forEach(
-        function(tr, idx, rs) {
-            if (idx > 0) { // skip header
-                if (tr.children[0].textContent === 'Well fed') {
-                    var li = tag("li", { "class": "avatar-links--item" },
-                                 tag("a", { "href": "#", "class": "icon-link", "data-component": "tooltip-basic", "data-message": "Well fed" },
-                                     tag("span", { "class": "fa fa-cutlery", "style": "color: #66bb6a;" })
-                                    )
-                                );
-
-                    li.onmouseover = function() { buff_div.style.display = display; };
-                    li.onmouseout  = function() { if (unknown == 0) { buff_div.style.display = "none"; } };
-                    li.onclick     = function() { unknown = unknown ? 0 : 1; };
-
-                    icons.insertAdjacentElement('beforeend', li);
-                }
-
-                else { unknown += 1; }
-            }
-        }
-    );
-
-    if (unknown == 0) {
-        buff_div.style.display = 'none';
-    }
-}
-
-
-INSTALL();
+})();
