@@ -19,6 +19,9 @@
 (function() {
     'use strict';
 
+    // Set to key to press (with control) to step the discreet work
+    let KEY_PRESS = 'd';
+
     // When true, after mission is complete, will return to discreet area
     // to start the next mission. When false, pressing Ctrl-d after
     // completing the mission will do nothing.
@@ -200,9 +203,11 @@
         }
 
         // Listen for Control-d then perform a step
-        document.addEventListener('keypress', (event) => {
-            if (event.ctrlKey && 'd' == event.key) {
+        document.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && KEY_PRESS == event.key) {
                 _discreet_step();
+                event.preventDefault();
+                event.stopPropagation();
             }
         });
     }
