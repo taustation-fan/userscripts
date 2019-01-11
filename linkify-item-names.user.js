@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.01
+// @version      1.02
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -35,6 +35,7 @@
 var linkify_config = {
     'debug': false,
     'open_links_in_new_tab': true,  // If true: Clicking an item link opens the item page in a new tab.
+    'check_if_item_exists_in_ls': true, // If true: preserves existing values in localStorage, otherwise overwrites them
 };
 
 //
@@ -65,7 +66,10 @@ async function linkify_all_item_names() {
     }
 
     if (window.location.pathname.startsWith('/item/')) {
-        store_item_params(window.location.pathname.substr(6));
+        var slug = window.location.pathname.substr(6);
+        if (!linkify_config.check_if_item_exists_in_ls || !localStorage.hasOwnProperty(slug)){
+            store_item_params(slug);
+        }
     }
 
     var campaign_rewards = $('#campaign-rewards-syndicate');
@@ -138,11 +142,12 @@ function linkify_items_in_syndicate_campaign_rewards() {
 }
 
 function store_item_params(slug) {
-    var item_type = $('.data-list>.type>span');
+    var data_list = $('.data-list');
+    var item_type = data_list.find('.type>span');
     if (item_type.length && (item_type.html().toLowerCase() == 'armor' || item_type.html().toLowerCase() == 'weapon')) {
-        var piercing = $('.data-list>.piercing-damage>span').html();
-        var impact = $('.data-list>.impact-damage>span').html();
-        var energy = $('.data-list>.energy-damage>span').html();
+        var piercing = data_list.find('.piercing-damage>span').html();
+        var impact = data_list.find('.impact-damage>span').html();
+        var energy = data_list.find('.energy-damage>span').html();
         localStorage.setItem(ls_prefix + slug, ' (P:' + piercing + ', I:' + impact + ', E:' + energy + ')');
     }
 }
