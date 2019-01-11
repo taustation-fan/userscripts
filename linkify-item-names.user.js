@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.0
+// @version      1.01
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -42,6 +42,7 @@ var linkify_config = {
 //////////////////////////////
 
 var log_prefix = 'Linkify item names: ';
+var ls_prefix = 'lins_'; // Linkify Item Names Storage
 
 $(document).ready(linkify_all_item_names);
 
@@ -61,6 +62,10 @@ async function linkify_all_item_names() {
     if (window.location.pathname.startsWith('/area/the-wilds')
         && $('.syndicate-campaigns').length > 0) {
         linkify_items_in_syndicate_campaign_opponents_list();
+    }
+
+    if (window.location.pathname.startsWith('/item/')) {
+        store_item_params(window.location.pathname.substr(6));
     }
 
     var campaign_rewards = $('#campaign-rewards-syndicate');
@@ -132,6 +137,16 @@ function linkify_items_in_syndicate_campaign_rewards() {
     }
 }
 
+function store_item_params(slug) {
+    var item_type = $('.data-list>.type>span');
+    if (item_type.length && (item_type.html().toLowerCase() == 'armor' || item_type.html().toLowerCase() == 'weapon')) {
+        var piercing = $('.data-list>.piercing-damage>span').html();
+        var impact = $('.data-list>.impact-damage>span').html();
+        var energy = $('.data-list>.energy-damage>span').html();
+        localStorage.setItem(ls_prefix + slug, ' (P:' + piercing + ', I:' + impact + ', E:' + energy + ')');
+    }
+}
+
 //
 // #endregion Area-specific handlers.
 //////////////////////////////
@@ -177,7 +192,9 @@ function linkify_item_name(text) {
         var slug   = get_slug(text);
         var target = (linkify_config.open_links_in_new_tab ? ' target="_blank"' : '');
 
-        retval = '<a ' + target + ' href="/item/' + slug + '">' + text + '</a>';
+        var extra = localStorage[ls_prefix + slug] || "";
+
+        retval = '<a ' + target + ' href="/item/' + slug + '">' + text  + '</a>' + extra;
     }
     return retval;
 }
