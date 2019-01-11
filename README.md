@@ -138,3 +138,12 @@ does without having to click on any of them. (This script incorporates all of
 `next-regen-tick.user.js`: The game shows countdown timers for each stat until
 full regeneration. But when is the _next_ regeneration tick due? This displays
 the duration in units. It will only be updated on mouseclick.
+
+## Linkify Item Names
+
+`linkify-item-names.user.js` updates item names to be a link to that item's info
+page ("/item/_[item-name]_"). It affects item names when looking at another player's
+info ("/character/details/_[character-name]_"), and during Syndicate Campaigns
+(in the opponents list, and in the final loot summary when the Campaign is finished).
+In the Syndicate Campaigns opponents list, it will also show a summary of the damage
+/ defense types for opponents' equipment.
