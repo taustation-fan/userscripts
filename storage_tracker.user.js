@@ -59,7 +59,50 @@ function tSStorageTracker_main() {
         tSStorageTracker_load_from_localStorage();
         tSStorageTracker_update_localStorage_from_inventory();
         tSStorageTracker_decorate_inventory();
+        tSStorageTracker_print_vip();
+        tSStorageTracker_print_rations();
     }
+}
+
+function tSStorageTracker_count_vip(counts) {
+    var total_days = 0;
+    for (var key in counts) {
+       if (counts.hasOwnProperty(key) && key.startsWith('vip-')) {
+          var days_per_pack = parseInt(key.substr(4));
+          total_days += counts[key] * days_per_pack;
+       }
+    }
+    return total_days;
+}
+
+function tSStorageTracker_print_vip() {
+    var vip_storage = tSStorageTracker_count_vip(coretechs_storage.storage.item_totals);
+    var vip_inventory = tSStorageTracker_count_vip(coretechs_storage.carried.items);
+    console.log('Days of VIP in storage: ', vip_storage);
+    console.log('Days of VIP in inventory: ', vip_inventory);
+    console.log('Days of VIP total: ', vip_storage + vip_inventory);
+}
+
+function tSStorageTracker_count_rations(counts) {
+    var results = {}
+    for (var key in counts) {
+       if (counts.hasOwnProperty(key) && key.startsWith('ration-')) {
+            results[key] = counts[key];
+       }
+    }
+    return results;
+}
+
+function tSStorageTracker_print_rations() {
+     var stored = tSStorageTracker_count_rations(coretechs_storage.storage.item_totals);
+     var carried = tSStorageTracker_count_rations(coretechs_storage.carried.items);
+     for (var tier = 1; tier <= 5; tier++) {
+         var key = 'ration-' + tier;
+         var count = (stored[key] || 0) + (carried[key] || 0);
+         if (count > 0) {
+             console.log('Ration tier ' + tier + ': ' + count);
+         }
+     }
 }
 
 function tSStorageTracker_load_from_localStorage() {
