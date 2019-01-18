@@ -2,12 +2,12 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.02
+// @version      1.10
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
 // @grant        none
-// @require      https://code.jquery.com/jquery-3.3.1.slim.js
+// @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 //
 // License: CC-BY-SA
@@ -19,10 +19,11 @@
 //  - v0.1: Handle items in an area's People list, and in "player details" pages.
 //  - v0.2: Handle Syndicate Campaigns -- list of opponents (Ruins->Wilds page), and the final loot summary.
 //  - v1.0: Published at GitHub.
+//  - v1.02: [Dotsent] Skim/save details from "/item/$slug", and append summary to linkified item names.
+//  - v1.1.0: Dynamically query TauHead.com API for not-yet-saved weapon & armor details.
 //
 
 // TODO List: (things not yet implemented or ready)
-// - Dynamically query TauHead.com to get weapon-damage/armor-defense details, and show quick summary by each item.
 //
 
 // Action Items: (things ready & waiting for action)
@@ -49,7 +50,7 @@ $(document).ready(linkify_all_item_names);
 
 async function linkify_all_item_names() {
     if (window.location.pathname.startsWith('/character/details/')) {
-        linkify_items_in_character_details(linkify_item_name);
+        linkify_items_in_character_details();
     }
 
     if (window.location.hash.startsWith('#/people')) {
@@ -83,7 +84,7 @@ async function linkify_all_item_names() {
 //
 var regex_character_armor_and_weapons = new RegExp(/(appears to be )(?:(wearing a )(?:(.+)( and )|(.+)(\.)))?(?:(carrying a )(.+)(\.))?/);
 
-function linkify_items_in_character_details(linkify_item_name) {
+function linkify_items_in_character_details() {
     // Examples:
     //  - "Alice appears to be wearing a smeared composite armor."
     //  - "bob appears to be carrying a g-sag1e."
@@ -92,14 +93,20 @@ function linkify_items_in_character_details(linkify_item_name) {
     var line = $('.character-overview p:contains("appears to be")');
     if (line.length && !line.children().length) {
         var html = line.html();
-        // var matches = html.match(/appears to be (?:(wearing a )(?:(.+)( and )|(.+)(\.)))?(?:(carrying a )(.+)(\.))?/);
         var matches = html.match(regex_character_armor_and_weapons);
         if (matches != null) {
-            // html = html.replace(/appears to be (?:(wearing a )(?:(.+)( and )|(.+)(\.)))?(?:(carrying a )(.+)(\.))?/,
+            console.log(log_prefix + 'Linkifying item in character info.');
+
+            // First, wrap the item names in a tag, so we can update them asynchronously if needed.
             html = html.replace(regex_character_armor_and_weapons,
-                                '$1$2' + linkify_item_name(matches[3] || matches[5]) + '$4$6' +
-                                '$7' + linkify_item_name(matches[8]) + '$9');
+                                '$1$2<span class="linkified">' + (matches[3] || matches[5]) + '</span>$4' +
+                                '$7<span class="linkified">'   + matches[8] + '</span>$6$9');
             line.html(html);
+
+            // Next, update the items (which, if AJAX calls are needed, updates them asynchronously).
+            line.find('.linkified').each(function() {
+                linkify_item_element(this);
+            });
         }
     }
 }
@@ -141,14 +148,19 @@ function linkify_items_in_syndicate_campaign_rewards() {
     }
 }
 
+// Applies to "/item/{slug}" page. (Also applies to "/character/inventory",
+// in case we decide to skim from there as well.)
 function store_item_params(slug) {
     var data_list = $('.data-list');
     var item_type = data_list.find('.type>span');
     if (item_type.length && (item_type.html().toLowerCase() == 'armor' || item_type.html().toLowerCase() == 'weapon')) {
+        // Note: If we start skimming Inventory item data, use (e.g.) '[class^="piercing-"]>span' instead.
+        //       (In Inventory, weapons use these, but armor uses (e.g.) '.piercing-defense>span'.)
         var piercing = data_list.find('.piercing-damage>span').html();
         var impact = data_list.find('.impact-damage>span').html();
-        var energy = data_list.find('.energy-damage>span').html();
-        localStorage.setItem(ls_prefix + slug, ' (P:' + piercing + ', I:' + impact + ', E:' + energy + ')');
+        var energy = data_list.find('.energy-damage>span').html(); // In Inventory, '.Energy-damage>span' is capitalized.
+
+        localStorage.setItem(ls_prefix + slug, format_item_data(piercing, impact, energy));
     }
 }
 
@@ -160,15 +172,20 @@ function store_item_params(slug) {
 // #region Common workers.
 //
 
-function linkify_item_element(domElement) {
-    var jqElement = $(domElement);
+function linkify_item_element(dom_elements) {
+    var jq_elements = $(dom_elements);
 
     // Ignore any elements that already contain a link. (Note: .children() ignores #text nodes; .contents() includes them.)
-    if (! jqElement.find('a').length) {
-        var textElement = jqElement.contents().filter(text_nodes_only);
-        textElement.each(function() {
+    if (! jq_elements.find('a').length) {
+        var text_elements = jq_elements.contents().filter(text_nodes_only);
+        text_elements.each(function() {
+            var text_element = this;
             var item_count = undefined;
-            var item_text  = this.textContent;
+            var item_text  = text_element.textContent;
+
+            if (! item_text) {
+                return;
+            }
 
             var matches = item_text.match(/^(\d+) x (.*)$/);
             if (matches !== null && matches.length) {
@@ -176,13 +193,15 @@ function linkify_item_element(domElement) {
                 item_text  = matches[2];
             }
 
-            var item_html = linkify_item_name(item_text, true);
+            // If this needs to contact TauHead, it will complete asynchronously,
+            // therefore it needs to handle updating the output (not us).
+            linkify_item_name(item_text, function(item_html) {
+                if (item_count) {
+                    item_html = item_count + ' x ' + item_html;
+                }
 
-            if (item_count) {
-                item_html = item_count + ' x ' + item_html;
-            }
-
-            $(this).replaceWith(item_html);
+                $(text_element).replaceWith(item_html);
+            });
         });
     }
 
@@ -191,17 +210,28 @@ function linkify_item_element(domElement) {
     }
 }
 
-function linkify_item_name(text) {
+function linkify_item_name(text, fn_update_item_name) {
     var retval = '';
     if (text) {
+        text = text.trim();
         var slug   = get_slug(text);
         var target = (linkify_config.open_links_in_new_tab ? ' target="_blank"' : '');
 
-        var extra = localStorage[ls_prefix + slug] || "";
+        // This will happen synchronously if we already have the item data,
+        // or asynchronously if we need to get the data via an AJAX call.
+        var fn_apply_link_and_data = function() {
+            var extra = localStorage[ls_prefix + slug] || "";
 
-        retval = '<a ' + target + ' href="/item/' + slug + '">' + text  + '</a>' + extra;
+            retval = '<a ' + target + ' href="/item/' + slug + '">' + text + '</a>' + extra;
+            fn_update_item_name(retval);
+        }
+
+        if (! localStorage.hasOwnProperty(ls_prefix + slug)) {
+            get_item_data(slug, fn_apply_link_and_data);
+        } else {
+            fn_apply_link_and_data();
+        }
     }
-    return retval;
 }
 
 function get_slug(text) {
@@ -255,6 +285,74 @@ var lookup_slug = {
 var lookup_slug_regexp = [
     [ new RegExp('Food and water daily ration tier ([0-9]+)'), 'ration-$1' ],
 ];
+
+
+var ajax_enabled = true;
+
+var count_ajax_queries = 0;
+var last_slug_queried  = undefined;
+var missing_slugs      = [];
+
+// Query TauHead.com's API to get the JSON data for a single item.
+function get_item_data(slug, fn_finish_caller_tasks) {
+    // Allow us to disable AJAX for subsequent attempts (on this page) if a suitably-bad error occurs.
+    if (! ajax_enabled) {
+        return;
+    }
+
+    count_ajax_queries++;
+    last_slug_queried = slug;
+
+    $.getJSON('https://www.tauhead.com/item/' + slug)
+        .done(function (data, status, xhr) {
+            if (data) {
+                // If not a weapon or armor, this will add the item w/ an empty value (to prevent further AJAX queries for it).
+                var saved_data = format_item_data(data);
+                localStorage.setItem(ls_prefix + slug, saved_data);
+            }
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            if (jqXHR.status == 404) {
+                missing_slugs.push(slug);
+            }
+        })
+        // Continue updating the item name, even if TauHead has no data for it (yet).
+        .always(function (jqXHR, textStatus) {
+            // When the last AJAX query returns, report the total # of queries for this page load.
+            if (last_slug_queried == slug) {
+                console.log(log_prefix + 'Sent ' + count_ajax_queries + ' AJAX queries to TauHead.com.')
+                if (missing_slugs.length) {
+                    console.log(log_prefix + 'TauHead.com is missing the following items:\n' +
+                                '  ' + missing_slugs.join(', '));
+                }
+            }
+
+            fn_finish_caller_tasks();
+        });
+}
+
+// Transform one item's weapon/armor data into the format saved to localStorage.
+// Can pass in either separate piercing, impact, and energy values, or a single
+// object containing the item's JSON data.
+function format_item_data(piercing, impact, energy) {
+    if (typeof piercing === 'object') {
+        var data = piercing;
+        if (data.hasOwnProperty('item_component_weapon')) {
+            piercing = (data.item_component_weapon.piercing_damage || 0) * 1;
+            impact   = (data.item_component_weapon.impact_damage   || 0) * 1;
+            energy   = (data.item_component_weapon.energy_damage   || 0) * 1;
+        } else if (data.hasOwnProperty('item_component_armor')) {
+            piercing = (data.item_component_armor.piercing || 0) * 1;
+            impact   = (data.item_component_armor.impact   || 0) * 1;
+            energy   = (data.item_component_armor.energy   || 0) * 1;
+        } else {
+            // Not a weapon or armor; for now, we don't care about it.
+            return '';
+        }
+    }
+
+    return ' (P:' + piercing + ', I:' + impact + ', E:' + energy + ')';
+}
 
 // Trigger a handler when nodes of interest are updated. For details about the datatypes
 // named below, see: https://dom.spec.whatwg.org/#interface-mutationobserver
