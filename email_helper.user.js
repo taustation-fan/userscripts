@@ -16,20 +16,20 @@ var localStorageKey = 'emailsToForward';
 var turndownService = new TurndownService();
 
 function extractEmailText(emailId) {
-    var emailBody = $('#email-body-' + emailId);
-    var emailHeader = $('#email-' + emailId);
-    if (emailBody.length == 0) { // This is the MAIN/currently opened email in conversation
-        emailBody = $(emailHeader).next();
+    var $emailBody = $('#email-body-' + emailId);
+    var $emailHeader = $('#email-' + emailId);
+    if ($emailBody.length == 0) { // This is the MAIN/currently opened email in conversation
+        $emailBody = $emailHeader.next();
     }
     var emailComponents = [];
-    var emailBodyAuthorComponents = emailBody.children('.comment-author');
-    emailComponents.push(emailHeader.children('.comment-date')[0].innerHTML);
-    emailComponents.push(emailHeader.children('.comment-title')[0].innerHTML);
-    for (var i = 0; i < emailBodyAuthorComponents.length; i++){
-        emailComponents.push(emailBodyAuthorComponents[i].innerHTML);
+    var $emailBodyAuthorComponents = $emailBody.children('.comment-author');
+    emailComponents.push($emailHeader.children('.comment-date')[0].innerHTML);
+    emailComponents.push($emailHeader.children('.comment-title')[0].innerHTML);
+    for (var i = 0; i < $emailBodyAuthorComponents.length; i++){
+        emailComponents.push($emailBodyAuthorComponents[i].innerHTML);
     }
     emailComponents.push('<p/>'); //extra line break between headers and body
-    emailComponents.push(emailBody.children('.comment-body')[0].innerHTML);
+    emailComponents.push($emailBody.children('.comment-body')[0].innerHTML);
 
     var text = '';
     for (var j = 0; j < emailComponents.length; j++){
@@ -68,16 +68,16 @@ function clearLS() {
 }
 
 function initForwardButton(emailId, forwardStatus){
-    var emailBody = $('#email-body-' + emailId);
-    if (emailBody.length == 0) { // This is the MAIN/currently opened email in conversation
-        emailBody = $('#email-' + emailId).next();
+    var $emailBody = $('#email-body-' + emailId);
+    if ($emailBody.length == 0) { // This is the MAIN/currently opened email in conversation
+        $emailBody = $('#email-' + emailId).next();
     }
-    var emailButtons = emailBody.children('.reply-actions');
-    var forwardButton = emailButtons.find('.btn-forward');
-    if (!forwardButton.length) {
-        emailButtons.prepend('<a href="#" class="btn-control normal btn-forward">' + (forwardStatus ? '&#9745;' : '&#9744;') + ' Forward</a>');
-        forwardButton = emailButtons.find('.btn-forward');
-        forwardButton.on('click', function(evt){
+    var $emailButtons = $emailBody.children('.reply-actions');
+    var $forwardButton = $emailButtons.find('.btn-forward');
+    if (!$forwardButton.length) {
+        $emailButtons.prepend('<a href="#" class="btn-control normal btn-forward">' + (forwardStatus ? '&#9745;' : '&#9744;') + ' Forward</a>');
+        $forwardButton = $emailButtons.find('.btn-forward');
+        $forwardButton.on('click', function(evt){
             evt.preventDefault();
             if (isEmailForwarded(emailId)){
                 removeEmailFromLS(emailId);
@@ -98,24 +98,24 @@ function initForwardButton(emailId, forwardStatus){
         emails = JSON.parse(localStorage[localStorageKey]);
     }
 
-    var emailElements = $('#email-body button[id^="email-"], #email-body .boxed-main > div[id^="email-"]');
-    emailElements.each(function(id, emailObj) {
+    var $emailElements = $('#email-body button[id^="email-"], #email-body .boxed-main > div[id^="email-"]');
+    $emailElements.each(function(id, emailObj) {
         var emailId = emailObj.id.replace('email-', '');
         initForwardButton(emailId, emails.hasOwnProperty(emailId));
     });
 
-    var emailComposeButtonsContainer = $('#email .form-action-container');
-    if (emailComposeButtonsContainer.length) {
+    var $emailComposeButtonsContainer = $('#email .form-action-container');
+    if ($emailComposeButtonsContainer.length) {
         console.log('Setting up Forward Paste button');
-        emailComposeButtonsContainer.prepend('<a href="#" class="btn-control normal btn-clear-paste-forward">Clear forwards</a> <a href="#" class="btn-control normal btn-paste-forward">Paste emails (' + Object.keys(emails).length + ') to forward</a>');
-        emailComposeButtonsContainer.find('.btn-paste-forward').on('click', function(evt){
+        $emailComposeButtonsContainer.prepend('<a href="#" class="btn-control normal btn-clear-paste-forward">Clear forwards</a> <a href="#" class="btn-control normal btn-paste-forward">Paste emails (' + Object.keys(emails).length + ') to forward</a>');
+        $emailComposeButtonsContainer.find('.btn-paste-forward').on('click', function(evt){
             evt.preventDefault();
             var emailKeys = Object.keys(emails).sort();
             for (var i = 0; i < emailKeys.length; i++) {
                 document.getElementById('message').value += '\r\n---\r\n\r\n' + emails[emailKeys[i]];
             }
         });
-        emailComposeButtonsContainer.find('.btn-clear-paste-forward').on('click', function(evt){
+        $emailComposeButtonsContainer.find('.btn-clear-paste-forward').on('click', function(evt){
             evt.preventDefault();
             clearLS();
         });
