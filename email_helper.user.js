@@ -90,7 +90,7 @@ function initForwardButton(emailId, forwardStatus){
     } //TODO: 'else' block?
 }
 
-(function() {
+$(document).ready(function() {
     'use strict';
 
     var emails = {};
@@ -120,4 +120,4 @@ function initForwardButton(emailId, forwardStatus){
             clearLS();
         });
     }
-})();
+});
