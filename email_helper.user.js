@@ -2,7 +2,7 @@
 // @name         Tau Station Email Helper
 // @namespace    http://tampermonkey.net/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/email_helper.user.js
-// @version      0.1
+// @version      0.2
 // @description  Provides multi-email forwarding functionality to Tau Station email system
 // @author       Sergey Kudriavtsev <https://github.com/dot-sent>
 // @match        https://alpha.taustation.space/email/*
@@ -25,16 +25,16 @@ function extractEmailText(emailId) {
     var $emailBodyAuthorComponents = $emailBody.children('.comment-author');
     emailComponents.push($emailHeader.children('.comment-date')[0].innerHTML);
     emailComponents.push($emailHeader.children('.comment-title')[0].innerHTML);
-    for (var i = 0; i < $emailBodyAuthorComponents.length; i++){
-        emailComponents.push($emailBodyAuthorComponents[i].innerHTML);
-    }
+    $emailBodyAuthorComponents.each(function(ix, $emailBodyAuthorComponent) {
+        emailComponents.push($emailBodyAuthorComponent.innerHTML);
+    });
     emailComponents.push('<p/>'); //extra line break between headers and body
     emailComponents.push($emailBody.children('.comment-body')[0].innerHTML);
 
     var text = '';
-    for (var j = 0; j < emailComponents.length; j++){
-        text += turndownService.turndown(emailComponents[j]) + '  \r\n';
-    }
+    $.each(emailComponents, function(ix, component) {
+        text += turndownService.turndown(component) + '  \r\n';
+    })
     return text;
 }
 
@@ -99,21 +99,20 @@ $(document).ready(function() {
     }
 
     var $emailElements = $('#email-body button[id^="email-"], #email-body .boxed-main > div[id^="email-"]');
-    $emailElements.each(function(id, emailObj) {
+    $.each($emailElements, function(id, emailObj) {
         var emailId = emailObj.id.replace('email-', '');
         initForwardButton(emailId, emails.hasOwnProperty(emailId));
     });
 
     var $emailComposeButtonsContainer = $('#email .form-action-container');
     if ($emailComposeButtonsContainer.length) {
-        console.log('Setting up Forward Paste button');
         $emailComposeButtonsContainer.prepend('<a href="#" class="btn-control normal btn-clear-paste-forward">Clear forwards</a> <a href="#" class="btn-control normal btn-paste-forward">Paste emails (' + Object.keys(emails).length + ') to forward</a>');
         $emailComposeButtonsContainer.find('.btn-paste-forward').on('click', function(evt){
             evt.preventDefault();
             var emailKeys = Object.keys(emails).sort();
-            for (var i = 0; i < emailKeys.length; i++) {
-                document.getElementById('message').value += '\r\n---\r\n\r\n' + emails[emailKeys[i]];
-            }
+            $.each(emailKeys, function(ix, key) {
+                document.getElementById('message').value += '\r\n---\r\n\r\n' + emails[key];
+            })
         });
         $emailComposeButtonsContainer.find('.btn-clear-paste-forward').on('click', function(evt){
             evt.preventDefault();
