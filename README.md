@@ -147,3 +147,14 @@ info ("/character/details/_[character-name]_"), and during Syndicate Campaigns
 (in the opponents list, and in the final loot summary when the Campaign is finished).
 In the Syndicate Campaigns opponents list, it will also show a summary of the damage
 / defense types for opponents' equipment.
+
+## Email helper
+
+`email_helper.user.js` adds "Forward" toggle buttons to the email reading interface.
+Clicking Forward adds the email contents to the localStorage, ready for forwarding,
+clicking it once again removes the email from localStorage. The script also adds two
+new buttons to the email compose interface - one of them clears all the emails from
+the localStorage, while the other one pastes all the emails from localStorage to the
+current message window, after the existing text. The script utilizes [turndown library](https://github.com/domchristie/turndown)
+to convert the emails to their Markdown code and preserve the look and feel as much
+as possible.
