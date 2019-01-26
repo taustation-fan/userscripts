@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.10
+// @version      1.1.1
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -21,6 +21,7 @@
 //  - v1.0: Published at GitHub.
 //  - v1.02: [Dotsent] Skim/save details from "/item/$slug", and append summary to linkified item names.
 //  - v1.1.0: Dynamically query TauHead.com API for not-yet-saved weapon & armor details.
+//  - v1.1.1: Minor fixes for handling character description.
 //
 
 // TODO List: (things not yet implemented or ready)
@@ -82,7 +83,7 @@ async function linkify_all_item_names() {
 //////////////////////////////
 // #region Area-specific handlers.
 //
-var regex_character_armor_and_weapons = new RegExp(/(appears to be )(?:(wearing a )(?:(.+)( and )|(.+)(\.)))?(?:(carrying a )(.+)(\.))?/);
+var regex_character_armor_and_weapons = new RegExp(/(appears to be )(?:(wearing an? )(?:(.+)( and )|(.+)(\.)))?(?:(carrying an? )(.+)(\.))?/);
 
 function linkify_items_in_character_details() {
     // Examples:
@@ -90,7 +91,7 @@ function linkify_items_in_character_details() {
     //  - "bob appears to be carrying a g-sag1e."
     //  - "carol appears to be wearing a smeared composite armor and carrying a g-sag1e."
 
-    var line = $('.character-overview p:contains("appears to be")');
+    var line = $('.character-profile--details p:contains("appears to be")');
     if (line.length && !line.children().length) {
         var html = line.html();
         var matches = html.match(regex_character_armor_and_weapons);
@@ -99,8 +100,8 @@ function linkify_items_in_character_details() {
 
             // First, wrap the item names in a tag, so we can update them asynchronously if needed.
             html = html.replace(regex_character_armor_and_weapons,
-                                '$1$2<span class="linkified">' + (matches[3] || matches[5]) + '</span>$4' +
-                                '$7<span class="linkified">'   + matches[8] + '</span>$6$9');
+                                '$1$2<span class="linkified">' + (matches[3] || matches[5] || "") + '</span>$4' +
+                                '$7<span class="linkified">'   + (matches[8] || "") + '</span>$6$9');
             line.html(html);
 
             // Next, update the items (which, if AJAX calls are needed, updates them asynchronously).
