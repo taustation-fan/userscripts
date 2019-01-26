@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.1.1
+// @version      1.10.1
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -20,8 +20,8 @@
 //  - v0.2: Handle Syndicate Campaigns -- list of opponents (Ruins->Wilds page), and the final loot summary.
 //  - v1.0: Published at GitHub.
 //  - v1.02: [Dotsent] Skim/save details from "/item/$slug", and append summary to linkified item names.
-//  - v1.1.0: Dynamically query TauHead.com API for not-yet-saved weapon & armor details.
-//  - v1.1.1: Minor fixes for handling character description.
+//  - v1.10: Dynamically query TauHead.com API for not-yet-saved weapon & armor details.
+//  - v1.10.1: Minor fixes for handling character description.
 //
 
 // TODO List: (things not yet implemented or ready)
