@@ -74,6 +74,8 @@ var item_type_fields = [
 
 // UI variables.
 var tSTauHeadHelper_region;
+var tSTauHeadHelper_buttons = {};
+var tSTauHeadHelper_known_ui_areas = ['area', 'sub_area', 'other', 'items', 'auction'];
 
 //
 
@@ -88,36 +90,38 @@ function tSTauHeadHelper_main() {
     let path_parts = clean_path.split("/");
 
     if ( 2 == path_parts.length && "area" == path_parts[0] ) {
-        tSTauHeadHelper_add_button({ action: 'add_area',     slug: path_parts[1] });
-        tSTauHeadHelper_add_button({ action: 'add_sub_area', slug: path_parts[1] });
-        tSTauHeadHelper_add_button({ action: 'add_area',     slug: path_parts[1], url: 'update_area',     text: 'Update Area' });
-        tSTauHeadHelper_add_button({ action: 'add_sub_area', slug: path_parts[1], url: 'update_sub_area', text: 'Update Sub-Area' });
+        tSTauHeadHelper_add_button({ action: 'add_area',     slug: path_parts[1], span: 'area' });
+        tSTauHeadHelper_add_button({ action: 'add_sub_area', slug: path_parts[1], span: 'sub_area' });
+        tSTauHeadHelper_add_button({ action: 'add_area',     slug: path_parts[1], url: 'update_area',     text: 'Update Area',     span: 'area' });
+        tSTauHeadHelper_add_button({ action: 'add_sub_area', slug: path_parts[1], url: 'update_sub_area', text: 'Update Sub-Area', span: 'sub_area' });
 
-        tSTauHeadHelper_add_button({ action: 'add_area_npcs', slug: path_parts[1] });
+        tSTauHeadHelper_add_button({ action: 'add_area_npcs', slug: path_parts[1], span: 'other' });
 
         if ( "government-center" === path_parts[1] ) {
-            tSTauHeadHelper_add_button({ action: 'update_station_details' });
+            tSTauHeadHelper_add_button({ action: 'update_station_details', span: 'other' });
         }
         else if ( "storage" === path_parts[1] ) {
-            tSTauHeadHelper_add_button({ action: 'update_items_from_storage', url: 'update_items', text: 'Update Items' });
+            tSTauHeadHelper_add_button({ action: 'update_items_from_storage', url: 'update_items', text: 'Update Items', span: 'items' });
         }
     }
     else if ( 2 == path_parts.length && "item" == path_parts[0] ) {
-        tSTauHeadHelper_add_button({ action: 'update_item', slug: path_parts[1] });
+        tSTauHeadHelper_add_button({ action: 'update_item', slug: path_parts[1], span: 'items' });
     }
     else if ( 2 == path_parts.length && "character" == path_parts[0] && "inventory" == path_parts[1] ) {
-        tSTauHeadHelper_add_button({ action: 'update_items_from_inventory', url: 'update_items', text: 'Update Items' });
+        tSTauHeadHelper_add_button({ action: 'update_items_from_inventory', url: 'update_items', text: 'Update Items', span: 'items' });
     }
     else if ( 3 == path_parts.length && "character" == path_parts[0] && "details" == path_parts[1] ) {
-        tSTauHeadHelper_add_button({ action: 'update_npc', slug: path_parts[2], text: 'Update NPC' });
+        tSTauHeadHelper_add_button({ action: 'update_npc', slug: path_parts[2], text: 'Update NPC', span: 'other' });
     }
     else if ( 4 == path_parts.length && "area" == path_parts[0] && ( "character" == path_parts[2] || "corporation" == path_parts[2] ) ) {
-        tSTauHeadHelper_add_button({ action: 'update_vendor_itinerary', area_slug: path_parts[1] });
+        tSTauHeadHelper_add_button({ action: 'update_vendor_itinerary', area_slug: path_parts[1], span: 'items' });
     }
 
     if ( page_path.startsWith('/area/electronic-market') ) {
-        tSTauHeadHelper_add_button({ action: 'log_auctions' });
+        tSTauHeadHelper_add_button({ action: 'log_auctions', span: 'auction' });
     }
+
+    tSTauHeadHelper_render_buttons();
 }
 
 var tSTauHeadHelper_actions = {
@@ -678,6 +682,51 @@ var tSTauHeadHelper_actions = {
     }
 };
 
+function tSTauHeadHelper_add_button( data ) {
+    let span = data.span || 'other';
+
+    if ( tSTauHeadHelper_known_ui_areas.indexOf(span) == -1 ) {
+        span = 'other';
+    }
+
+    if ( tSTauHeadHelper_buttons[span] ) {
+        tSTauHeadHelper_buttons[span].push( data );
+    }
+    else {
+        tSTauHeadHelper_buttons[span] = [data];
+    }
+}
+
+function tSTauHeadHelper_render_buttons() {
+    tSTauHeadHelper_init_ui();
+
+    for ( ui_area of tSTauHeadHelper_known_ui_areas ) {
+        if ( ! tSTauHeadHelper_buttons[ui_area] ) {
+            continue;
+        }
+
+        let span = $("<span/>").appendTo(tSTauHeadHelper_region);
+
+        for ( data of tSTauHeadHelper_buttons[ui_area] ) {
+            let id   = data.id   || data.action;
+            let text = data.text || slug_to_words(data.action);
+
+            let attrs = {
+                id:    'tauhead_helper_'+id,
+                style: 'font-size: large;',
+                text:  text
+            };
+
+            let button = $('<button/>', attrs);
+            button.click( function() { tSTauHeadHelper_actions[data.action](data) } );
+
+            span.append(button, '<br/>');
+        }
+
+        $(span).find('button').last().css( 'margin-bottom', '0.5em' );
+    }
+}
+
 function tSTauHeadHelper_init_ui() {
     // add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
 
@@ -687,18 +736,6 @@ function tSTauHeadHelper_init_ui() {
         $('body').append(tSTauHeadHelper_region);
         tSTauHeadHelper_region.append('<br/>');
     }
-}
-
-function tSTauHeadHelper_add_button( data ) {
-    tSTauHeadHelper_init_ui();
-
-    let id   = data.id   || data.action;
-    let text = data.text || slug_to_words(data.action);
-
-    let button = $('<button id="tauhead_helper_'+id+'">'+text+'</button>');
-    button.click( function() { tSTauHeadHelper_actions[data.action](data) } );
-    tSTauHeadHelper_region.append(button);
-    tSTauHeadHelper_region.append('<br/>');
 }
 
 function tSTauHeadHelper_post( data ) {
