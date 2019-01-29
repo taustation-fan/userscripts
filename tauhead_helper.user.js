@@ -184,9 +184,7 @@ var tSTauHeadHelper_actions = {
 
                 $(this).next("table").find("tbody tr").each(function() {
                     npc_counter++;
-                    console.log($(this).text());
                     let link           = $(this).find("td:nth-child(1) a");
-                    console.log(link);
                     let primary_weapon = $(this).find("td:nth-child(2)").text();
                     let armor          = $(this).find("td:nth-child(3)").text();
                     let slug = $(link).attr("href");
@@ -499,30 +497,22 @@ var tSTauHeadHelper_actions = {
         let char = $(".character-overview").first();
 
         let name = $(char).find("h1").first().text();
-        let genotype;
-        let description = [];
-        let i = 1;
 
-        $(char).find("p").each(function() {
-            let text = $(this).text();
-            text = trim_ws_ends( text );
-            if ( i === 1 ) {
-                let match = text.match( /(\w+) genotype/i );
-                genotype = match[1].toLowerCase();
-            }
-            else {
-                description.push( text );
-            }
-            i++;
-        });
+        let match = $(".character-profile--details p").first().text().match( /(\w+) genotype/i );
+        let genotype = match[1].toLowerCase();
 
-        description = description.join("\n\n");
+        let description = $(".character-profile").first().next("div").text();
+
+        let avatar = $(".character-profile--image img").first().attr("src");
+        avatar = avatar.replace( /.*\//, "" );
+        avatar = avatar.replace( /\.png$/, "" );
 
         let response = {
             "slug":        data.slug,
             "name":        trim_ws_ends( name ),
             "genotype":    genotype,
             "description": trim_ws_ends( description ),
+            "avatar":      avatar
         };
 
         tSTauHeadHelper_post({ request: data, response: response });
@@ -707,7 +697,7 @@ function tSTauHeadHelper_render_buttons() {
 
         let span = $("<span/>").appendTo(tSTauHeadHelper_region);
 
-        for ( data of tSTauHeadHelper_buttons[ui_area] ) {
+        for ( let data of tSTauHeadHelper_buttons[ui_area] ) {
             let id   = data.id   || data.action;
             let text = data.text || slug_to_words(data.action);
 
