@@ -260,12 +260,13 @@ function get_slug(text) {
             // Convert accented characters to their 7-bit equivalent. (JS's I18N
             // is too good - unfortunately, no "lossy" conversion method exists.)
             // These are the only such chars that've been seen so far.
-            retval = retval.replace(/\xC9/g,       'E')  // É (capital E ACUTE)
-                            .replace(/\xE9/g,       'e')  // é (small E ACUTE)
-                            .replace(/\u014d/g,     'o')  // ō (small O WITH MACRON)
-                            .replace(/ ?\u2013 ?/g, '-')  // – (EN DASH)
-                            .replace(/\u2019/g,     '')   // ’ (RIGHT SINGLE QUOTATION MARK)
-                            .replace(/\u2122/g,     'tm');// ™ (TRADE MARK SIGN)
+            retval = retval.replace(/ & /g,        ' ')  // & (ampersand)
+                           .replace(/\xC9/g,       'E')  // É (capital E ACUTE)
+                           .replace(/\xE9/g,       'e')  // é (small E ACUTE)
+                           .replace(/\u014d/g,     'o')  // ō (small O WITH MACRON)
+                           .replace(/ ?\u2013 ?/g, '-')  // – (EN DASH)
+                           .replace(/\u2019/g,     '')   // ’ (RIGHT SINGLE QUOTATION MARK)
+                           .replace(/\u2122/g,     'tm');// ™ (TRADE MARK SIGN)
 
             // Convert remaining characters as appropriate. (Note: \x2D = "-", which we need to keep.)
             retval = retval.toLowerCase().replace(/[\x21-\x2C\x2E-\x2F]/g, '').replace(/[ \xA0]/g, '-');
