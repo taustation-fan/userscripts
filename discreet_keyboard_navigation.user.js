@@ -59,14 +59,17 @@
 
     // narrative directions: capture the name of the next location to visit
     var dh_narrative_directions = [
-        /^\s*New goals:\s*Talk to .*? in (.*?)\s*$/,
+        /^\s*New goals:\s*Talk to .*? in (.*?) on .*?\s*$/,
+        /^New goals: Return to .*? in (.*?) on .*? to collect your reward\.$/,
         /^From your CORETECHS you see that (.*?) is the place to find .*\.$/,
         /^Go to .*? who is in (.*)\.$/,
         /^A hunch tells you to go to the (.*?) to find .*\.$/,
         /^You're pretty sure you can find .*? in (.*)\.$/,
         /^You check your CORETECHS for the location of .*?. Seems like the place to look is (.*)\.$/,
         /^You ask a passerby if they know where to find .*?. They direct you to (.*)\.$/,
+        // These next two are probably obsolete, but may not have been removed from all stations.
         /^New goals: Return to .*? in (.*?) to collect your reward\.$/,
+        /^\s*New goals:\s*Talk to .*? in (.*?)\s*$/,
     ];
 
     // _discreet_target: loop over narrative directions and return the next location to visit
