@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.10.2
+// @version      1.11
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -22,6 +22,7 @@
 //  - v1.02: [Dotsent] Skim/save details from "/item/$slug", and append summary to linkified item names.
 //  - v1.10: Dynamically query TauHead.com API for not-yet-saved weapon & armor details.
 //  - v1.10.*: Minor fixes (character description handling, slug generation).
+//  - v1.11: For 2019-02-05 TauStation Update: Handle renamed items; also, in "/coretechs/storage", flags items with mismatched slugs (to call out subsequently renamed items, so they can be special-cased in this script using lookup_slug / lookup_slug_regexp).
 //
 
 // TODO List: (things not yet implemented or ready)
@@ -78,6 +79,10 @@ async function linkify_all_item_names() {
     if (campaign_rewards.length) {
         linkify_items_in_syndicate_campaign_rewards();
     }
+
+    if (window.location.pathname.startsWith('/coretechs/storage')) {
+        check_slugs_vs_item_links();
+    }
 }
 
 //////////////////////////////
@@ -95,7 +100,7 @@ function linkify_items_in_character_details() {
     if (line.length && !line.children().length) {
         var html = line.html();
         var matches = html.match(regex_character_armor_and_weapons);
-        if (matches != null) {
+        if (matches !== null) {
             console.log(log_prefix + 'Linkifying item in character info.');
 
             // First, wrap the item names in a tag, so we can update them asynchronously if needed.
@@ -165,6 +170,14 @@ function store_item_params(slug) {
     }
 }
 
+function check_slugs_vs_item_links() {
+    var items_listed = $('.content-section > table td[data-label="Name"]');
+    if (items_listed.length) {
+        console.log(log_prefix + 'Checking Storage page for unexpected Item slugs.');
+        flag_unexpected_item_links(items_listed);
+    }
+}
+
 //
 // #endregion Area-specific handlers.
 //////////////////////////////
@@ -211,12 +224,54 @@ function linkify_item_element(dom_elements) {
     }
 }
 
+function flag_unexpected_item_links(jq_elements) {
+    jq_elements.find('a').each(function() {
+        var a_element = $(this);
+        var item_text = a_element.text();
+
+        if (! item_text) {
+            return;
+        }
+
+        item_text = item_text.trim();
+        var generated_slug = get_slug(item_text);
+        var item_link_slug = a_element.attr('href').replace(/\/item\//, '');
+
+        // If the generated slug doesn't match the actual slug provided in this page,
+        // discreetly ask the user to let us know, so we can update this script.
+        if (   generated_slug !== item_link_slug
+            && generated_slug !== placeholder_stim_name) {  // Stims are too much of a hassle for the time being. (Their names vs. slugs have diverged too far.)
+
+            var problem_brief = log_prefix + '"' + item_text + '" has unexpected slug "' + item_link_slug + '" (expected "' + generated_slug + '").\n';
+            var problem_alert = 'Linkifier userscript:\n\nThe item "' + item_text + '" has an unexpected slug name ("' + item_link_slug + '", ' +
+                                'vs. the expected "' + generated_slug + '"). ';
+            var email_line    = 'Please send in-game email to @quasidart or @Dotsent, so they can update the Linkifier script.';
+
+            console.log(problem_brief);
+
+            // Add an icon before the item name, which can show the expected vs. actual slug.
+            var problem_link = $(`
+<a class="icon-link" style="cursor:pointer; padding-right:0.3em;" title='${problem_brief + email_line}'>
+  <span style="color:yellow;" class="fa fa-exclamation-triangle"></span>
+</a>
+`).insertBefore(a_element);
+            // Also allow folks on Mobile to view the details.
+            problem_link.click(function() {
+                window.alert(problem_alert + email_line);
+            })
+        }
+    });
+}
+
 function linkify_item_name(text, fn_update_item_name) {
     var retval = '';
     if (text) {
         text = text.trim();
-        var slug   = get_slug(text);
         var target = (linkify_config.open_links_in_new_tab ? ' target="_blank"' : '');
+        var slug   = get_slug(text);
+        if (! slug || slug === placeholder_stim_name) {
+            return;
+        }
 
         // This will happen synchronously if we already have the item data,
         // or asynchronously if we need to get the data via an AJAX call.
@@ -253,6 +308,11 @@ function get_slug(text) {
             }
         }
 
+        // Next, check for Stim names.
+        if (! retval) {
+            retval = get_slug_for_stim(text);
+        }
+
         // Finally, just try processing the item name itself. (Appilcable to most items in the game.)
         if (! retval) {
             retval = text;
@@ -276,18 +336,60 @@ function get_slug(text) {
 }
 
 var lookup_slug = {
-    'Insignificant Bond Package': 'bonds-2',
-    'Tiny Bond Package':          'bonds-5',
-    'Small Bond Package':         'bonds-10',
-    'Standard Bond Package':      'bonds-20',
-    'Large Bond Package':         'bonds-30',
-    'Huge Bond Package':          'bonds-40',
+    'Two Bond Certificate':    'bonds-2',
+    'Five Bond Certificate':   'bonds-5',
+    'Ten Bond Certificate':    'bonds-10',
+    'Twenty Bond Certificate': 'bonds-20',
+    'Thirty Bond Certificate': 'bonds-30',
+    'Forty Bond Certificate':  'bonds-40',
+    'Trusty Hand':             'trusty-field-hand',
+    'The Silent One':          'handgun-reclaim',
 };
 
 var lookup_slug_regexp = [
-    [ new RegExp('Food and water daily ration tier ([0-9]+)'), 'ration-$1' ],
+    [ new RegExp('Tier ([0-9]+) Ration'),      'ration-$1' ],
+    [ new RegExp('VIP Pack - ([0-9]+) days?'), 'vip-$1' ],
 ];
 
+// Example Stim names:
+//  - "Str T01-V001-8.25-0.1"
+//  - "Soc T02-V008-10.31-0.1"
+//  - "Civ T04-V005-13.76x2-0.075"
+//  - "Mil T03-V027-7.54x4-0.03"
+var stim_name_pattern = new RegExp(/(Str|Agi|Sta|Int|Soc|Civ|Mil) T([0-9]+)-V([0-9]+)-([0-9.]+)(?:x([0-9]+))?-[0-9.]+/);
+
+var placeholder_stim_name = '[stim]';
+
+function get_slug_for_stim(text) {
+    var matches = text.match(stim_name_pattern);
+    if (matches === null) {
+        return;
+    }
+
+    // var category  = matches[1];
+    // var tier      = matches[2];
+    // var stat_map  = matches[3];
+    // var stat_amt  = matches[4];
+    // var num_stats = matches[5];
+
+    // var name_for_category = {
+    //     'Str': 'Strength',
+    //     'Agi': 'Agility',
+    //     'Sta': 'Stamina',
+    //     'Int': 'Intelligence',
+    //     'Soc': 'Social',
+    //     'Civ': 'Multi',
+    //     'Mil': 'Military',
+    // }
+
+    // category = name_for_category[category];
+
+    // For now, just return a placeholder value, so callers can ignore stims.
+    // (To fully work, this function would need a lookup table to convert Tier-
+    // specific (stat_amt * num_stats) values into { "Minor", "Standard", "Strong" }.)
+    //
+    return placeholder_stim_name;
+}
 
 var ajax_enabled = true;
 
