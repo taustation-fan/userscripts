@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         discreet_keyboard_navigation
 // @namespace    https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @version      1.0
+// @version      1.1
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
 // @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available in the scriot source.
@@ -59,14 +59,14 @@
 
     // narrative directions: capture the name of the next location to visit
     var dh_narrative_directions = [
-        /^\s*New goals:\s*Talk to .*? in (.*?)\s*$/,
+        /^\s*New goals:\s*Talk to .*? in (.*?)(?: on.*)?\s*$/,
         /^From your CORETECHS you see that (.*?) is the place to find .*\.$/,
         /^Go to .*? who is in (.*)\.$/,
         /^A hunch tells you to go to the (.*?) to find .*\.$/,
         /^You're pretty sure you can find .*? in (.*)\.$/,
         /^You check your CORETECHS for the location of .*?. Seems like the place to look is (.*)\.$/,
         /^You ask a passerby if they know where to find .*?. They direct you to (.*)\.$/,
-        /^New goals: Return to .*? in (.*?) to collect your reward\.$/,
+        /^\s*New goals: Return to .*? in (.*?)(?: on .*?)?\s*to collect your reward\.\s*$/,
     ];
 
     // _discreet_target: loop over narrative directions and return the next location to visit
