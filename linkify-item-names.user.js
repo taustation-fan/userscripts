@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.11
+// @version      1.11.1
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -23,6 +23,7 @@
 //  - v1.10: Dynamically query TauHead.com API for not-yet-saved weapon & armor details.
 //  - v1.10.*: Minor fixes (character description handling, slug generation).
 //  - v1.11: For 2019-02-05 TauStation Update: Handle renamed items; also, in "/coretechs/storage", flags items with mismatched slugs (to call out subsequently renamed items, so they can be special-cased in this script using lookup_slug / lookup_slug_regexp).
+//  - v1.11.*: Minor updates (special-case slug)
 //
 
 // TODO List: (things not yet implemented or ready)
@@ -344,6 +345,7 @@ var lookup_slug = {
     'Forty Bond Certificate':  'bonds-40',
     'Trusty Hand':             'trusty-field-hand',
     'The Silent One':          'handgun-reclaim',
+    'Heavy Dö-maru':           'heavy-d-maru',
 };
 
 var lookup_slug_regexp = [
