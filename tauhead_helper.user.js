@@ -808,7 +808,7 @@ function get_other_img(data) {
     else if ( data.slug == "government-center" ) {
         img = $(".gov-area-wrapper.rations").first().css("background-image");
     }
-    else if ( data.slug == "security" ) {
+    else if ( data.slug == "security" && $(".security-main-content").length ) {
         img = window.getComputedStyle( $(".security-main-content")[0], ':after' ).getPropertyValue("background-image");
     }
     else if ( data.slug == "storage" ) {
