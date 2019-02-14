@@ -504,8 +504,6 @@ var tSTauHeadHelper_actions = {
         let description = $(".character-profile").first().next("div").text();
 
         let avatar = $(".character-profile--image img").first().attr("src");
-        avatar = avatar.replace( /.*\//, "" );
-        avatar = avatar.replace( /\.png$/, "" );
 
         let response = {
             "slug":        data.slug,
