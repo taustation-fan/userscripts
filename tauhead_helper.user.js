@@ -12,6 +12,9 @@
 
 var tauhead_domain = 'https://www.tauhead.com';
 
+var ok_css_colour    = "#339900";
+var error_css_colour = "#ff0000";
+
 //
 
 var vendor_item_fields = [
@@ -76,6 +79,7 @@ var item_type_fields = [
 var tSTauHeadHelper_region;
 var tSTauHeadHelper_buttons = {};
 var tSTauHeadHelper_known_ui_areas = ['area', 'sub_area', 'other', 'items', 'auction'];
+var tSTauHeadHelper_message_area;
 
 //
 
@@ -220,6 +224,13 @@ var tSTauHeadHelper_actions = {
     },
 
     log_auctions: function(data) {
+        if ( !is_storage_available() ) {
+            console.log("localStorage not available");
+            tSTauHeadHelper_message_area.css("background-color", error_css_colour);
+            tSTauHeadHelper_message_area.text("localStorage not available");
+            return;
+        }
+
         let gct = $("#gct_display").text();
         gct = gct.replace( /[^0-9./:]+/g, "" );
         gct = trim_ws_ends(gct);
@@ -253,8 +264,45 @@ var tSTauHeadHelper_actions = {
             response["auction_"+auction_counter+".seller_name"] = trim_ws_ends(seller_name);
         });
 
-        response.auction_counter = auction_counter;
+         // Add own auctions
+         // ( Only from page 1 )
+         if ( ( window.location.pathname === "/area/electronic-market" )
+             || ( window.location.pathname === "/area/electronic-market/page/1" ) )
+         {
+             let own_auctions = $("ol.market-my-items--list li");
 
+             if ( own_auctions.length ) {
+                 inject(fetch_game_character);
+                 let own_name = localStorage.getItem( "tauhead_game_name" );
+                 let own_slug = localStorage.getItem( "tauhead_game_slug" );
+
+                 own_auctions.each(function() {
+                     auction_counter++;
+
+                     let reclaim_button = $(this).find(".market-my-items--list-col--reclaim a").first().attr("href");
+                     reclaim_button = reclaim_button.replace(/^\/area\/electronic-market\/buy-item\//, "");
+
+                     let details = $(this).find(".market-my-items--list-col--item dd").first().text();
+                     let match   = details.match( /(.*) Quantity \((\d+)\)/ );
+                     let item_name = match[1];
+                     let quantity  = match[2];
+
+                     let price = $(this).find(".market-my-items--list-col--price .currency-amount").first().text();
+                     while ( price.match(/,/) ) {
+                         price = price.replace(/,/, "");
+                     }
+
+                     response["auction_"+auction_counter+".auction_id"]  = reclaim_button;
+                     response["auction_"+auction_counter+".item_slug"]   = get_slug(item_name);
+                     response["auction_"+auction_counter+".quantity"]    = quantity;
+                     response["auction_"+auction_counter+".price"]       = price;
+                     response["auction_"+auction_counter+".seller_slug"] = own_slug;
+                     response["auction_"+auction_counter+".seller_name"] = own_name;
+                 });
+             }
+         }
+
+        response.auction_counter = auction_counter;
         tSTauHeadHelper_post({ request: data, response: response });
     },
 
@@ -723,6 +771,9 @@ function tSTauHeadHelper_init_ui() {
         tSTauHeadHelper_region = $('<div id="tSTauHeadHelper_region">TauHead Helper: </div>');
         $('body').append(tSTauHeadHelper_region);
         tSTauHeadHelper_region.append('<br/>');
+
+        tSTauHeadHelper_message_area = $('<span style="clear: both"></span>');
+        tSTauHeadHelper_region.append(tSTauHeadHelper_message_area);
     }
 }
 
@@ -892,4 +943,150 @@ function trim_ws_ends(str) {
     }
 
     return str;
+}
+
+function is_storage_available() {
+    // example copied from https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
+    var type="localStorage";
+
+    try {
+        var storage = window[type],
+            x = '__storage_test__';
+        storage.setItem(x, x);
+        storage.removeItem(x);
+        return true;
+    }
+    catch(e) {
+        return e instanceof DOMException && (
+            // everything except Firefox
+            e.code === 22 ||
+            // Firefox
+            e.code === 1014 ||
+            // test name field too, because code might not be present
+            // everything except Firefox
+            e.name === 'QuotaExceededError' ||
+            // Firefox
+            e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+            // acknowledge QuotaExceededError only if there's something already stored
+            storage.length !== 0;
+    }
+}
+
+function fetch_game_character() {
+    localStorage.setItem( "tauhead_game_name", Core.character.name );
+    localStorage.setItem( "tauhead_game_slug", Core.character.slug );
+}
+
+function inject(func) {
+    var source = func.toString();
+    var script = document.createElement('script');
+    script.innerHTML = "("+source+")()";
+    document.body.appendChild(script);
+}
+
+// Following function and vars copied from linkify-item-names
+// https://github.com/taustation-fan/userscripts/blob/master/linkify-item-names.user.js
+
+function get_slug(text) {
+    var retval = '';
+    if (text) {
+        // First, check for simple, special-case slugs.
+        retval = lookup_slug[text.toLowerCase()];
+        if (! retval) {
+            // Next, check for more complex, special-case slugs.
+            for (var index in lookup_slug_regexp) {
+                var regexp  = lookup_slug_regexp[index][0];
+                var replace = lookup_slug_regexp[index][1];
+
+                if (regexp.test(text)) {
+                    retval = text.replace(regexp, replace);
+                    break;
+                }
+            }
+        }
+
+        // Next, check for Stim names.
+        // if (! retval) {
+        //     retval = get_slug_for_stim(text);
+        // }
+
+        // Finally, just try processing the item name itself. (Appilcable to most items in the game.)
+        if (! retval) {
+            retval = text;
+
+            // Convert accented characters to their 7-bit equivalent. (JS's I18N
+            // is too good - unfortunately, no "lossy" conversion method exists.)
+            // These are the only such chars that've been seen so far.
+            retval = retval.replace(/ & /g,        ' ')  // & (ampersand)
+                           .replace(/\xC9/g,       'E')  // É (capital E ACUTE)
+                           .replace(/\xE9/g,       'e')  // é (small E ACUTE)
+                           .replace(/\u014d/g,     'o')  // ō (small O WITH MACRON)
+                           .replace(/ ?\u2013 ?/g, '-')  // – (EN DASH)
+                           .replace(/\u2019/g,     '')   // ’ (RIGHT SINGLE QUOTATION MARK)
+                           .replace(/\u2122/g,     'tm');// ™ (TRADE MARK SIGN)
+
+            // Convert remaining characters as appropriate. (Note: \x2D = "-", which we need to keep.)
+            retval = retval.toLowerCase().replace(/[\x21-\x2C\x2E-\x2F]/g, '').replace(/[ \xA0]/g, '-');
+        }
+    }
+    return retval;
+}
+
+// Weapons & armor here also need to match equipped items in other characters'
+// descriptions, where they appear in lower case (unlike item names elsewhere).
+var lookup_slug = {
+    'two bond certificate':    'bonds-2',
+    'five bond certificate':   'bonds-5',
+    'ten bond certificate':    'bonds-10',
+    'twenty bond certificate': 'bonds-20',
+    'thirty bond certificate': 'bonds-30',
+    'forty bond certificate':  'bonds-40',
+    'trusty hand':             'trusty-field-hand',
+    'the silent one':          'handgun-reclaim',
+    'heavy dö-maru':           'heavy-d-maru',
+};
+
+var lookup_slug_regexp = [
+    [ new RegExp('Tier ([0-9]+) Ration'),      'ration-$1' ],
+    [ new RegExp('VIP Pack - ([0-9]+) days?'), 'vip-$1' ],
+];
+
+// Example Stim names:
+//  - "Str T01-V001-8.25-0.1"
+//  - "Soc T02-V008-10.31-0.1"
+//  - "Civ T04-V005-13.76x2-0.075"
+//  - "Mil T03-V027-7.54x4-0.03"
+var stim_name_pattern = new RegExp(/(Str|Agi|Sta|Int|Soc|Civ|Mil) T([0-9]+)-V([0-9]+)-([0-9.]+)(?:x([0-9]+))?-[0-9.]+/);
+
+var placeholder_stim_name = '[stim]';
+
+function get_slug_for_stim(text) {
+    var matches = text.match(stim_name_pattern);
+    if (matches === null) {
+        return;
+    }
+
+    // var category  = matches[1];
+    // var tier      = matches[2];
+    // var stat_map  = matches[3];
+    // var stat_amt  = matches[4];
+    // var num_stats = matches[5];
+
+    // var name_for_category = {
+    //     'Str': 'Strength',
+    //     'Agi': 'Agility',
+    //     'Sta': 'Stamina',
+    //     'Int': 'Intelligence',
+    //     'Soc': 'Social',
+    //     'Civ': 'Multi',
+    //     'Mil': 'Military',
+    // }
+
+    // category = name_for_category[category];
+
+    // For now, just return a placeholder value, so callers can ignore stims.
+    // (To fully work, this function would need a lookup table to convert Tier-
+    // specific (stat_amt * num_stats) values into { "Minor", "Standard", "Strong" }.)
+    //
+    return placeholder_stim_name;
 }
