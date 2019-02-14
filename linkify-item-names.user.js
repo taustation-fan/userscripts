@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.11.1
+// @version      1.11.2
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -295,7 +295,7 @@ function get_slug(text) {
     var retval = '';
     if (text) {
         // First, check for simple, special-case slugs.
-        retval = lookup_slug[text];
+        retval = lookup_slug[text.toLowerCase()];
         if (! retval) {
             // Next, check for more complex, special-case slugs.
             for (var index in lookup_slug_regexp) {
@@ -336,16 +336,18 @@ function get_slug(text) {
     return retval;
 }
 
+// Weapons & armor here also need to match equipped items in other characters'
+// descriptions, where they appear in lower case (unlike item names elsewhere).
 var lookup_slug = {
-    'Two Bond Certificate':    'bonds-2',
-    'Five Bond Certificate':   'bonds-5',
-    'Ten Bond Certificate':    'bonds-10',
-    'Twenty Bond Certificate': 'bonds-20',
-    'Thirty Bond Certificate': 'bonds-30',
-    'Forty Bond Certificate':  'bonds-40',
-    'Trusty Hand':             'trusty-field-hand',
-    'The Silent One':          'handgun-reclaim',
-    'Heavy Dö-maru':           'heavy-d-maru',
+    'two bond certificate':    'bonds-2',
+    'five bond certificate':   'bonds-5',
+    'ten bond certificate':    'bonds-10',
+    'twenty bond certificate': 'bonds-20',
+    'thirty bond certificate': 'bonds-30',
+    'forty bond certificate':  'bonds-40',
+    'trusty hand':             'trusty-field-hand',
+    'the silent one':          'handgun-reclaim',
+    'heavy dö-maru':           'heavy-d-maru',
 };
 
 var lookup_slug_regexp = [
