@@ -2,12 +2,12 @@
 // @name         taustation-tools-common
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js
-// @version      0.2
+// @version      0.3
 // @description  Common code shared by my Tau Station userscripts.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
 // @grant        none
-// @require      https://code.jquery.com/jquery-3.3.1.slim.js
+// @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 //
 // License: CC-BY-SA
@@ -18,6 +18,7 @@
 // Changelist:
 //  - v0.1: Initial commit.
 //  - v0.2: New: Icons for client scripts (clicking icon shows/hides each script's UI)
+//  - v0.3: Plays better with icon_bar userscript, and supports combat page's new stripped-down UI (non-combat UI items now absent).
 //
 
 //////////////////////////////
@@ -50,30 +51,73 @@ var panes_visible = {}; // Indicates whether each given script's UI pane is visi
 var tST_nodes = {};
 var player_name;
 
+var log_prefix = 'TauStation Tools (common): ';
+
 async function tST_main() {
     add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
     tST_add_base_UI();
 }
 
 function tST_add_base_UI() {
-    // If tST-region doesn't exist yet, add it.
-    tST_region = $("#tST-container");
-    if (! tST_region.length) {
-        $('.stats-container').before('<div id="tST-container" class="tST-container tST-hidden" style="display: none;">\n</div>\n');
-        tST_region = $("#tST-container");
-    }
+    var target;
+    var new_ui_html;
 
-    // Also, add an area where the client scripts can place their icons.
+    // Add an area where the client scripts can place their icons.
     tST_icons = $('#tST-icons-region');
     if (! tST_icons.length) {
-        $('.social-navigation').before(`<ul id="tST-icons-region" class="avatar-links avatar-messages" style="float: left;">\n</ul>\n`);
+        var special_layout = '';
+
+        target = $('.social-navigation');
+        if (! target.length) {
+            target = $('#content-container');
+            // If we aren't slotting the icons next to the player icon (as a column), show them in a horizontal row.
+            special_layout = ' display:flex;';
+        }
+
+        // If this doesn't have an explicit z-index, the avatar-decoration-container ends up on
+        // a higher layer than the first icon (leaving that icon unresponsive to the mouse).
+        new_ui_html = `<ul id="tST-icons-region" class="avatar-messages" style="float:left; z-index:1;${special_layout}">\n</ul>\n`;
+
+        if (target.length) {
+            target.before(new_ui_html);
+        } else {
+            console.log(log_prefix + 'Warning: No container for scripts\' icons, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
+            $('body').insert(new_ui_html);
+        }
+
         tST_icons = $('#tST-icons-region');
+    }
+
+    // Also, add an area where the client scripts can place their UI panes.
+    tST_region = $("#tST-container");
+    if (! tST_region.length) {
+        target = $('.stats-container');
+        if (! target.length) {
+            target = $('#content-container');
+        }
+
+        new_ui_html = '<div id="tST-container" class="tST-container tST-hidden" style="display: none;">\n</div>\n';
+
+        if (target.length) {
+            target.before(new_ui_html);
+        } else {
+            console.log(log_prefix + 'Warning: No container for scripts\' UI, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
+            $('body').insert(new_ui_html);
+        }
+
+        tST_region = $("#tST-container");
     }
 }
 
 ////////////////////
 // #region Helper methods for icons, used by related scripts during setup.
 //
+
+    function tST_add_UI_pane(ui_html) {
+        if (tST_region && tST_region.length) {
+            tST_region.append(ui_html);
+        }
+    }
 
     function tST_add_icon(icon_id, script_pane_id, icon_html) {
         tST_add_icon_in_container(icon_id, script_pane_id, '#tST-container', icon_html);
@@ -188,7 +232,7 @@ function tST_add_base_UI() {
     function tST_clear_localStorage_by_key_prefix(key_prefix) {
         for (var item in localStorage) {
             if (item.startsWith(key_prefix)) {
-                tST_debug('TauStationTools: Removing localStorage item: ' + item);
+                tST_debug(log_prefix + 'Removing localStorage item: ' + item);
                 localStorage.removeItem(item);
             }
         }
@@ -214,7 +258,7 @@ function tST_add_base_UI() {
         }
 
         if (! hide_alert) {
-            console.log('Copied the following text to the clipboard:\n' + msg);
+            console.log(log_prefix + 'Copied the following text to the clipboard:\n' + msg);
         }
     }
 
