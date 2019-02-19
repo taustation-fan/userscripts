@@ -5,7 +5,7 @@
 // @description  Tau Sort Inventory Gear
 // @match        https://alpha.taustation.space/*
 // @grant        none
-// @require      https://code.jquery.com/jquery-3.3.1.js
+// @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 
 var from_json;

@@ -7,7 +7,7 @@
 // @match        https://alpha.taustation.space/area/storage
 // @version      1.0
 // @grant        none
-// @require      https://code.jquery.com/jquery-3.3.1.slim.js
+// @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 
 $(document).ready(do_main);

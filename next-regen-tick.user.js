@@ -8,7 +8,7 @@
 // @license      CC-BY-SA - https://creativecommons.org/licenses/by-sa/2.0/
 // @match        https://alpha.taustation.space/*
 // @grant        GM_addStyle
-// @require      https://code.jquery.com/jquery-3.3.1.slim.js
+// @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 //
 // Disclaimer:

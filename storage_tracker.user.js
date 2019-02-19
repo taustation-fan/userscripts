@@ -6,7 +6,7 @@
 // @description  Track Storage items, and show owned items in Public Market
 // @match        https://alpha.taustation.space/*
 // @grant        none
-// @require      https://code.jquery.com/jquery-3.3.1.slim.js
+// @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js
 // ==/UserScript==
 

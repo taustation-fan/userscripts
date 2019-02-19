@@ -6,7 +6,7 @@
 // @author       Marco Fontani <MFONTANI@cpan.org>
 // @match        https://alpha.taustation.space/*
 // @grant        none
-// @require      https://code.jquery.com/jquery-3.3.1.slim.js
+// @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 
 // While on a discreet work (or mission?), routinely "scan"

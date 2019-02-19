@@ -7,7 +7,7 @@
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
 // @grant        none
-// @require      https://code.jquery.com/jquery-3.3.1.slim.js
+// @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://rawgit.com/taustation-fan/userscripts/master/taustation-tools-common.js
 // ==/UserScript==
 //
