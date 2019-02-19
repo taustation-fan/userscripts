@@ -2,7 +2,7 @@
 // @name         Tau Station: Show Stim effects
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/stim-summary-in-item-name.user.js
-// @version      1.1
+// @version      1.2
 // @description  Show full, multi-line stim name (+ %stat effects) in Inventory / Storage / etc.; also updates item details pane to show %stat & %toxin effects. Calculates percentages using Medical Stims skill level & player-vs.-stim Tiers, based on formulae at https://tauguide.de/#so-whats-the-gain-stat-boost & https://tauguide.de/#medical-stim-toxicity-calculation-formula .
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -20,6 +20,7 @@
 //  - v1.0.1: Renamed from "describe-stims.user.js" to "stim-summary-in-item-name.user.js" -- easier to spot if someone scans the list of file names for Stim-related userscripts.
 //  - v1.0.2: Fixed duplicate item frames on updated items.
 //  - v1.1: Added support for Stims shown during combat, and optimized jQuery calls that find stim nodes & text.
+//  - v1.2: Switch to jquery-3.3.1.min.js
 //
 // TODO:
 //  - Support Military-grade stims. (Requires building another total_stim_boosts_table table (Military stims use different {"vX.Y.ZZZ": boost_value} pairs), plus some code updates.)

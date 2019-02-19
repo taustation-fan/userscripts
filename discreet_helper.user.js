@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tau Discreet Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  Add links to areas while on discreet work
 // @author       Marco Fontani <MFONTANI@cpan.org>
 // @match        https://alpha.taustation.space/*

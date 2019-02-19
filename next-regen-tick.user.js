@@ -2,7 +2,7 @@
 // @name         Tau Station: Next Regen Tick
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/next-regen-tick.user.js
-// @version      0.1
+// @version      0.2
 // @description  The game shows countdown timers for each stat until full regeneration. But when is the _next_ regeneration tick due? This displays the duration in units, will only update on click.
 // @author       Perleone (https://github.com/Perleone)
 // @license      CC-BY-SA - https://creativecommons.org/licenses/by-sa/2.0/

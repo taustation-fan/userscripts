@@ -2,7 +2,7 @@
 // @name         stats_tracker
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/stats_tracker.user.js
-// @version      1.1
+// @version      1.2
 // @description  To learn how player stats regenerate over time, this script periodically collects stats values, and stores the info only in a box within the current webpage (in a hidden <div>). To save, click the "Copy" button to copy the data into the clipboard, then save it to a file.
 // @match        https://alpha.taustation.space/*
 // @grant        none

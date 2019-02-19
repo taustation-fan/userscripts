@@ -2,7 +2,7 @@
 // @name         Storage Tracker
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/storage_tracker.user.js
-// @version      1.3
+// @version      1.4
 // @description  Track Storage items, and show owned items in Public Market
 // @match        https://alpha.taustation.space/*
 // @grant        none

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tau Sort Inventory Gear
 // @namespace    https://github.com/taustation-fan/userscripts/
-// @version      1.0
+// @version      1.1
 // @description  Tau Sort Inventory Gear
 // @match        https://alpha.taustation.space/*
 // @grant        none

@@ -2,7 +2,7 @@
 // @name         Tau Station: Combat Log
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/combat-log.user.js
-// @version      1.3.2
+// @version      1.3.3
 // @description  Records a log of any combat you're involved in.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -23,6 +23,7 @@
 //  - v1.2.1: Fix issue appearing with 2018-07-25's Wednesday update: In Chat window, messages frame was displaying zero text when this script was enabled.
 //  - v1.3: Add an icon to control UI (via taustation-tools-common.js's Icons code); also, improved in-combat detection logic.
 //  - v1.3.1: Fix for "attacker fled" scenario.
+//  - v1.3.3: switch to jquery-3.3.1.min.js
 //
 
 //////////////////////////////
