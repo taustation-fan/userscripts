@@ -83,6 +83,7 @@ Includes CSS classes for areas within window.
     width: 30em;
     height: 30em;
     max-height: 90vh;
+    max-width: 95%;
     border: 2px solid #08a1ec;
     margin: 0 .3em;
     z-index: 800;
