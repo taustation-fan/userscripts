@@ -2,7 +2,7 @@
 // @name         TauHead Data Gatherer
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_data_gatherer.user.js
-// @version      1.2
+// @version      1.3
 // @description  Post data to TauHead API
 // @match        https://alpha.taustation.space/*
 // @exclude      https://alpha.taustation.space/combat/*
