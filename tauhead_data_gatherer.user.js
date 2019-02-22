@@ -57,6 +57,7 @@ var game_mobile_message_section;
 var game_mobile_message_list;
 var game_desktop_message_section;
 var game_desktop_message_list;
+var game_character_message_items;
 
 //
 
@@ -79,7 +80,8 @@ function tauhead_main() {
 
 function tauhead_wrecks_salvage_loot() {
     let lines = tauhead_get_character_messages();
-    if ( !lines )
+
+    if ( 0 === lines.length )
         return;
 
     if ( !lines.text().match( /Your Stamina is now at \d+%/i ) )
@@ -118,7 +120,7 @@ function tauhead_wrecks_salvage_loot() {
 function tauhead_wrecks_looking_for_trouble() {
     let lines = tauhead_get_character_messages();
 
-    if ( !lines )
+    if ( 0 === lines.length )
         return;
 
     if (
@@ -166,7 +168,7 @@ function tauhead_wrecks_looking_for_trouble() {
 function tauhead_wrecks_sewers() {
     let lines = tauhead_get_character_messages();
 
-    if ( !lines )
+    if ( 0 === lines.length )
         return;
 
     let match = lines.text().match(
@@ -218,20 +220,18 @@ function tauhead_wrecks_looking_for_trouble_search( success, level, difficulty )
 }
 
 function tauhead_get_character_messages() {
-    let msg = $(".character-messages-desktop").first();
+    if ( game_character_message_items )
+        return game_character_message_items;
 
-    if ( !msg.length )
-        msg = $(".character-messages-mobile").first();
+    if (!game_mobile_message_section)
+        tauhead_get_mobile_message_section();
 
-    if ( !msg.length )
-        return;
+    if ( 0 === game_mobile_message_section.length )
+        return $();
 
-    let lines = $(msg).find("li");
+    game_character_message_items = $(game_mobile_message_section).find("li");
 
-    if ( !lines.length )
-        return;
-
-    return lines;
+    return game_character_message_items;
 }
 
 function tauhead_get_current_station() {
@@ -276,12 +276,25 @@ function tauhead_add_message(message, color) {
     }
 }
 
+function tauhead_populate_mobile_message_vars() {
+    game_mobile_message_section = $("#main-content > section[aria-label='Feedback']").first();
+    game_mobile_message_list    = $(game_mobile_message_section).find("ul#character-messages").first();
+}
+
+function tauhead_populate_desktop_message_vars() {
+    game_desktop_message_section = $("#main-content > .content-section > section[aria-label='Action Feedback']").first();
+    game_desktop_message_list    = $(game_desktop_message_section).find("ul.character-messages-desktop").first();
+}
+
 function tauhead_init_message_ui() {
     if (th_init_message_ui)
         return;
 
-    game_mobile_message_section  = $("#main-content > section[aria-label='Feedback']").first();
-    game_desktop_message_section = $("#main-content > .content-section > section[aria-label='Action Feedback']").first();
+    if (!game_mobile_message_section)
+        tauhead_get_mobile_message_section();
+
+    if (!game_desktop_message_section)
+        tauhead_get_desktop_message_section();
 
     if ( game_mobile_message_section.length === 0 ) {
         tauhead_init_button_ui();
@@ -292,7 +305,6 @@ function tauhead_init_message_ui() {
     if ( game_desktop_message_section.length === 0 )
         game_desktop_message_section = game_mobile_message_section;
 
-    game_mobile_message_list = $(game_mobile_message_section).find("ul#character-messages").first();
     if ( !game_mobile_message_list || game_mobile_message_list.length === 0 ) {
         game_mobile_message_list = $('<ul id="character-messages" class="messages character-messages-mobile" role="alert" area-label="Action Feedback"></ul>');
         game_mobile_message_section.append(game_mobile_message_list);
@@ -301,7 +313,6 @@ function tauhead_init_message_ui() {
     // If we're re-using the mobile section for the desktop,
     // don't add the message twice
     if ( game_mobile_message_section[0] != game_desktop_message_section[0] ) {
-        game_desktop_message_list = $(game_desktop_message_section).find("ul.character-messages-desktop").first();
         if ( !game_desktop_message_list || game_desktop_message_list.length === 0 ) {
             game_desktop_message_list = $('<ul class="messages character-messages-desktop" role="alert" area-label="Action Feedback"></ul>');
             game_desktop_message_section.append(game_desktop_message_list);
