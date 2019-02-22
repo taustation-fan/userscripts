@@ -29,9 +29,6 @@
 // The ultimate aim of this data is to allow tauhead.com to show station-specific loot tables
 // for different tasks, and to show relative availability of different items.
 // ***
-// Currently, it only sends the result of actions in The Wrecks (Ruins sub-area).
-// Next on the to-do list is adding the results of Discreet Work.
-// ***
 // *** When is data sent to tauhead.com ***
 // ***
 // Ruins / The Wrecks
@@ -43,6 +40,14 @@
 // you gained.
 // Every time you complete a Sewers campaign, it sends what loot you gained from
 // the final enemy.
+// ***
+// Discreet Work
+// =============
+// After completion of a Discreet Work (anonymous mission), it sends whether or
+// not you gained an item as loot, and what that item was.
+// This script can only identify loot items for which a message is shown upon
+// completion of the Discreet Work mission. If an item is added to your
+// inventory earlier during the Discreet Work, this will not be logged.
 
 // Nothing user-configurable below
 //
@@ -53,6 +58,7 @@ var th_init_button_ui;
 var th_init_message_ui;
 var th_region;
 var th_message;
+var dw_interval_id;
 var game_mobile_message_section;
 var game_mobile_message_list;
 var game_desktop_message_section;
@@ -71,11 +77,53 @@ function tauhead_main() {
     clean_path = clean_path.replace( /\/$/, "" );
     let path_parts = clean_path.split("/");
 
+    if ( page_path.startsWith("/character/details") ) {
+        tauhead_discreet_work_search();
+    }
+
     if ( page_path.startsWith("/area/the-wrecks") ) {
         tauhead_wrecks_salvage_loot()
         || tauhead_wrecks_looking_for_trouble()
         || tauhead_wrecks_sewers();
     }
+}
+
+function tauhead_discreet_work_search() {
+    if ( $(".mission-action").text().match( /Ask .* about your reward/i ) ) {
+        dw_interval_id = window.setInterval(tauhead_discreet_work_loot, 750);
+        tauhead_discreet_work_loot();
+    }
+}
+
+function tauhead_discreet_work_loot(dw) {
+    let lines = $(".mission-updates");
+
+    if ( 0 === lines.length )
+        return;
+
+    if ( !lines.text().match( /You have completed the "Anonymous" mission/i ) )
+        return;
+
+    window.clearInterval(dw_interval_id);
+
+    let loot = tauhead_first_capture_that_matches( lines, /You have received '(.*)'/i );
+
+    let data = {
+        method:              'discreet_work_loot',
+        current_station:     tauhead_get_current_station(),
+        player_level:        $.trim( $("#stats-panel .level .amount").text() ),
+        player_xp:           $.trim( $("#stats-panel .experience .amount").text() ),
+    };
+
+    if (loot) {
+        data["discreet_work_gave_loot_item"] = 1;
+        data["discreet_work_loot"]           = loot;
+    }
+    else {
+        data["discreet_work_gave_loot_item"] = 0;
+    }
+
+    tauhead_post( data, 'Logged Discreet Work loot' );
 }
 
 function tauhead_wrecks_salvage_loot() {
@@ -224,7 +272,7 @@ function tauhead_get_character_messages() {
         return game_character_message_items;
 
     if (!game_mobile_message_section)
-        tauhead_get_mobile_message_section();
+        tauhead_populate_mobile_message_vars();
 
     if ( 0 === game_mobile_message_section.length )
         return $();
@@ -234,8 +282,43 @@ function tauhead_get_character_messages() {
     return game_character_message_items;
 }
 
+function tauhead_captures_that_match( lines, regexp ) {
+    let captures = [];
+    $(lines).each(function() {
+        let match = $(this).text().match(regexp);
+        if ( match )
+            captures.push(match[1]);
+    });
+    return captures;
+}
+
+function tauhead_first_capture_that_matches( lines, regexp ) {
+    let captures = tauhead_captures_that_match( lines, regexp );
+    if ( captures.length >= 1 ) {
+        return captures[0];
+    }
+    return;
+}
+
 function tauhead_get_current_station() {
     return $.trim( $("#main-content .location-container .station").text() );
+}
+
+function tauhead_add_mission_message(message, color) {
+    let message_area = $(".mission-flow").first();
+
+    if ( 0 === message_area.length )
+        return tauhead_add_message(message, color);
+
+    if (!color)
+        color = 'green';
+
+    message_area.append(
+        '<div class="mission-updates" style="background-color: '+color+';">' +
+        'TauHead Data Gatherer: ' +
+        message +
+        '</div>'
+    );
 }
 
 function tauhead_add_message(message, color) {
@@ -291,10 +374,10 @@ function tauhead_init_message_ui() {
         return;
 
     if (!game_mobile_message_section)
-        tauhead_get_mobile_message_section();
+        tauhead_populate_mobile_message_vars();
 
     if (!game_desktop_message_section)
-        tauhead_get_desktop_message_section();
+        tauhead_populate_desktop_message_vars();
 
     if ( game_mobile_message_section.length === 0 ) {
         tauhead_init_button_ui();
@@ -349,7 +432,12 @@ function tauhead_post( data, message ) {
         dataType:    "json",
         success: function(jqXHR) {
             if (jqXHR.ok) {
-                tauhead_add_message(message);
+                if ( "discreet_work_loot" === data["method"] ) {
+                    tauhead_add_mission_message(message);
+                }
+                else {
+                    tauhead_add_message(message);
+                }
             }
             else {
                 let error = jqXHR["error"] || 'An error occured';
