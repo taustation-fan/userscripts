@@ -424,6 +424,9 @@ function tauhead_post( data, message ) {
         data:        data,
         traditional: true,
         dataType:    "json",
+        xhrFields: {
+            withCredentials: true
+        },
         success: function(jqXHR) {
             if (jqXHR.ok) {
                 if ( "discreet_work_loot" === data["method"] ) {
