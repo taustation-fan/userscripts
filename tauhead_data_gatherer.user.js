@@ -150,12 +150,12 @@ function tauhead_wrecks_salvage_loot() {
         data["salvage_success"] = 0;
     }
     else if ( lines.text().match( /You found a /i ) ) {
-        let loot = lines.text().match( /"([^"]+)" has been added to your inventory/i );
+        let loot = tauhead_first_capture_that_matches( lines, /"([^"]+)" has been added to your inventory/i );
         if ( !loot )
             return;
 
         data["salvage_success"] = 1;
-        data["salvage_loot"]    = loot[1];
+        data["salvage_loot"]    = loot;
     }
     else {
         return;
@@ -197,14 +197,14 @@ function tauhead_wrecks_looking_for_trouble() {
     if ( !match )
         return;
 
-    let loot = lines.text().match( /You have received bonus item '(.*)'/i );
+    let loot = tauhead_first_capture_that_matches( lines, /You have received bonus item '(.*)'/i );
 
     let data = {
         method:              'wrecks_looking_for_trouble_loot',
         current_station:     tauhead_get_current_station(),
         campaign_level:      match[1],
         campaign_difficulty: match[2],
-        campaign_loot:       loot[1],
+        campaign_loot:       loot,
         player_level:        $.trim( $("#stats-panel .level .amount").text() ),
         player_xp:           $.trim( $("#stats-panel .experience .amount").text() ),
     };
@@ -226,13 +226,7 @@ function tauhead_wrecks_sewers() {
     if ( !match )
         return;
 
-    let loot = [];
-    $(lines).each(function() {
-        let loot_match = $(this).text().match( /You have received bonus item '(.*)'/i );
-        if (loot_match) {
-            loot.push( loot_match[1] );
-        }
-    });
+    let loot = tauhead_captures_that_match( lines, /You have received bonus item '(.*)'/i );
 
     let data = {
         method:          'wrecks_sewers_loot',
