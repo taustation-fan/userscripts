@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         Tau Sort Inventory Gear
 // @namespace    https://github.com/taustation-fan/userscripts/
-// @version      1.1
+// @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/sort_inventory_gear.user.js
+// @version      1.2
 // @description  Tau Sort Inventory Gear
 // @match        https://alpha.taustation.space/*
 // @grant        none
@@ -32,9 +33,10 @@ function add_buttons() {
 function sort_gear(sort_by) {
     let json = from_json ? from_json : get_inventory_data();
 
+    // carried items
+    let by_slug = [];
     let carried_groups = json.carried_groups;
     let carried        = json.carried;
-    let by_slug = [];
 
     for ( let i=0; i<carried_groups.length; ++i ) {
         let group       = carried_groups[i];
@@ -42,6 +44,31 @@ function sort_gear(sort_by) {
 
         for ( let j=0; j<group_items.length; ++j ) {
             by_slug[ group_items[j].slug ] = group_items[j];
+        }
+    }
+
+    // equipped items
+    let equipped = json.equipped;
+
+    if ( 'armor' in equipped ) {
+        if ( equipped.armor.length ) {
+            by_slug[ equipped.armor[0].slug ] = equipped.armor[0];
+        }
+    }
+
+    if ( 'weapon' in equipped ) {
+        for ( let k=0; k<equipped.weapon.length; ++k  ) {
+            let weapon = equipped.weapon[k];
+            by_slug[ weapon.slug ] = weapon;
+        }
+    }
+
+    if ( 'combat-belt' in equipped ) {
+        for ( let m=0; m<equipped['combat-belt'].lenth; ++m ) {
+            let item = equipped['combat-belt'][m];
+            if (item) {
+                by_slug[ item.slug ] = item;
+            }
         }
     }
 
