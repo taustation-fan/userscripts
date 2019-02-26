@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.3
+// @version  1.4
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
@@ -170,7 +170,7 @@ function gs_taustation_enhance() {
             // A career is currently active: Show the link to leave your career.
             $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
                 .after('<li class="area"><span style="padding-left: 2em">→</span> <a href="/character/quit-career">Change career</a></li>\n');
-        } else if (! $(".description-container .name").text().match(/career advisory/i)) {
+        } else if (! $(".description-container .name").text().match(/career advi/i)) {
             // No careers are currently active, but we can only change careers
             // inside Career Advisory: Show a link to Career Advisory. (Same as
             // the page's "start a career" link, but in the same place on-page
