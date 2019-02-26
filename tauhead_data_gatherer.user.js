@@ -2,7 +2,7 @@
 // @name         TauHead Data Gatherer
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_data_gatherer.user.js
-// @version      1.3
+// @version      1.4
 // @description  Post data to TauHead API
 // @match        https://alpha.taustation.space/*
 // @exclude      https://alpha.taustation.space/combat/*
@@ -11,7 +11,7 @@
 // ==/UserScript==
 
 // *** Personal Data ***
-// This script sends your current character level and xp level (% to next level).
+// This script sends your current character level.
 // If you're not happy with that being sent, please do not use this script.
 // That specific data will not be shared publically on the site, and will only be
 // available to site admins.
@@ -112,7 +112,6 @@ function tauhead_discreet_work_loot(dw) {
         method:              'discreet_work_loot',
         current_station:     tauhead_get_current_station(),
         player_level:        $.trim( $("#stats-panel .level .amount").text() ),
-        player_xp:           $.trim( $("#stats-panel .experience .amount").text() ),
     };
 
     if (loot) {
@@ -143,7 +142,6 @@ function tauhead_wrecks_salvage_loot() {
         method:          'wrecks_salvage_loot',
         current_station: tauhead_get_current_station(),
         player_level:    $("#stats-panel .level .amount").text(),
-        player_xp:       $("#stats-panel .experience .amount").text(),
     };
 
     if ( lines.text().match( /You did not find anything of value/i ) ) {
@@ -206,7 +204,6 @@ function tauhead_wrecks_looking_for_trouble() {
         campaign_difficulty: match[2],
         campaign_loot:       loot,
         player_level:        $.trim( $("#stats-panel .level .amount").text() ),
-        player_xp:           $.trim( $("#stats-panel .experience .amount").text() ),
     };
 
     tauhead_post( data, 'Logged Looking-for-Trouble loot' );
@@ -234,7 +231,6 @@ function tauhead_wrecks_sewers() {
         campaign_level:  match[1],
         campaign_loot:   loot,
         player_level:    $.trim( $("#stats-panel .level .amount").text() ),
-        player_xp:       $.trim( $("#stats-panel .experience .amount").text() ),
     };
 
     tauhead_post( data, 'Logged Sewers loot' );
@@ -246,7 +242,6 @@ function tauhead_wrecks_looking_for_trouble_search( success, level, difficulty )
         method:          'wrecks_looking_for_trouble_search',
         current_station: tauhead_get_current_station(),
         player_level:    $("#stats-panel .level .amount").text(),
-        player_xp:       $("#stats-panel .experience .amount").text(),
     };
 
     if (success) {
