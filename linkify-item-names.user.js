@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.11.3
+// @version      1.11.4
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -23,7 +23,7 @@
 //  - v1.10: Dynamically query TauHead.com API for not-yet-saved weapon & armor details.
 //  - v1.10.*: Minor fixes (character description handling, slug generation).
 //  - v1.11: For 2019-02-05 TauStation Update: Handle renamed items; also, in "/coretechs/storage", flags items with mismatched slugs (to call out subsequently renamed items, so they can be special-cased in this script using lookup_slug / lookup_slug_regexp).
-//  - v1.11.*: Minor updates (special-case slugs)
+//  - v1.11.*: Minor updates (special-case slugs, slug generator fine-tuning)
 //
 
 // TODO List: (things not yet implemented or ready)
@@ -330,7 +330,8 @@ function get_slug(text) {
                            .replace(/\u2122/g,     'tm');// ™ (TRADE MARK SIGN)
 
             // Convert remaining characters as appropriate. (Note: \x2D = "-", which we need to keep.)
-            retval = retval.toLowerCase().replace(/[\x21-\x2C\x2E-\x2F]/g, '').replace(/[ \xA0]/g, '-');
+            retval = retval.toLowerCase().replace(/[\x21-\x2C\x2E-\x2F\x3A-\x40\x5B-\x60\x7B-\x7F]/g, '')
+                                         .replace(/[ \xA0]/g, '-');
         }
     }
     return retval;
