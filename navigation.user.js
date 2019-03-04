@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.4
+// @version  1.5
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
@@ -142,7 +142,8 @@ function gs_taustation_enhance() {
             // we are at hotel-room area page
             window.location.pathname.startsWith('/area/hotel-rooms/enter-room')
             // or a non-area page with a location link back to inside the hotel-room
-            || $(".location-container a.navigation[href='/area/hotel-rooms/enter-room']").length
+            || $(".non-area-heading-container a.navigation[href='/area/hotel-rooms/enter-room'], " +
+                 ".location-container a.navigation[href='/area/hotel-rooms/enter-room']").length
         ) {
             let attrs = {
                 'class': 'fa fa-bed',
@@ -155,6 +156,8 @@ function gs_taustation_enhance() {
         }
     }
 
+    //TODO: Add "Hide Tasks"-style UI to Careers page, to select which careers this shows (instead of using constants at top of file).
+    //TODO: Move to sidebar's [Employment] section? (May also need to confirm that sidebar's [Areas] section includes Employment area.)
     function show_change_career_links() {
         // If no careers have been selected (see show_careers above),
         // don't display this addition.
