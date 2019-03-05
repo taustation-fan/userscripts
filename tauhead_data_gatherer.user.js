@@ -109,7 +109,7 @@ function tauhead_discreet_work_loot(dw) {
     let loot = tauhead_first_capture_that_matches( lines, /You have received '(.*)'/i );
 
     let data = {
-        method:              'discreet_work_loot',
+        action:              'discreet_work_loot',
         current_station:     tauhead_get_current_station(),
         player_level:        $.trim( $("#stats-panel .level .amount").text() ),
     };
@@ -139,7 +139,7 @@ function tauhead_wrecks_salvage_loot() {
         return;
 
     let data = {
-        method:          'wrecks_salvage_loot',
+        action:          'wrecks_salvage_loot',
         current_station: tauhead_get_current_station(),
         player_level:    $("#stats-panel .level .amount").text(),
     };
@@ -198,7 +198,7 @@ function tauhead_wrecks_looking_for_trouble() {
     let loot = tauhead_first_capture_that_matches( lines, /You have received bonus item '(.*)'/i );
 
     let data = {
-        method:              'wrecks_looking_for_trouble_loot',
+        action:              'wrecks_looking_for_trouble_loot',
         current_station:     tauhead_get_current_station(),
         campaign_level:      match[1],
         campaign_difficulty: match[2],
@@ -226,7 +226,7 @@ function tauhead_wrecks_sewers() {
     let loot = tauhead_captures_that_match( lines, /You have received bonus item '(.*)'/i );
 
     let data = {
-        method:          'wrecks_sewers_loot',
+        action:          'wrecks_sewers_loot',
         current_station: tauhead_get_current_station(),
         campaign_level:  match[1],
         campaign_loot:   loot,
@@ -239,7 +239,7 @@ function tauhead_wrecks_sewers() {
 
 function tauhead_wrecks_looking_for_trouble_search( success, level, difficulty ) {
     let data = {
-        method:          'wrecks_looking_for_trouble_search',
+        action:          'wrecks_looking_for_trouble_search',
         current_station: tauhead_get_current_station(),
         player_level:    $("#stats-panel .level .amount").text(),
     };
@@ -424,7 +424,7 @@ function tauhead_post( data, message ) {
         },
         success: function(jqXHR) {
             if (jqXHR.ok) {
-                if ( "discreet_work_loot" === data["method"] ) {
+                if ( "discreet_work_loot" === data["action"] ) {
                     tauhead_add_mission_message(message);
                 }
                 else {
