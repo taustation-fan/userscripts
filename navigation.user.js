@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.5
+// @version  1.6
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
@@ -56,7 +56,7 @@ function gs_taustation_enhance() {
 
     // Highlight when safe in hotel-room
     show_hotel_room();
-    show_hotel_room_icon();
+    show_hotel_room_or_ship_icon();
 
     // new feature: Once the chat is shown,
     // clicking on "CHAT" will increase the size of the chat window
@@ -137,7 +137,9 @@ function gs_taustation_enhance() {
         $('.area-hotel-rooms h1').append( ' ⇒ ' + $('.zone-notice').text() ).css('background-color', 'blue');
     }
 
-    function show_hotel_room_icon() {
+    function show_hotel_room_or_ship_icon() {
+        let attrs = undefined;
+
         if (
             // we are at hotel-room area page
             window.location.pathname.startsWith('/area/hotel-rooms/enter-room')
@@ -145,10 +147,25 @@ function gs_taustation_enhance() {
             || $(".non-area-heading-container a.navigation[href='/area/hotel-rooms/enter-room'], " +
                  ".location-container a.navigation[href='/area/hotel-rooms/enter-room']").length
         ) {
-            let attrs = {
+            attrs = {
                 'class': 'fa fa-bed',
-                'style': 'margin-left: 0.5em;'
             };
+        } else if (
+            // We are onboard a private ship, or are traveling in a shuttle (not merely in an area page).
+            // (The link back to the area page just uses '/area/', so it's not helpful here.)
+            $('.global-timer[data-timer-type="travel"]').length ||
+            $('.areas a[href="/area/docks/leave_ship"]').length
+        ) {
+            attrs = {
+                'class': 'fa fa-space-shuttle',
+            };
+        }
+
+        if (attrs) {
+            if (! attrs.hasOwnProperty('style')) {  // Allow it to be specified as empty.
+                attrs.style = 'margin-left: 0.5em;';
+            }
+
             // player name on large screens
             $('<span/>', attrs).appendTo('#player-name');
             // player name on small screens
