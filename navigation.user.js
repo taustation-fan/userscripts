@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.6
+// @version  1.7
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
@@ -144,8 +144,7 @@ function gs_taustation_enhance() {
             // we are at hotel-room area page
             window.location.pathname.startsWith('/area/hotel-rooms/enter-room')
             // or a non-area page with a location link back to inside the hotel-room
-            || $(".non-area-heading-container a.navigation[href='/area/hotel-rooms/enter-room'], " +
-                 ".location-container a.navigation[href='/area/hotel-rooms/enter-room']").length
+            || $(".non-area-heading-container a.navigation[href='/area/hotel-rooms/enter-room']").length
         ) {
             attrs = {
                 'class': 'fa fa-bed',
