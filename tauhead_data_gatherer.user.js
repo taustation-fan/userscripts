@@ -111,7 +111,7 @@ function tauhead_discreet_work_loot(dw) {
     let data = {
         action:              'discreet_work_loot',
         current_station:     tauhead_get_current_station(),
-        player_level:        get_player_level(),
+        player_level:        tauhead_get_player_level(),
     };
 
     if (loot) {
@@ -141,7 +141,7 @@ function tauhead_wrecks_salvage_loot() {
     let data = {
         action:          'wrecks_salvage_loot',
         current_station: tauhead_get_current_station(),
-        player_level:    get_player_level(),
+        player_level:    tauhead_get_player_level(),
     };
 
     if ( lines.text().match( /You did not find anything of value/i ) ) {
@@ -203,7 +203,7 @@ function tauhead_wrecks_looking_for_trouble() {
         campaign_level:      match[1],
         campaign_difficulty: match[2],
         campaign_loot:       loot,
-        player_level:        get_player_level(),
+        player_level:        tauhead_get_player_level(),
     };
 
     tauhead_post( data, 'Logged Looking-for-Trouble loot' );
@@ -230,7 +230,7 @@ function tauhead_wrecks_sewers() {
         current_station: tauhead_get_current_station(),
         campaign_level:  match[1],
         campaign_loot:   loot,
-        player_level:    get_player_level(),
+        player_level:    tauhead_get_player_level(),
     };
 
     tauhead_post( data, 'Logged Sewers loot' );
@@ -241,7 +241,7 @@ function tauhead_wrecks_looking_for_trouble_search( success, level, difficulty )
     let data = {
         action:          'wrecks_looking_for_trouble_search',
         current_station: tauhead_get_current_station(),
-        player_level:    get_player_level(),
+        player_level:    tauhead_get_player_level(),
     };
 
     if (success) {
@@ -445,6 +445,6 @@ function tauhead_post( data, message ) {
     });
 }
 
-function get_player_level() {
+function tauhead_get_player_level() {
     return $(".stats-container .level .amount").first().text();
 }
