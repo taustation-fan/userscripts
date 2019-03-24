@@ -559,7 +559,7 @@ function tauhead_init_message_ui() {
 
     // If we're re-using the mobile section for the desktop,
     // don't add the message twice
-    if ( game_mobile_message_section[0] != game_desktop_message_section[0] ) {
+    if ( !game_mobile_message_section.is( game_desktop_message_section ) ) {
         if ( !game_desktop_message_list || game_desktop_message_list.length === 0 ) {
             game_desktop_message_list = $("<ul class='messages character-messages-desktop' role='alert' area-label='Action Feedback'></ul>");
             game_desktop_message_section.append(game_desktop_message_list);
