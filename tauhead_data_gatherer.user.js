@@ -114,7 +114,6 @@ function tauhead_main() {
     let page_path  = window.location.pathname;
     let clean_path = page_path.replace( /^\//, "" );
     clean_path = clean_path.replace( /\/$/, "" );
-    let path_parts = clean_path.split("/");
 
     if ( page_path.startsWith("/area/discreet-work") ) {
         tauhead_discreet_work_search_start();
@@ -123,9 +122,9 @@ function tauhead_main() {
         tauhead_discreet_work_search();
     }
     else if ( page_path.startsWith("/area/the-wrecks") ) {
-        tauhead_wrecks_salvage_loot()
-        || tauhead_wrecks_looking_for_trouble()
-        || tauhead_wrecks_sewers();
+        tauhead_wrecks_salvage_loot()        ||
+        tauhead_wrecks_looking_for_trouble() ||
+        tauhead_wrecks_sewers();
     }
 }
 
@@ -197,8 +196,9 @@ function tauhead_discreet_work_search() {
 function tauhead_discreet_work_item_exchange() {
     let lines = dw_mission_flow.find( ".mission-updates" ).not( "[data-tauhead-dw-seen='1']" );
 
-    if ( 0 === lines.length )
+    if ( 0 === lines.length ) {
         return;
+    }
 
     for ( let i=0; i < lines.length; i++ ) {
         let line = lines[i];
@@ -238,14 +238,16 @@ function tauhead_discreet_work_remove_item( item ) {
     }
 }
 
-function tauhead_discreet_work_end(dw) {
+function tauhead_discreet_work_end() {
     let lines = dw_mission_flow.find(".mission-updates");
 
-    if ( 0 === lines.length )
+    if ( 0 === lines.length ) {
         return;
+    }
 
-    if ( !lines.text().match( /You have completed the "Anonymous" mission/i ) )
+    if ( !lines.text().match( /You have completed the "Anonymous" mission/i ) ) {
         return;
+    }
 
     window.clearInterval(dw_interval_id);
 
@@ -281,15 +283,18 @@ function tauhead_discreet_work_end(dw) {
 function tauhead_wrecks_salvage_loot() {
     let lines = tauhead_get_character_messages();
 
-    if ( 0 === lines.length )
+    if ( 0 === lines.length ) {
         return;
+    }
 
-    if ( !lines.text().match( /Your Stamina is now at \d+%/i ) )
+    if ( !lines.text().match( /Your Stamina is now at \d+%/i ) ) {
         return;
+    }
 
     // Don't want to match this - it must be L4T, not salvageing
-    if ( lines.text().match( /Your Agility is now at \d+%/i ) )
+    if ( lines.text().match( /Your Agility is now at \d+%/i ) ) {
         return;
+    }
 
     let data = {
         action:          "wrecks_salvage_loot",
@@ -298,15 +303,16 @@ function tauhead_wrecks_salvage_loot() {
     };
 
     if ( lines.text().match( /You did not find anything of value/i ) ) {
-        data["salvage_success"] = 0;
+        data.salvage_success = 0;
     }
     else if ( lines.text().match( /You found a /i ) ) {
         let loot = tauhead_first_capture_that_matches( lines, /"([^"]+)" has been added to your inventory/i );
-        if ( !loot )
+        if ( !loot ) {
             return;
+        }
 
-        data["salvage_success"] = 1;
-        data["salvage_loot"]    = loot;
+        data.salvage_success = 1;
+        data.salvage_loot    = loot;
     }
     else {
         return;
@@ -319,8 +325,9 @@ function tauhead_wrecks_salvage_loot() {
 function tauhead_wrecks_looking_for_trouble() {
     let lines = tauhead_get_character_messages();
 
-    if ( 0 === lines.length )
+    if ( 0 === lines.length ) {
         return;
+    }
 
     if (
         lines.text().match( /Your Agility is now at \d+%/i ) &&
@@ -345,8 +352,9 @@ function tauhead_wrecks_looking_for_trouble() {
         /You have completed the "[^"]+ Look for trouble Level (\d+) Difficulty (\w+)" campaign/i
     );
 
-    if ( !match )
+    if ( !match ) {
         return;
+    }
 
     let loot = tauhead_first_capture_that_matches( lines, /You have received bonus item '(.*)'/i );
 
@@ -366,15 +374,17 @@ function tauhead_wrecks_looking_for_trouble() {
 function tauhead_wrecks_sewers() {
     let lines = tauhead_get_character_messages();
 
-    if ( 0 === lines.length )
+    if ( 0 === lines.length ) {
         return;
+    }
 
     let match = lines.text().match(
         /You have completed the "[^"]+ Enter the sewers Level (\d+)" campaign/i
     );
 
-    if ( !match )
+    if ( !match ) {
         return;
+    }
 
     let loot = tauhead_captures_that_match( lines, /You have received bonus item '(.*)'/i );
 
@@ -398,26 +408,29 @@ function tauhead_wrecks_looking_for_trouble_search( success, level, difficulty )
     };
 
     if (success) {
-        data["campaign_search"]     = 1;
-        data["campaign_level"]      = level;
-        data["campaign_difficulty"] = difficulty;
+        data.campaign_search     = 1;
+        data.campaign_level      = level;
+        data.campaign_difficulty = difficulty;
     }
     else {
-        data["campaign_search"] = 0;
+        data.campaign_search = 0;
     }
 
     tauhead_post( data, "Logged Looking-for-Trouble search result" );
 }
 
 function tauhead_get_character_messages() {
-    if ( game_character_message_items )
+    if ( game_character_message_items ) {
         return game_character_message_items;
+    }
 
-    if (!game_mobile_message_section)
+    if (!game_mobile_message_section) {
         tauhead_populate_mobile_message_vars();
+    }
 
-    if ( 0 === game_mobile_message_section.length )
+    if ( 0 === game_mobile_message_section.length ) {
         return $();
+    }
 
     game_character_message_items = $(game_mobile_message_section).find("li");
 
@@ -428,8 +441,9 @@ function tauhead_captures_that_match( lines, regexp ) {
     let captures = [];
     $(lines).each(function() {
         let match = $(this).text().match(regexp);
-        if ( match )
+        if ( match ) {
             captures.push(match[1]);
+        }
     });
     return captures;
 }
@@ -449,11 +463,13 @@ function tauhead_get_current_station() {
 function tauhead_add_mission_message(message, color) {
     let message_area = $(".mission-flow").first();
 
-    if ( 0 === message_area.length )
+    if ( 0 === message_area.length ) {
         return tauhead_add_message(message, color);
+    }
 
-    if (!color)
+    if (!color) {
         color = "green";
+    }
 
     message_area.append(
         "<div class='mission-updates' style='background-color: "+color+";'>" +
@@ -464,11 +480,13 @@ function tauhead_add_mission_message(message, color) {
 }
 
 function tauhead_add_message(message, color) {
-    if (!th_init_message_ui)
+    if (!th_init_message_ui) {
         tauhead_init_message_ui();
+    }
 
-    if (!color)
+    if (!color) {
         color = "green";
+    }
 
     let message_shown = false;
 
@@ -512,14 +530,17 @@ function tauhead_populate_desktop_message_vars() {
 }
 
 function tauhead_init_message_ui() {
-    if (th_init_message_ui)
+    if (th_init_message_ui) {
         return;
+    }
 
-    if (!game_mobile_message_section)
+    if (!game_mobile_message_section) {
         tauhead_populate_mobile_message_vars();
+    }
 
-    if (!game_desktop_message_section)
+    if (!game_desktop_message_section) {
         tauhead_populate_desktop_message_vars();
+    }
 
     if ( game_mobile_message_section.length === 0 ) {
         tauhead_init_button_ui();
@@ -527,8 +548,9 @@ function tauhead_init_message_ui() {
         return;
     }
 
-    if ( game_desktop_message_section.length === 0 )
+    if ( game_desktop_message_section.length === 0 ) {
         game_desktop_message_section = game_mobile_message_section;
+    }
 
     if ( !game_mobile_message_list || game_mobile_message_list.length === 0 ) {
         game_mobile_message_list = $("<ul id='character-messages' class='messages character-messages-mobile' role='alert' area-label='Action Feedback'></ul>");
@@ -548,8 +570,9 @@ function tauhead_init_message_ui() {
 }
 
 function tauhead_init_button_ui() {
-    if (th_init_button_ui)
+    if (th_init_button_ui) {
         return;
+    }
 
     th_region  = $("<div></div>");
     th_message = $("<div></div>");
@@ -564,8 +587,9 @@ function tauhead_init_button_ui() {
 }
 
 function tauhead_post( data, message ) {
-    if ( !message )
+    if ( !message ) {
         message = "Data logged";
+    }
 
     data.api_version = api_version;
 
@@ -579,7 +603,7 @@ function tauhead_post( data, message ) {
         },
         success: function(jqXHR) {
             if (jqXHR.ok) {
-                if ( "discreet_work_loot" === data["action"] ) {
+                if ( "discreet_work_loot" === data.action ) {
                     tauhead_add_mission_message(message);
                 }
                 else {
@@ -587,11 +611,11 @@ function tauhead_post( data, message ) {
                 }
             }
             else {
-                let error = jqXHR["error"] || "An error occured";
+                let error = jqXHR.error || "An error occured";
                 tauhead_add_message(error, "orange");
-                if (jqXHR["login_url"]) {
+                if ( jqXHR.login_url ) {
                     tauhead_add_message(
-                        "<a target='_blank' href='" + jqXHR["login_url"] + "'>Login</a>",
+                        "<a target='_blank' href='" + jqXHR.login_url + "'>Login</a>",
                         "orange"
                     );
                 }
