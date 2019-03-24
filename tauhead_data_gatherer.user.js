@@ -2,11 +2,10 @@
 // @name         TauHead Data Gatherer
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_data_gatherer.user.js
-// @version      1.5
+// @version      1.6
 // @description  Post data to TauHead API
-// @match        https://alpha.taustation.space/*
-// @exclude      https://alpha.taustation.space/combat/*
-// @exclude      https://alpha.taustation.space/shop
+// @match        https://alpha.taustation.space/area/*
+// @match        https://alpha.taustation.space/character/details/*
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 
@@ -43,15 +42,15 @@
 // ***
 // Discreet Work
 // =============
-// After completion of a Discreet Work (anonymous mission), it sends whether or
-// not you gained an item as loot, and what that item was.
-// This script can only identify loot items for which a message is shown upon
-// completion of the Discreet Work mission. If an item is added to your
-// inventory earlier during the Discreet Work, this will not be logged.
+// It uses the browser's localStorage to track which items you receive and
+// return during the course of speaking to NPCs during Discreet Work.
+// After completion of a Discreet Work (anonymous mission), it sends whether
+// you kept any items, and whether you received at item as a reward.
 
 // Nothing user-configurable below
 //
 var tauhead_domain = 'https://www.tauhead.com';
+var api_version    = '1.6';
 
 // UI variables.
 var th_init_button_ui;
@@ -59,12 +58,52 @@ var th_init_message_ui;
 var th_region;
 var th_message;
 var dw_interval_id;
+var dw_mission_flow;
+var dw_mission_id;
 var game_mobile_message_section;
 var game_mobile_message_list;
 var game_desktop_message_section;
 var game_desktop_message_list;
 var game_character_message_items;
 
+// store movement of DW items in localStorage
+var localStorage_prefix = "tauhead_data_gatherer";
+var localStorage_mission_id      = localStorage_prefix + "_mission_id";
+var localStorage_current_station = localStorage_prefix + "_current_station";
+var localStorage_received_item   = localStorage_prefix + "_received_item";
+
+//
+var dw_ignore_mission_items = [
+    "Bottle of Spring water",
+    "Box of Strawberries",
+    "Brosia",
+    "Can of Caviar",
+    "Copper Ingot",
+    "Corpse Hooks",
+    "Crate of Fresh fruit",
+    "Crate of Gaule Wine",
+    "Elric’s Consortium Visa",
+    "Emily's Starship Plushie",
+    "Galactic Cup Ticket",
+    "Goldfish",
+    "Hologram Cube",
+    "Homemade heater",
+    "Husk Body",
+    "Lump of Regocrete",
+    "Metal Box",
+    "Model Porsche",
+    "Muck's \"Special\" Package",
+    "Plastic Scroll",
+    "Polished Cube",
+    "Rusted Sculpture",
+    "Sadia's Datacard",
+    "Shenzia’s Consortium Visa",
+    "The 200 Commemorative Pin Badge",
+    "Xavier's ID tag",
+    "Yellow Rock",
+    "Yolanda's Subderm",
+    "Yvette's Gift",
+];
 //
 
 $(document).ready(tauhead_main);
@@ -77,26 +116,130 @@ function tauhead_main() {
     clean_path = clean_path.replace( /\/$/, "" );
     let path_parts = clean_path.split("/");
 
-    if ( page_path.startsWith("/character/details") ) {
+    if ( page_path.startsWith("/area/discreet-work") ) {
+        tauhead_discreet_work_search_start();
+    }
+    else if ( page_path.startsWith("/character/details") ) {
         tauhead_discreet_work_search();
     }
-
-    if ( page_path.startsWith("/area/the-wrecks") ) {
+    else if ( page_path.startsWith("/area/the-wrecks") ) {
         tauhead_wrecks_salvage_loot()
         || tauhead_wrecks_looking_for_trouble()
         || tauhead_wrecks_sewers();
     }
 }
 
-function tauhead_discreet_work_search() {
-    if ( $(".mission-action").text().match( /Ask .* about your reward/i ) ) {
-        dw_interval_id = window.setInterval(tauhead_discreet_work_loot, 750);
-        tauhead_discreet_work_loot();
+function tauhead_discreet_work_search_start() {
+    if ( !tauhead_storage_available() ) {
+        console.log("tauhead_data_gatherer: localStorage required for Discreet Work tracking");
+        return;
+    }
+
+    dw_mission_flow = $( "[id^=mission-].mission-flow" ).first();
+    if ( !dw_mission_flow.length ) {
+        return;
+    }
+
+    dw_mission_id = dw_mission_flow.attr( "id" ).match( /^mission-.*-anonymous-(\d+)$/ );
+    if ( !dw_mission_id ) {
+        return;
+    }
+
+    dw_mission_id = dw_mission_id[1];
+
+    if ( dw_mission_flow
+            .find(".mission-updates")
+            .text()
+            .match( /You have accepted the "Anonymous" mission./i )
+        )
+    {
+        localStorage.setItem( localStorage_mission_id, dw_mission_id );
+        localStorage.setItem( localStorage_current_station, tauhead_get_current_station() );
+        localStorage.removeItem( localStorage_received_item );
     }
 }
 
-function tauhead_discreet_work_loot(dw) {
-    let lines = $(".mission-updates");
+function tauhead_discreet_work_search() {
+    if ( !tauhead_storage_available() ) {
+        console.log("tauhead_data_gatherer: localStorage required for Discreet Work tracking");
+        return;
+    }
+
+    dw_mission_flow = $( "[id^=mission-].mission-flow" ).first();
+    if ( !dw_mission_flow.length ) {
+        return;
+    }
+
+    dw_mission_id = dw_mission_flow.attr( "id" ).match( /^mission-.*-anonymous-(\d+)$/ );
+    if ( !dw_mission_id ) {
+        return;
+    }
+
+    dw_mission_id = dw_mission_id[1];
+
+    if ( dw_mission_id !== localStorage.getItem( localStorage_mission_id ) ) {
+        localStorage.removeItem( localStorage_mission_id );
+        localStorage.removeItem( localStorage_current_station );
+        localStorage.removeItem( localStorage_received_item );
+        return;
+    }
+
+    if ( dw_mission_flow.find(".mission-action").text().match( /Ask .* about your reward/i ) ) {
+        dw_interval_id = window.setInterval(tauhead_discreet_work_end, 600);
+        tauhead_discreet_work_end();
+    }
+    else {
+        dw_interval_id = window.setInterval(tauhead_discreet_work_item_exchange, 600);
+        tauhead_discreet_work_item_exchange();
+    }
+}
+
+function tauhead_discreet_work_item_exchange() {
+    let lines = dw_mission_flow.find( ".mission-updates" ).not( "[data-tauhead-dw-seen='1']" );
+
+    if ( 0 === lines.length )
+        return;
+
+    for ( let i=0; i < lines.length; i++ ) {
+        let line = lines[i];
+        $(line).attr( "data-tauhead-dw-seen", 1 );
+
+        let receive_item = $(line).text().match( /You have received 1 '(.*)'./ );
+        if ( receive_item ) {
+            receive_item = receive_item[1];
+            if ( dw_ignore_mission_items.includes( receive_item ) ) {
+                continue;
+            }
+            tauhead_discreet_work_add_item( receive_item );
+            continue;
+        }
+
+        let return_item = $(line).text().match( /You no longer have 1 '(.*)'./ );
+        if ( return_item ) {
+            return_item = return_item[1];
+            if ( dw_ignore_mission_items.includes( return_item ) ) {
+                continue;
+            }
+            tauhead_discreet_work_remove_item( return_item );
+            continue;
+        }
+    }
+}
+
+function tauhead_discreet_work_add_item( item ) {
+    localStorage.setItem( localStorage_mission_id, dw_mission_id );
+    localStorage.setItem( localStorage_received_item, item );
+}
+
+function tauhead_discreet_work_remove_item( item ) {
+    let stored_item = localStorage.getItem( localStorage_received_item );
+    if ( stored_item === item ) {
+        localStorage.removeItem( localStorage_received_item );
+    }
+}
+
+function tauhead_discreet_work_end(dw) {
+    let lines = dw_mission_flow.find(".mission-updates");
 
     if ( 0 === lines.length )
         return;
@@ -106,21 +249,31 @@ function tauhead_discreet_work_loot(dw) {
 
     window.clearInterval(dw_interval_id);
 
-    let loot = tauhead_first_capture_that_matches( lines, /You have received '(.*)'/i );
-
+    let current_station = localStorage.getItem( localStorage_current_station );
     let data = {
-        action:              'discreet_work_loot',
-        current_station:     tauhead_get_current_station(),
-        player_level:        tauhead_get_player_level(),
+        action:          'discreet_work_loot',
+        current_station: current_station,
+        player_level:    tauhead_get_player_level(),
     };
 
-    if (loot) {
-        data["discreet_work_gave_loot_item"] = 1;
-        data["discreet_work_loot"]           = loot;
+    // Received & kept items
+    let stored_mission_id = localStorage.getItem( localStorage_mission_id );
+    let stored_item       = localStorage.getItem( localStorage_received_item );
+
+    if ( stored_mission_id && ( stored_mission_id === dw_mission_id ) && stored_item ) {
+        data.discreet_work_kept_item = stored_item;
     }
-    else {
-        data["discreet_work_gave_loot_item"] = 0;
+
+    // Reward Item
+    let reward_item = tauhead_first_capture_that_matches( lines, /You have received '(.*)'/i );
+
+    if ( reward_item ) {
+        data.discreet_work_reward_item = reward_item;
     }
+
+    localStorage.removeItem( localStorage_mission_id );
+    localStorage.removeItem( localStorage_current_station );
+    localStorage.removeItem( localStorage_received_item );
 
     tauhead_post( data, 'Logged Discreet Work loot' );
 }
@@ -414,6 +567,8 @@ function tauhead_post( data, message ) {
     if ( !message )
         message = "Data logged";
 
+    data.api_version = api_version;
+
     $.post({
         url:         tauhead_domain+"/api/data_gatherer",
         data:        data,
@@ -447,4 +602,20 @@ function tauhead_post( data, message ) {
 
 function tauhead_get_player_level() {
     return $(".stats-container .level .amount").first().text();
+}
+
+function tauhead_storage_available() {
+    // example copied from https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
+    var type="localStorage";
+
+    try {
+        var storage = window[type],
+            x = '__storage_test__';
+        storage.setItem(x, x);
+        storage.removeItem(x);
+        return true;
+    }
+    catch(e) {
+        return false;
+    }
 }
