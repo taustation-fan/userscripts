@@ -1,0 +1,23 @@
+{
+	"boss":      true,
+	"curly":     true,
+	"eqeqeq":    true,
+	"eqnull":    true,
+	"esversion": 6,
+	"expr":      true,
+	"globals": {
+		"console":      false,
+		"document":     false,
+		"localStorage": false,
+		"location":     false,
+		"window":       false
+	},
+	"immed":     true,
+	"jquery":    true,
+	"noarg":     true,
+	"quotmark":  "double",
+	"smarttabs": true,
+	"trailing":  true,
+	"undef":     true,
+	"unused":    true
+}
