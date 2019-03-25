@@ -2,7 +2,7 @@
 // @name         TauHead Data Gatherer
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_data_gatherer.user.js
-// @version      1.6
+// @version      1.7
 // @description  Post data to TauHead API
 // @match        https://alpha.taustation.space/area/*
 // @match        https://alpha.taustation.space/character/details/*
@@ -609,6 +609,9 @@ function tauhead_post( data, message ) {
                 else {
                     tauhead_add_message(message);
                 }
+                $(".social-navigation")
+                    .first()
+                    .append("<span class='fa fa-check-circle' style='color: green'>TauHead</span>");
             }
             else {
                 let error = jqXHR.error || "An error occured";
