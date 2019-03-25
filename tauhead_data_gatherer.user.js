@@ -2,7 +2,7 @@
 // @name         TauHead Data Gatherer
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_data_gatherer.user.js
-// @version      1.7
+// @version      1.8
 // @description  Post data to TauHead API
 // @match        https://alpha.taustation.space/area/*
 // @match        https://alpha.taustation.space/character/details/*
@@ -593,6 +593,17 @@ function tauhead_post( data, message ) {
 
     data.api_version = api_version;
 
+    $(".social-navigation")
+        .first()
+        .append(
+            "<span>"+
+                "<span id='tauhead-post-status' class='fa fa-spinner fa-spin' style='color: yellow'>"+
+                "</span>"+
+                "TauHead"+
+            "</span>"
+        );
+    let status_indicator = $("#tauhead-post-status").first();
+
     $.post({
         url:         tauhead_domain+"/api/data_gatherer",
         data:        data,
@@ -609,9 +620,9 @@ function tauhead_post( data, message ) {
                 else {
                     tauhead_add_message(message);
                 }
-                $(".social-navigation")
-                    .first()
-                    .append("<span class='fa fa-check-circle' style='color: green'>TauHead</span>");
+                status_indicator.removeClass("fa-spinner fa-spin");
+                status_indicator.addClass("fa-check-circle");
+                status_indicator.attr( "style", "color: green" );
             }
             else {
                 let error = jqXHR.error || "An error occured";
@@ -622,9 +633,18 @@ function tauhead_post( data, message ) {
                         "orange"
                     );
                 }
+                status_indicator.removeClass("fa-spinner fa-spin");
+                status_indicator.addClass("fa-exclamation-circle");
+                status_indicator.attr( "style", "color: red" );
             }
         }
-    });
+    })
+        .fail( function() {
+            tauhead_add_message("An unknown error occured", "orange");
+            status_indicator.removeClass("fa-spinner fa-spin");
+            status_indicator.addClass("fa-exclamation-circle");
+            status_indicator.attr( "style", "color: red" );
+        } );
 }
 
 function tauhead_get_player_level() {
