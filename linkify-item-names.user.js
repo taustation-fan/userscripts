@@ -348,7 +348,7 @@ var lookup_slug = {
     'forty bond certificate':  'bonds-40',
     'the silent one':          'handgun-reclaim',
     'heavy dō-maru':           'heavy-d-maru',
-    'cadet’s epee':            'scabbard',
+    'cadet\'s epee':           'scabbard',
     'trusty hand':             'trusty-field-hand',
 };
 
