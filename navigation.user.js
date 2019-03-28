@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.8
+// @version  1.8.1
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
@@ -102,25 +102,25 @@ function gs_taustation_enhance() {
     }
 
     function fullpage_chat() {
-        let chat = $( "#chat" ).first();
+        let chat = $( "#chat:first" );
         chat.css( "max-height", "100vh" );
         chat.css( "margin", 0 );
         chat.css( "bottom", 0 );
         chat.css( "right", 0 );
         chat.find(".chat--inner").css( "height", "calc( 100% - 2.25em )" );
-        let header = chat.find( "header" ).first();
+        let header = chat.find( "header:first" );
         header.css( "height", "unset" );
         header.css( "padding", 0 );
-        let h2 = header.find("h2").first();
+        let h2 = header.find("h2:first");
         h2.css( "font-size", "unset" );
         header.find( "button" ).css( "padding", 0 );
-        let content = chat.find(".content").first();
+        let content = chat.find(".content:first");
         content.css( "height", "calc( 100% - 5.5em )" );
-        let controls = chat.find(".controls").first();
+        let controls = chat.find(".controls:first");
         controls.css( "height", "unset" );
         controls.css( "margin", 0 );
         controls.css( "padding", 0 );
-        let controls_channels = chat.find("#controls_channels").first();
+        let controls_channels = chat.find("#controls_channels:first");
         controls_channels.css( "height", "unset" );
         controls_channels.css( "margin", 0 );
         controls_channels.css( "padding", 0 );
