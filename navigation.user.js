@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.8.2
+// @version  1.8.3
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
