@@ -31,7 +31,7 @@ function gs_taustation_enhance() {
     // $('.bond-to-credits').hide();
 
     // bribe for an extra ration
-    // $('a.btn-buy-rations').hide();
+    // $('a#bribe-for-ration').hide();
 
     // Intelligence training
     // $('.btn-train-intelligence').hide();
@@ -41,7 +41,7 @@ function gs_taustation_enhance() {
     // $('.personal-trainer').hide();
 
     // "Buy a round" at the lounge:
-    // $('.buy-a-round').hide();
+    // $('.btn-train-social').hide();
 
 
     // hide area tutorial and area image to save space
