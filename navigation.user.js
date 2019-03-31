@@ -4,70 +4,219 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.8.3
+// @version  1.9.0
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
+// @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // ==/UserScript==
 
-// If you've started one or more Career paths, set them to true here,
-// and uncomment "show_change_career_links();" in the function below.
-var show_careers = {
-    'trader':             false,    // Business
-    'opportunist':        false,    // Criminal
-    'embassy_staff':      false,    // Law
-    'cloning_specialist': false,    // Medicine
-    'operative':          false,    // Special Services
-    'port_technician':    false     // Technologist
-};
-
 function gs_taustation_enhance() {
+    let defaults = {
+        show_change_career_links: true,
+        show_careers: {
+            trader:             false,
+            opportunist:        false,
+            embassy_staff:      false,
+            cloning_specialist: false,
+            operative:          false,
+            port_technician:    false
+        },
+        show_sub_area_nav_links:      true,
+        show_discreet_counter:        true,
+        show_hotel_ship_icon:         true,
+        show_hotel_room_message:      true,
+        modify_chat:                  true,
+        hide_bond_conversion_in_bank: false,
+        hide_bride_for_extra_ration:  false,
+        hide_int_training:            false,
+        hide_gym_trainer:             false,
+        hide_lounge_buy_round:        false,
+        hide_area_tutorial_image:     false,
+        style_shop_button:            true
+    };
+    let local_storage_key = get_player_storage_prefix( "taustation_extended_nav" );
+
+    if ( window.location.pathname === "/preferences" ) {
+        add_userscript_settings( {
+            key: local_storage_key,
+            label: "Extended Naviation",
+            options: [
+                {
+                    key:     "show_change_career_links",
+                    label:   "Show career-change links",
+                    default: true,
+                    type:    "checkbox",
+                },
+                {
+                    key:   "show_careers",
+                    label: "Show Careers",
+                    type:  "array_checkbox",
+                    options: [
+                        { key: "trader",             label: "Trader" },
+                        { key: "opportunist",        label: "Opportunist" },
+                        { key: "embassy_staff",      label: "Embassy Staff" },
+                        { key: "cloning_specialist", label: "Cloning Specialist" },
+                        { key: "operative",          label: "Operative" },
+                        { key: "port_technician",    label: "Port Technician" },
+                    ]
+                },
+                {
+                    key:     "show_sub_area_nav_links",
+                    label:   "Show sub-area nav links",
+                    default: true,
+                    type:    "checkbox",
+                },
+                {
+                    key:     "show_discreet_counter",
+                    label:   "Show discreet-work counter",
+                    default: true,
+                    type:    "checkbox",
+                },
+                {
+                    key:     "show_hotel_ship_icon",
+                    label:   "Show icon when safe in Hotel Room or Ship",
+                    default: true,
+                    type:    "checkbox",
+                },
+                {
+                    key:     "show_hotel_room_message",
+                    label:   "Show large message when safe in Hotel Room",
+                    default: true,
+                    type:    "checkbox",
+                },
+                {
+                    key:     "modify_chat",
+                    label:   "Modify chat: allow maximizing chat window",
+                    default: true,
+                    type:    "checkbox",
+                },
+                {
+                    key:   "hide_bond_conversion_in_bank",
+                    label: "Hide bond-conversion in Bank",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_bride_for_extra_ration",
+                    label: "Hide Gov't Centre option to buy extra ration for bonds",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_int_training",
+                    label: "Hide Intelligence training",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_gym_trainer",
+                    label: "Hide Gym personal trainer",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_lounge_buy_round",
+                    label: "Hide Lounge 'buy a round'",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_area_tutorial_image",
+                    label: "Hide area tutorials & image",
+                    type:  "checkbox",
+                },
+                {
+                    key:     "style_shop_button",
+                    label:   "Remove color highlight from Shop button",
+                    default: true,
+                    type:    "checkbox",
+                },
+            ],
+            defaults: defaults,
+        } );
+    }
+    let options = defaults;
+    let stored_options = localStorage.getItem(local_storage_key);
+    if ( stored_options ) {
+        // Merge options from storage into the defaults, so that new options
+        // are used even if user hasn't updated in /preferences
+        try {
+            stored_options = JSON.parse( stored_options );
+            for ( let i in stored_options ) {
+                options[i] = stored_options[i];
+            }
+        }
+        catch (error) {
+            // console.log("caught error");
+            // console.log(error);
+        }
+    }
+
     // show area links for the most common sub-areas
-    add_sub_area_nav_links();
+    if ( options.show_sub_area_nav_links ) {
+        add_sub_area_nav_links();
+    }
 
     // hide bond spending options without confirmation dialog.
-    // remove the leading "//" from a line to enable it:
 
     // bond to credits conversion in the bank
-    // $('.bond-to-credits').hide();
+    if ( options.hide_bond_conversion_in_bank ) {
+        $('.bond-to-credits').hide();
+    }
 
     // bribe for an extra ration
-    // $('a#bribe-for-ration').hide();
+    if ( options.hide_bride_for_extra_ration ) {
+        $('a#bribe-for-ration').hide();
+    }
 
     // Intelligence training
-    // $('.btn-train-intelligence').hide();
-    // $('.header-train-intelligence').hide();
+    if ( options.hide_int_training ) {
+        $('.btn-train-intelligence').hide();
+        $('.header-train-intelligence').hide();
+    }
 
     // personal trainer that the Gym
-    // $('.personal-trainer').hide();
+    if ( options.hide_gym_trainer ) {
+        $('.personal-trainer').hide();
+    }
 
     // "Buy a round" at the lounge:
-    // $('.btn-train-social').hide();
+    if ( options.hide_lounge_buy_round ) {
+        $('.btn-train-social').hide();
+    }
 
 
     // hide area tutorial and area image to save space
-    // $('.tutorial').hide(); // area tutorial
-    // $('.area-hero').hide(); // area image
+    if ( options.hide_area_tutorial_image ) {
+        $('.tutorial').hide(); // area tutorial
+        $('.area-hero').hide(); // area image
+    }
 
     // make the Shop button less annoying
-    $('.shop').removeClass('shop').addClass('bug-report')
+    if ( options.style_shop_button ) {
+        $('.shop').removeClass('shop').addClass('bug-report')
+    }
 
     // show the number of the discreet work (counter per station)
-    show_discreet_counter();
+    if ( options.show_discreet_counter ) {
+        show_discreet_counter();
+    }
 
     // Highlight when safe in hotel-room
-    show_hotel_room();
-    show_hotel_room_or_ship_icon();
+    if ( options.show_hotel_room_message ) {
+        show_hotel_room();
+    }
+
+    if ( options.show_hotel_ship_icon ) {
+        show_hotel_room_or_ship_icon();
+    }
 
     // new feature: Once the chat is shown,
     // clicking on "CHAT" will increase the size of the chat window
-    modify_chat();
+    if ( options.modify_chat ) {
+        modify_chat();
+    }
 
     // Make it easy to change between the careers you've chosen.
-    // show_change_career_links();
+    if ( options.show_change_career_links ) {
+        show_change_career_links();
+    }
 
-    //
-    // END OF USER-CONFIGURATION
-    //
 
     function add_sub_area_nav_links() {
         var current_station = $(".description-container .station").text();
@@ -204,8 +353,8 @@ function gs_taustation_enhance() {
         // If no careers have been selected (see show_careers above),
         // don't display this addition.
         var careers_selected = false;
-        for (var x in show_careers) {
-            careers_selected = careers_selected | show_careers[x];
+        for (var x in options.show_careers) {
+            careers_selected = careers_selected | options.show_careers[x];
         }
         if (! careers_selected) {
             return;
@@ -227,12 +376,12 @@ function gs_taustation_enhance() {
             // player has chosen to pursue (see show_careers above).
             var careers = [];
             var prefix  = '/area/career-advisory/start-career/';
-            if (show_careers.trader)             { careers.push('<a href="' + prefix + 'trader">Trader</a>'); }
-            if (show_careers.opportunist)        { careers.push('<a href="' + prefix + 'opportunist">Opportunist</a>'); }
-            if (show_careers.embassy_staff)      { careers.push('<a href="' + prefix + 'embassy-staff">Embassy</a>'); }
-            if (show_careers.cloning_specialist) { careers.push('<a href="' + prefix + 'cloning-specialist">Cloning</a>'); }
-            if (show_careers.operative)          { careers.push('<a href="' + prefix + 'operative">Operative</a>'); }
-            if (show_careers.port_technician)    { careers.push('<a href="' + prefix + 'port-technician">Port Tech</a>'); }
+            if (options.show_careers.trader)             { careers.push('<a href="' + prefix + 'trader">Trader</a>'); }
+            if (options.show_careers.opportunist)        { careers.push('<a href="' + prefix + 'opportunist">Opportunist</a>'); }
+            if (options.show_careers.embassy_staff)      { careers.push('<a href="' + prefix + 'embassy-staff">Embassy</a>'); }
+            if (options.show_careers.cloning_specialist) { careers.push('<a href="' + prefix + 'cloning-specialist">Cloning</a>'); }
+            if (options.show_careers.operative)          { careers.push('<a href="' + prefix + 'operative">Operative</a>'); }
+            if (options.show_careers.port_technician)    { careers.push('<a href="' + prefix + 'port-technician">Port Tech</a>'); }
 
             // People typically have only 1-2 careers (so far); the list we
             // end up with should be short, so just show it on one line.
