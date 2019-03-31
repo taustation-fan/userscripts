@@ -211,7 +211,7 @@ function gs_taustation_enhance() {
             return;
         }
 
-        if (! $('#employment_panel').find('a[href="/area/job-center"]').length) {
+        if (! $('#employment_panel').find('a[href="/travel/area/job-center"],a[href="/area/job-center"]').length) {
             // A career is currently active: Show the link to leave your career.
             $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
                 .after('<li class="area"><span style="padding-left: 2em">→</span> <a href="/character/quit-career">Change career</a></li>\n');
