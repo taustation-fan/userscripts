@@ -157,6 +157,8 @@ function add_userscript_settings(def) {
         }
         let this_id = def.key + "_" + pref.key;
 
+        let checked;
+
         switch ( pref.type ) {
             case "text":
                 dd.append(
@@ -164,7 +166,7 @@ function add_userscript_settings(def) {
                 );
                 break;
             case "checkbox":
-                let checked = this_value ? "checked=checked" : "";
+                checked = this_value ? "checked=checked" : "";
                 dd.append(
                     `<input data-userscript-pref='${this_id}' type='checkbox' value=1 ${checked}/>`
                 );
@@ -219,17 +221,19 @@ function _save_userscript_settings(def) {
     for ( let i=0; i<def.options.length; i++ ) {
         let pref    = def.options[i];
         let this_id = def.key + "_" + pref.key;
+        let is_checked;
+        let all_checkboxes;
 
         switch ( pref.type ) {
             case "text":
                 values[ pref.key ] = $(`input[data-userscript-pref=${this_id}]`).first().val();
                 break;
             case "checkbox":
-                let is_checked = $(`input[data-userscript-pref=${this_id}]`).first().prop("checked");
+                is_checked = $(`input[data-userscript-pref=${this_id}]`).first().prop("checked");
                 values[ pref.key ] = is_checked ? true : false;
                 break;
             case "array_checkbox":
-                let all_checkboxes = $(`input[data-userscript-pref=${this_id}]`);
+                all_checkboxes = $(`input[data-userscript-pref=${this_id}]`);
                 values[ pref.key ] = {};
                 all_checkboxes.map( function() {
                     values[ pref.key ][ $(this).prop("name") ] = $(this).prop("checked") ? true : false;
