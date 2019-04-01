@@ -22,9 +22,9 @@ Each array item must be an object defining a single preference.
 Each preference definition must have a `key` value.
 Each preference may have a `label` value. If missing, the value of `key` is used.
 Each preference must have a `type` value.
-Types `checkbox_array` and `radio` must have an `options` array.
+Types `array_checkbox` and `radio` must have an `options` array.
 
-Type `checkbox_array` options must be an array of objects.
+Type `array_checkbox` options must be an array of objects.
 Each object must have a `key` value.
 Each object may have a `label` value. If missing, the value of `key` is used.
 
@@ -47,7 +47,7 @@ Example user-code:
 let defaults = {
     my_text: "default value!",
     my_checkbox: true,
-    my_checkbox_array: {
+    my_array_checkbox: {
         one: true
     },
     my_radio: 'two'
@@ -71,9 +71,9 @@ if ( window.location.pathname === "/preferences" ) {
                 type: "checkbox"
             },
             {
-                key:   "my_checkbox_array",
+                key:   "my_array_checkbox",
                 label: "My Checkbox Array",
-                type: "checkbox_array",
+                type: "array_checkbox",
                 options: [
                     { key: one, label: "One" },
                     { key: two, label: "Two" }
@@ -127,7 +127,7 @@ function add_userscript_settings(def) {
     }
 
     let label = def.label || def.key;
-    core_prefs.append( `<h2>UserScript: ${label}</h2>` );
+    core_prefs.append( `<h2 class='settings-header'>UserScript: ${label}</h2>` );
 
     for ( let i=0; i<def.options.length; i++ ) {
         let pref = def.options[i];
