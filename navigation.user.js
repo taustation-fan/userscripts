@@ -44,7 +44,6 @@ function gs_taustation_enhance() {
                 {
                     key:     "show_change_career_links",
                     label:   "Show career-change links",
-                    default: true,
                     type:    "checkbox",
                 },
                 {
@@ -63,31 +62,26 @@ function gs_taustation_enhance() {
                 {
                     key:     "show_sub_area_nav_links",
                     label:   "Show sub-area nav links",
-                    default: true,
                     type:    "checkbox",
                 },
                 {
                     key:     "show_discreet_counter",
                     label:   "Show discreet-work counter",
-                    default: true,
                     type:    "checkbox",
                 },
                 {
                     key:     "show_hotel_ship_icon",
                     label:   "Show icon when safe in Hotel Room or Ship",
-                    default: true,
                     type:    "checkbox",
                 },
                 {
                     key:     "show_hotel_room_message",
                     label:   "Show large message when safe in Hotel Room",
-                    default: true,
                     type:    "checkbox",
                 },
                 {
                     key:     "modify_chat",
                     label:   "Modify chat: allow maximizing chat window",
-                    default: true,
                     type:    "checkbox",
                 },
                 {
@@ -123,7 +117,6 @@ function gs_taustation_enhance() {
                 {
                     key:     "style_shop_button",
                     label:   "Remove color highlight from Shop button",
-                    default: true,
                     type:    "checkbox",
                 },
             ],

@@ -62,17 +62,20 @@ function add_userscript_settings(def) {
         return;
     }
 
-    let defaults = localStorage.getItem( def.key );
-    if ( defaults ) {
+    let stored_defaults = {};
+    let stored_defaults_str = localStorage.getItem( def.key );
+    if ( stored_defaults_str ) {
         try {
-            defaults = JSON.parse( defaults );
+            stored_defaults = JSON.parse( stored_defaults_str );
         }
         catch (error) {
-            defaults = {};
+            // console.log("caught error");
+            // console.log(error);
         }
     }
-    else {
-        defaults = {};
+    let def_defaults = {};
+    if ( def.hasOwnProperty("defaults") ) {
+        def_defaults = def.defaults;
     }
 
 
@@ -95,11 +98,11 @@ function add_userscript_settings(def) {
             dd
         );
         let this_value;
-        if ( defaults.hasOwnProperty( pref.key ) ) {
-            this_value = defaults[ pref.key ];
+        if ( stored_defaults.hasOwnProperty( pref.key ) ) {
+            this_value = stored_defaults[ pref.key ];
         }
-        else if ( pref.hasOwnProperty("default") ) {
-            this_value = pref.default;
+        else if ( def_defaults.hasOwnProperty( pref.key ) ) {
+            this_value = def_defaults[ pref.key ];
         }
         let this_id = def.key + "_" + pref.key;
 
@@ -119,10 +122,7 @@ function add_userscript_settings(def) {
                 for ( let j=0; j<pref.options.length; j++ ) {
                     let key     = pref.options[j].key;
                     let label   = pref.options[j].label || key;
-                    let checked = ( this_value && this_value.hasOwnProperty(key) ) ? this_value[key] :
-                                  pref.options[j].hasOwnProperty("default") ? pref.options[j].default :
-                                  false;
-                    checked = checked ? "checked=checked" : "";
+                    let checked = ( this_value.hasOwnProperty(key) && this_value[key] ) ? "checked=checked" : "";
                     dd.append(
                         "<label>"+
                         `<input data-userscript-pref='${this_id}' name='${key}' type='checkbox' value=1 ${checked} />`+
