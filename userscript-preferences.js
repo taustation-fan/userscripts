@@ -265,7 +265,7 @@ function fetch_userscript_preferences( key, defaults ) {
             options[i] = defaults[i];
         }
     }
-    let stored_options = localStorage.getItem(local_storage_key);
+    let stored_options = localStorage.getItem(key);
     if ( stored_options ) {
         // Merge options from storage into the defaults, so that new options
         // are used even if user hasn't updated in /preferences
