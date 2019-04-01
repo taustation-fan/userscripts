@@ -136,10 +136,18 @@ function add_userscript_settings(def) {
 
         core_prefs.append(dl);
         let this_label = pref.label || pref.key;
-        dl.append(
-            `<dt>${this_label}</dt>`,
-            dd
-        );
+        let dt = $( `<dt>${this_label}</dt>` );
+        if (pref.help) {
+            dt.append( $(
+                "<span></span>",
+                {
+                    class: "fa fa-info-circle",
+                    style: "padding-left: 0.5em;",
+                    title: pref.help
+                }
+            ) );
+        }
+        dl.append( dt, dd );
         let this_value;
         if ( stored_defaults.hasOwnProperty( pref.key ) ) {
             this_value = stored_defaults[ pref.key ];
