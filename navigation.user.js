@@ -27,7 +27,7 @@ function gs_taustation_enhance() {
         show_hotel_room_message:      true,
         modify_chat:                  true,
         hide_bond_conversion_in_bank: false,
-        hide_bride_for_extra_ration:  false,
+        hide_bribe_for_extra_ration:  false,
         hide_int_training:            false,
         hide_gym_trainer:             false,
         hide_lounge_buy_round:        false,
@@ -96,7 +96,7 @@ function gs_taustation_enhance() {
                     type:  "checkbox",
                 },
                 {
-                    key:   "hide_bride_for_extra_ration",
+                    key:   "hide_bribe_for_extra_ration",
                     label: "Hide Gov't Centre option to buy extra ration for bonds",
                     type:  "checkbox",
                 },
@@ -160,7 +160,7 @@ function gs_taustation_enhance() {
     }
 
     // bribe for an extra ration
-    if ( options.hide_bride_for_extra_ration ) {
+    if ( options.hide_bribe_for_extra_ration ) {
         $('a#bribe-for-ration').hide();
     }
 
