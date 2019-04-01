@@ -10,6 +10,14 @@
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // ==/UserScript==
 
+/*
+    No need to change this file!
+    Now turn features on/off by visiting in-game User Preferences
+    https://alpha.taustation.space/preferences
+*/
+
+// Nothing user-configurable below
+
 function gs_taustation_enhance() {
     let defaults = {
         show_change_career_links: true,
@@ -34,7 +42,7 @@ function gs_taustation_enhance() {
         hide_area_tutorial_image:     false,
         style_shop_button:            true
     };
-    let local_storage_key = get_player_storage_prefix( "taustation_extended_nav_" );
+    let local_storage_key = get_player_storage_prefix( "taustation_extended_nav_prefs" );
 
     if ( window.location.pathname === "/preferences" ) {
         add_userscript_settings( {

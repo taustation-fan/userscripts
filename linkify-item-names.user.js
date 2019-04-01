@@ -56,7 +56,7 @@ async function linkify_all_item_names() {
         'open_links_in_new_tab': true,
         'check_if_item_exists_in_ls': true,
     };
-    let local_storage_key = "linkify_item_names_"; // doesn't need per-player prefs
+    let local_storage_key = "linkify_item_names_prefs"; // doesn't need per-player prefs
     linkify_config = fetch_userscript_preferences( local_storage_key, defaults );
 
     if ( window.location.pathname === "/preferences" ) {
@@ -582,11 +582,6 @@ function do_prefs( local_storage_key, defaults ) {
         defaults: defaults,
         options: [
             {
-                key:   "debug",
-                label: "Debug",
-                type:  "checkbox"
-            },
-            {
                 key:   "open_links_in_new_tab",
                 label: "Open Links in New Tab",
                 type:  "checkbox"
@@ -594,6 +589,11 @@ function do_prefs( local_storage_key, defaults ) {
             {
                 key:   "check_if_item_exists_in_ls",
                 label: "Check if Item Exists in localStorage",
+                type:  "checkbox"
+            },
+            {
+                key:   "debug",
+                label: "Debug",
                 type:  "checkbox"
             }
         ]
