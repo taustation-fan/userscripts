@@ -43,7 +43,7 @@ The 2nd `defaults` argument is optional. Each key/value is used if the key is no
 localStorage.
 
 Example user-code:
-*/
+
 let defaults = {
     my_text: "default value!",
     my_checkbox: true,
@@ -94,7 +94,7 @@ let options = fetch_userscript_preferences(
     defaults
 );
 
-/**/
+*/
 
 var core_prefs;
 
