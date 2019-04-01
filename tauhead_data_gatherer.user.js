@@ -2,7 +2,7 @@
 // @name         TauHead Data Gatherer
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_data_gatherer.user.js
-// @version      1.8
+// @version      1.9
 // @description  Post data to TauHead API
 // @match        https://alpha.taustation.space/area/*
 // @match        https://alpha.taustation.space/character/details/*
@@ -50,7 +50,7 @@
 // Nothing user-configurable below
 //
 var tauhead_domain = "https://www.tauhead.com";
-var api_version    = "1.6";
+var api_version    = "1.9";
 
 // UI variables.
 var th_init_button_ui;
@@ -271,6 +271,13 @@ function tauhead_discreet_work_end() {
 
     if ( reward_item ) {
         data.discreet_work_reward_item = reward_item;
+    }
+
+    // Reward Bonds
+    let reward_bonds = tauhead_first_capture_that_matches( lines, /You have received (\d+) bonds/i );
+
+    if ( reward_bonds ) {
+        data.discreet_work_reward_bonds = reward_bonds;
     }
 
     localStorage.removeItem( localStorage_mission_id );
