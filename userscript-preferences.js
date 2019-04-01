@@ -291,7 +291,7 @@ function get_player_storage_prefix(script_prefix) {
         player_name = $("#player-name").text();
         if (player_name.length > 0) {
             // If the user is part of a Syndicate or has VIP, drop the "[foo]" prefix/suffix.
-            script_prefix += player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, "$2") + "_";
+            script_prefix += "_" + player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, "$2");
         }
     }
     return script_prefix;
