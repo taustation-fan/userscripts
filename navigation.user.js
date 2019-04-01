@@ -34,12 +34,12 @@ function gs_taustation_enhance() {
         hide_area_tutorial_image:     false,
         style_shop_button:            true
     };
-    let local_storage_key = get_player_storage_prefix( "taustation_extended_nav" );
+    let local_storage_key = get_player_storage_prefix( "taustation_extended_nav_" );
 
     if ( window.location.pathname === "/preferences" ) {
         add_userscript_settings( {
             key: local_storage_key,
-            label: "Extended Naviation",
+            label: "Extended Navigation",
             options: [
                 {
                     key:     "show_change_career_links",
