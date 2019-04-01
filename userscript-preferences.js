@@ -153,10 +153,6 @@ function _save_userscript_settings(def) {
         JSON.stringify( values )
     );
 
-    if ( def.hasOwnProperty("callback") ) {
-        def["callback"]( values );
-    }
-
     $( `button[data-userscript-save=${def.key}]` ).first().append(
         "<span class='fa fa-check-circle' style='color: green; padding-left: 0.5em'></span>"
     );
