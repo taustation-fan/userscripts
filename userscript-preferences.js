@@ -54,7 +54,7 @@ function _userscript_preferences_add_ui( def, values ) {
         let input = $(
             "<input/>",
             {
-                "data-userscript-pref": this_id
+                "data-userscript-pref": pref.key
             }
         );
 
@@ -63,6 +63,9 @@ function _userscript_preferences_add_ui( def, values ) {
                 input.prop( {
                     type: "text",
                     value: this_value
+                } );
+                input.donetyping( function() {
+                    _save_userscript_text.call( this, def, values );
                 } );
                 dd.append( input );
                 break;
@@ -145,6 +148,18 @@ function _userscript_preferences_add_ui( def, values ) {
     }
 
     core_prefs.append( container );
+}
+
+function _save_userscript_text( def, values ) {
+    let input = $(this);
+    let id = input.attr( "data-userscript-pref" );
+
+    values[id] = input.val();
+console.log(values);
+    localStorage.setItem(
+        def.key,
+        JSON.stringify( values )
+    );
 }
 
 function _toggle_userscript_boolean( event, def, values ) {
@@ -305,3 +320,39 @@ function _userscript_preferences_key_from_player_key( key ) {
 
     return `${key}_${player_name}`;
 }
+
+;(function($){
+    $.fn.extend({
+        donetyping: function(callback,timeout){
+            timeout = timeout || 1000;
+            var timeoutReference,
+                doneTyping = function(el){
+                    if (!timeoutReference) return;
+                    timeoutReference = null;
+                    callback.call(el);
+                };
+            return this.each(function(i,el){
+                var $el = $(el);
+                // Chrome Fix (Use keyup over keypress to detect backspace)
+                $el.is(':input') && $el.on('keyup keypress paste',function(e){
+                    // This catches the backspace button in chrome, but also prevents
+                    // the event from triggering too preemptively. Without this line,
+                    // using tab/shift+tab will make the focused element fire the callback.
+                    if (e.type=='keyup' && e.keyCode!=8) return;
+
+                    // Check if timeout has been set. If it has, "reset" the clock and
+                    // start over again.
+                    if (timeoutReference) clearTimeout(timeoutReference);
+                    timeoutReference = setTimeout(function(){
+                        // if we made it here, our timeout has elapsed. Fire the
+                        // callback
+                        doneTyping(el);
+                    }, timeout);
+                }).on('blur',function(){
+                    // If we can, fire the event since we're leaving the field
+                    doneTyping(el);
+                });
+            });
+        }
+    });
+})(jQuery);
