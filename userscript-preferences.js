@@ -1,11 +1,27 @@
 var core_prefs;
 
-function add_userscript_settings(def) {
+function userscript_preferences( def ) {
     "use strict";
 
-    if ( "/preferences" !== window.location.pathname ) {
-        return;
+    if ( !def.key ) {
+        if ( def.player_key ) {
+            def.key = _userscript_preferences_key_from_player_key( def.player_key );
+        }
+        else {
+            console.log("userscript_preferences() needs either a 'key' or 'player_key'");
+            return;
+        }
     }
+
+    if ( "/preferences" === window.location.pathname ) {
+        _userscript_preferences_add_ui( def );
+    }
+
+    return _userscript_preferences_return_config( def );
+}
+
+function _userscript_preferences_add_ui( def ) {
+    "use strict";
 
     let stored_defaults = {};
     let stored_defaults_str = localStorage.getItem( def.key );
@@ -18,11 +34,6 @@ function add_userscript_settings(def) {
             // console.log(error);
         }
     }
-    let def_defaults = {};
-    if ( def.hasOwnProperty("defaults") ) {
-        def_defaults = def.defaults;
-    }
-
 
     if ( !core_prefs ) {
         core_prefs = $("#preferences");
@@ -54,8 +65,8 @@ function add_userscript_settings(def) {
         if ( stored_defaults.hasOwnProperty( pref.key ) ) {
             this_value = stored_defaults[ pref.key ];
         }
-        else if ( def_defaults.hasOwnProperty( pref.key ) ) {
-            this_value = def_defaults[ pref.key ];
+        else if ( pref.default ) {
+            this_value = pref.default;
         }
         let this_id = def.key + "_" + pref.key;
 
@@ -77,7 +88,7 @@ function add_userscript_settings(def) {
                 for ( let j=0; j<pref.options.length; j++ ) {
                     let key     = pref.options[j].key;
                     let label   = pref.options[j].label || key;
-                    let checked = ( this_value.hasOwnProperty(key) && this_value[key] ) ? "checked=checked" : "";
+                    let checked = ( this_value && this_value.hasOwnProperty(key) && this_value[key] ) ? "checked=checked" : "";
                     dd.append(
                         "<label>"+
                         `<input data-userscript-pref='${this_id}' name='${key}' type='checkbox' value=1 ${checked} />`+
@@ -168,41 +179,60 @@ function _save_userscript_settings(def) {
     );
 }
 
-function fetch_userscript_preferences( key, defaults ) {
-    let options = {};
-    if ( defaults ) {
-        for ( let i in defaults ) {
-            options[i] = defaults[i];
-        }
-    }
-    let stored_options = localStorage.getItem(key);
-    if ( stored_options ) {
-        // Merge options from storage into the defaults, so that new options
-        // are used even if user hasn't updated in /preferences
+function _userscript_preferences_return_config( def, stored_config ) {
+    "use strict";
+
+    if ( !stored_config ) {
+        let stored_config_str = localStorage.getItem( def.key );
         try {
-            stored_options = JSON.parse( stored_options );
-            for ( let i in stored_options ) {
-                options[i] = stored_options[i];
-            }
+            stored_config = JSON.parse( stored_config_str );
         }
         catch (error) {
             // console.log("caught error");
             // console.log(error);
         }
     }
-    return options;
+
+    if ( !stored_config ) {
+        stored_config = {};
+    }
+
+    let config = stored_config;
+
+    for ( let i in def ) {
+        let pref = def[i];
+
+        // Prefer stored config
+        if ( config[ pref.key ] ) {
+            continue;
+        }
+
+        if ( pref.default ) {
+            config[ pref.key ] = pref.default;
+        }
+
+        // Ensure array_checkbox always has an object value
+        if ( "array_checkbox" === def.type ) {
+            config[ pref.key ] = {};
+        }
+    }
+
+    return config;
 }
 
 var player_name;
 
-function get_player_storage_prefix(script_prefix) {
-    // Get the player's name, to let us store different session data for different player characters.
-    if (! player_name) {
+function _userscript_preferences_key_from_player_key( key ) {
+    "use strict";
+
+    // Get the player's name, to let us store different data for different player characters.
+    if ( !player_name ) {
         player_name = $("#player-name").text();
-        if (player_name.length > 0) {
-            // If the user is part of a Syndicate or has VIP, drop the "[foo]" prefix/suffix.
-            script_prefix += "_" + player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, "$2");
-        }
+        player_name = $.trim( player_name );
+
+        // Remove [VIP] and [SYN]
+        player_name = player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, "$2");
     }
-    return script_prefix;
+
+    return `${key}_${player_name}`;
 }
