@@ -64,10 +64,21 @@ function _userscript_preferences_add_ui( def, values ) {
                     type: "text",
                     value: this_value
                 } );
+                input.on(
+                    "keyup keypress paste",
+                    function() {
+                        let spinner = $(this).next();
+                        spinner.css( "color", "" );
+                        spinner.removeClass("fa-check-circle");
+                        spinner.addClass("fa fa-spinner fa-spin");
+                    } );
                 input.donetyping( function() {
                     _save_userscript_text.call( this, def, values );
                 } );
-                dd.append( input );
+                dd.append(
+                    input,
+                    $( "<span></span>", { css: { "padding": "0 0.5em" } } )
+                );
                 break;
             case "boolean":
             case "bool":
@@ -152,14 +163,19 @@ function _userscript_preferences_add_ui( def, values ) {
 
 function _save_userscript_text( def, values ) {
     let input = $(this);
-    let id = input.attr( "data-userscript-pref" );
+    let spinner = input.next();
 
+    let id = input.attr( "data-userscript-pref" );
     values[id] = input.val();
-console.log(values);
+
     localStorage.setItem(
         def.key,
         JSON.stringify( values )
     );
+
+    spinner.removeClass( "fa-spinner fa-spin" );
+    spinner.addClass( "fa-check-circle" );
+    spinner.css( "color", "green" );
 }
 
 function _toggle_userscript_boolean( event, def, values ) {
