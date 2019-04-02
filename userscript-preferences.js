@@ -173,19 +173,13 @@ function _save_userscript_text( def, values ) {
 
 function _save_userscript_radio( def, values ) {
     let input = $(this);
-    // let spinner = input.next();
-console.log(input);
     let id = input.attr( "data-userscript-pref" );
     values[id] = input.val();
-console.log(values);
+
     localStorage.setItem(
         def.key,
         JSON.stringify( values )
     );
-
-    // spinner.removeClass( "fa-spinner fa-spin" );
-    // spinner.addClass( "fa-check-circle" );
-    // spinner.css( "color", "green" );
 }
 
 function _toggle_userscript_boolean( event, def, values ) {
