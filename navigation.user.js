@@ -274,7 +274,7 @@ function gs_taustation_enhance() {
                 {
                     key:     "show_change_career_links",
                     label:   "Show career-change links",
-                    type:    "checkbox",
+                    type:    "boolean",
                     default: true
                 },
                 {
@@ -294,67 +294,67 @@ function gs_taustation_enhance() {
                 {
                     key:     "show_sub_area_nav_links",
                     label:   "Show sub-area nav links",
-                    type:    "checkbox",
+                    type:    "boolean",
                     default: true
                 },
                 {
                     key:     "show_discreet_counter",
                     label:   "Show discreet-work counter",
-                    type:    "checkbox",
+                    type:    "boolean",
                     default: true
                 },
                 {
                     key:     "show_hotel_ship_icon",
                     label:   "Show icon when safe in Hotel Room or Ship",
-                    type:    "checkbox",
+                    type:    "boolean",
                     default: true
                 },
                 {
                     key:     "show_hotel_room_message",
                     label:   "Show large message when safe in Hotel Room",
-                    type:    "checkbox",
+                    type:    "boolean",
                     default: true
                 },
                 {
                     key:     "modify_chat",
                     label:   "Modify chat: allow maximizing chat window",
-                    type:    "checkbox",
+                    type:    "boolean",
                     default: true
                 },
                 {
                     key:   "hide_bond_conversion_in_bank",
                     label: "Hide bond-conversion in Bank",
-                    type:  "checkbox",
+                    type:  "boolean",
                 },
                 {
                     key:   "hide_bribe_for_extra_ration",
                     label: "Hide Gov't Centre option to buy extra ration for bonds",
-                    type:  "checkbox",
+                    type:  "boolean",
                 },
                 {
                     key:   "hide_int_training",
                     label: "Hide Intelligence training",
-                    type:  "checkbox",
+                    type:  "boolean",
                 },
                 {
                     key:   "hide_gym_trainer",
                     label: "Hide Gym personal trainer",
-                    type:  "checkbox",
+                    type:  "boolean",
                 },
                 {
                     key:   "hide_lounge_buy_round",
                     label: "Hide Lounge 'buy a round'",
-                    type:  "checkbox",
+                    type:  "boolean",
                 },
                 {
                     key:   "hide_area_tutorial_image",
                     label: "Hide area tutorials & image",
-                    type:  "checkbox",
+                    type:  "boolean",
                 },
                 {
                     key:     "style_shop_button",
                     label:   "Remove color highlight from Shop button",
-                    type:    "checkbox",
+                    type:    "boolean",
                     default: true
                 },
             ]
