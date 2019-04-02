@@ -574,20 +574,20 @@ function linkify_preferences_definition() {
                 key:     "open_links_in_new_tab",
                 label:   "Open Links in New Tab",
                 help:    "If true: Clicking an item link opens the item page in a new tab",
-                type:    "checkbox",
+                type:    "boolean",
                 default: true
             },
             {
                 key:     "check_if_item_exists_in_ls",
                 label:   "Check if Item Exists in localStorage",
                 help:    "If true: preserves existing values in localStorage, otherwise overwrites them",
-                type:    "checkbox",
+                type:    "boolean",
                 default: true
             },
             {
                 key:   "debug",
                 label: "Debug",
-                type:  "checkbox"
+                type:  "boolean"
             }
         ]
     };
