@@ -27,17 +27,15 @@ function _userscript_preferences_add_ui( def, values ) {
 
     let container = $( "<span></span>" );
     let label = def.label || def.key;
-    let dl = $("<dl></dl>");
     container.append( `<h2 class='settings-header'>UserScript: ${label}</h2>` );
-    container.append(dl);
 
     for ( let i in def.options ) {
         let pref = def.options[i];
         let this_id = def.key + "_" + pref.key;
         let this_value = values[ pref.key ];
-        let dt = $("<td></td>");
+        let dt = $("<dt></dt>");
         let dd = $("<dd></dd>");
-        dl.append( dt, dd );
+        container.append( dt, dd );
 
         dt.text( pref.label || pref.key );
 
