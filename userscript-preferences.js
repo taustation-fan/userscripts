@@ -54,7 +54,7 @@ function _userscript_preferences_add_ui( def ) {
             dt.append( $(
                 "<span></span>",
                 {
-                    class: "fa fa-info-circle",
+                    class: "fa fa-question-circle",
                     style: "padding-left: 0.5em;",
                     title: pref.help
                 }
