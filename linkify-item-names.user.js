@@ -51,17 +51,7 @@ var ls_prefix = 'lins_'; // Linkify Item Names Storage
 $(document).ready(linkify_all_item_names);
 
 async function linkify_all_item_names() {
-    let defaults = {
-        'debug': false,
-        'open_links_in_new_tab': true,
-        'check_if_item_exists_in_ls': true,
-    };
-    let local_storage_key = "linkify_item_names_prefs"; // doesn't need per-player prefs
-    linkify_config = fetch_userscript_preferences( local_storage_key, defaults );
-
-    if ( window.location.pathname === "/preferences" ) {
-        do_prefs( local_storage_key, defaults );
-    }
+    linkify_config = userscript_preferences( linkify_preferences_definition() );
 
     if (window.location.pathname.startsWith('/character/details/')) {
         linkify_items_in_character_details();
@@ -575,23 +565,24 @@ function stop_reacting_to_updates() {
 
 // Preferences
 
-function do_prefs( local_storage_key, defaults ) {
-    add_userscript_settings( {
-        key:      local_storage_key,
+function linkify_preferences_definition() {
+    return {
+        key:      "linkify_item_names_prefs",
         label:    "Linkify Item Names",
-        defaults: defaults,
         options: [
             {
-                key:   "open_links_in_new_tab",
-                label: "Open Links in New Tab",
-                help:  "If true: Clicking an item link opens the item page in a new tab",
-                type:  "checkbox"
+                key:     "open_links_in_new_tab",
+                label:   "Open Links in New Tab",
+                help:    "If true: Clicking an item link opens the item page in a new tab",
+                type:    "checkbox",
+                default: true
             },
             {
-                key:   "check_if_item_exists_in_ls",
-                label: "Check if Item Exists in localStorage",
-                help:  "If true: preserves existing values in localStorage, otherwise overwrites them",
-                type:  "checkbox"
+                key:     "check_if_item_exists_in_ls",
+                label:   "Check if Item Exists in localStorage",
+                help:    "If true: preserves existing values in localStorage, otherwise overwrites them",
+                type:    "checkbox",
+                default: true
             },
             {
                 key:   "debug",
@@ -599,7 +590,7 @@ function do_prefs( local_storage_key, defaults ) {
                 type:  "checkbox"
             }
         ]
-    } );
+    };
 }
 
 //
