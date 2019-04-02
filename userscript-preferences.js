@@ -74,29 +74,37 @@ function _userscript_preferences_add_ui( def, values ) {
                         "data-userscript-pref": pref.key,
                         "data-state": ( this_value ? 1 : 0 ),
                         class: "toggle",
-                        text: ( this_value ? " On " : " Off " ),
-                        type: "checkbox",
-                        value: 1
+                        text: ( this_value ? " On " : " Off " )
                     } );
                 input.click( function(event) {
                     _toggle_userscript_boolean.call( this, event, def, values );
                 } );
                 dd.append( input );
                 break;
-            case "array_checkbox":
+            case "boolean_array":
+            case "bool_array":
                 for ( let j in pref.options ) {
                     let key     = pref.options[j].key;
                     let label   = pref.options[j].label || key;
-                    let input_i = input.clone();
-                    input_i.prop( {
-                        name: key,
-                        type: "checkbox",
-                        value: 1
-                    } );
+                    input = $(
+                        "<button></button",
+                        {
+                            "data-userscript-pref": pref.key,
+                            "data-userscript-item": key,
+                            class: "toggle"
+                        } );
                     if ( this_value && this_value.hasOwnProperty(key) && this_value[key] ) {
-                        input_i.prop( "checked", "checked" );
+                        input.prop( "data-state", 1 );
+                        input.text( " On " );
                     }
-                    let olabel = $( "<label></label>", { css: { clear: "all" } } );
+                    else {
+                        input.prop( "data-state", 0 );
+                        input.text( " Off " );
+                    }
+                    input.click( function(event) {
+                        _toggle_userscript_boolean_array.call( this, event, def, values );
+                    } );
+                    let olabel = $( "<label></label>", { css: { display: "block" } } );
                     olabel.append( input, label );
                     dd.append( olabel );
                 }
@@ -147,6 +155,35 @@ function _toggle_userscript_boolean( event, def, values ) {
     button.attr( "data-state", on ? 0 : 1 );
 
     values[id] = on ? false : true;
+
+    localStorage.setItem(
+        def.key,
+        JSON.stringify( values )
+    );
+
+    button.text( on ? " Off " : " On " );
+
+    event.preventDefault();
+    event.stopPropagation();
+}
+
+function _toggle_userscript_boolean_array( event, def, values ) {
+    let button = $(this);
+    let outer_id = button.attr( "data-userscript-pref" );
+    let inner_id = button.attr( "data-userscript-item" );
+    let on = 1 == button.attr( "data-state" ) ? true : false;
+
+    button.attr( "data-state", on ? 0 : 1 );
+
+    if ( !values.hasOwnProperty(outer_id) ) {
+        values[outer_id] = {};
+    }
+
+    if ( !values[outer_id].hasOwnProperty(inner_id) ) {
+        values[outer_id][inner_id] = {};
+    }
+
+    values[outer_id][inner_id] = on ? false : true;
 
     localStorage.setItem(
         def.key,
