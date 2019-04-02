@@ -203,11 +203,11 @@ function _userscript_preferences_return_config( def ) {
 
     let config = stored_config;
 
-    for ( let i in def ) {
-        let pref = def[i];
+    for ( let i in def.options ) {
+        let pref = def.options[i];
 
         // Prefer stored config
-        if ( config[ pref.key ] ) {
+        if ( config.hasOwnProperty( pref.key ) ) {
             continue;
         }
 
