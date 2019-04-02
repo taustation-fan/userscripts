@@ -19,120 +19,7 @@
 // Nothing user-configurable below
 
 function gs_taustation_enhance() {
-    let defaults = {
-        show_change_career_links: true,
-        show_careers: {
-            trader:             false,
-            opportunist:        false,
-            embassy_staff:      false,
-            cloning_specialist: false,
-            operative:          false,
-            port_technician:    false
-        },
-        show_sub_area_nav_links:      true,
-        show_discreet_counter:        true,
-        show_hotel_ship_icon:         true,
-        show_hotel_room_message:      true,
-        modify_chat:                  true,
-        hide_bond_conversion_in_bank: false,
-        hide_bribe_for_extra_ration:  false,
-        hide_int_training:            false,
-        hide_gym_trainer:             false,
-        hide_lounge_buy_round:        false,
-        hide_area_tutorial_image:     false,
-        style_shop_button:            true
-    };
-    let local_storage_key = get_player_storage_prefix( "taustation_extended_nav_prefs" );
-
-    if ( window.location.pathname === "/preferences" ) {
-        add_userscript_settings( {
-            key: local_storage_key,
-            label: "Extended Navigation",
-            options: [
-                {
-                    key:     "show_change_career_links",
-                    label:   "Show career-change links",
-                    type:    "checkbox",
-                },
-                {
-                    key:   "show_careers",
-                    label: "Show careers",
-                    help:  "Only used if above setting is true",
-                    type:  "array_checkbox",
-                    options: [
-                        { key: "trader",             label: "Trader" },
-                        { key: "opportunist",        label: "Opportunist" },
-                        { key: "embassy_staff",      label: "Embassy Staff" },
-                        { key: "cloning_specialist", label: "Cloning Specialist" },
-                        { key: "operative",          label: "Operative" },
-                        { key: "port_technician",    label: "Port Technician" },
-                    ]
-                },
-                {
-                    key:     "show_sub_area_nav_links",
-                    label:   "Show sub-area nav links",
-                    type:    "checkbox",
-                },
-                {
-                    key:     "show_discreet_counter",
-                    label:   "Show discreet-work counter",
-                    type:    "checkbox",
-                },
-                {
-                    key:     "show_hotel_ship_icon",
-                    label:   "Show icon when safe in Hotel Room or Ship",
-                    type:    "checkbox",
-                },
-                {
-                    key:     "show_hotel_room_message",
-                    label:   "Show large message when safe in Hotel Room",
-                    type:    "checkbox",
-                },
-                {
-                    key:     "modify_chat",
-                    label:   "Modify chat: allow maximizing chat window",
-                    type:    "checkbox",
-                },
-                {
-                    key:   "hide_bond_conversion_in_bank",
-                    label: "Hide bond-conversion in Bank",
-                    type:  "checkbox",
-                },
-                {
-                    key:   "hide_bribe_for_extra_ration",
-                    label: "Hide Gov't Centre option to buy extra ration for bonds",
-                    type:  "checkbox",
-                },
-                {
-                    key:   "hide_int_training",
-                    label: "Hide Intelligence training",
-                    type:  "checkbox",
-                },
-                {
-                    key:   "hide_gym_trainer",
-                    label: "Hide Gym personal trainer",
-                    type:  "checkbox",
-                },
-                {
-                    key:   "hide_lounge_buy_round",
-                    label: "Hide Lounge 'buy a round'",
-                    type:  "checkbox",
-                },
-                {
-                    key:   "hide_area_tutorial_image",
-                    label: "Hide area tutorials & image",
-                    type:  "checkbox",
-                },
-                {
-                    key:     "style_shop_button",
-                    label:   "Remove color highlight from Shop button",
-                    type:    "checkbox",
-                },
-            ],
-            defaults: defaults,
-        } );
-    }
-    let options = fetch_userscript_preferences( local_storage_key, defaults );
+    let options = userscript_preferences( navigation_preferences_definition() );
 
     // show area links for the most common sub-areas
     if ( options.show_sub_area_nav_links ) {
@@ -377,6 +264,101 @@ function gs_taustation_enhance() {
             $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
                 .after('<li class="area"><span style="padding-left: 2em">→ Start:</span>\n' + careers_shown + '\n</li>\n');
         }
+    }
+
+    function navigation_preferences_definition() {
+        return {
+            player_key: "extended_nav_prefs",
+            label: "Extended Navigation",
+            options: [
+                {
+                    key:     "show_change_career_links",
+                    label:   "Show career-change links",
+                    type:    "checkbox",
+                    default: true
+                },
+                {
+                    key:     "show_careers",
+                    label:   "Show careers",
+                    help:    "Only used if above setting is true",
+                    type:    "array_checkbox",
+                    options: [
+                        { key: "trader",             label: "Trader" },
+                        { key: "opportunist",        label: "Opportunist" },
+                        { key: "embassy_staff",      label: "Embassy Staff" },
+                        { key: "cloning_specialist", label: "Cloning Specialist" },
+                        { key: "operative",          label: "Operative" },
+                        { key: "port_technician",    label: "Port Technician" },
+                    ]
+                },
+                {
+                    key:     "show_sub_area_nav_links",
+                    label:   "Show sub-area nav links",
+                    type:    "checkbox",
+                    default: true
+                },
+                {
+                    key:     "show_discreet_counter",
+                    label:   "Show discreet-work counter",
+                    type:    "checkbox",
+                    default: true
+                },
+                {
+                    key:     "show_hotel_ship_icon",
+                    label:   "Show icon when safe in Hotel Room or Ship",
+                    type:    "checkbox",
+                    default: true
+                },
+                {
+                    key:     "show_hotel_room_message",
+                    label:   "Show large message when safe in Hotel Room",
+                    type:    "checkbox",
+                    default: true
+                },
+                {
+                    key:     "modify_chat",
+                    label:   "Modify chat: allow maximizing chat window",
+                    type:    "checkbox",
+                    default: true
+                },
+                {
+                    key:   "hide_bond_conversion_in_bank",
+                    label: "Hide bond-conversion in Bank",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_bribe_for_extra_ration",
+                    label: "Hide Gov't Centre option to buy extra ration for bonds",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_int_training",
+                    label: "Hide Intelligence training",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_gym_trainer",
+                    label: "Hide Gym personal trainer",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_lounge_buy_round",
+                    label: "Hide Lounge 'buy a round'",
+                    type:  "checkbox",
+                },
+                {
+                    key:   "hide_area_tutorial_image",
+                    label: "Hide area tutorials & image",
+                    type:  "checkbox",
+                },
+                {
+                    key:     "style_shop_button",
+                    label:   "Remove color highlight from Shop button",
+                    type:    "checkbox",
+                    default: true
+                },
+            ]
+        };
     }
 }
 $(document).ready(gs_taustation_enhance);
