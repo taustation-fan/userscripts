@@ -281,7 +281,7 @@ function gs_taustation_enhance() {
                     key:     "show_careers",
                     label:   "Show careers",
                     help:    "Only used if above setting is true",
-                    type:    "array_checkbox",
+                    type:    "boolean_array",
                     options: [
                         { key: "trader",             label: "Trader" },
                         { key: "opportunist",        label: "Opportunist" },
