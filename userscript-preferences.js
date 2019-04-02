@@ -131,28 +131,21 @@ function _userscript_preferences_add_ui( def, values ) {
                         name: this_id,
                         type: "radio",
                         value: value,
-                        html: value
+                        text: value
                     } );
                     if ( this_value && ( this_value === value ) ) {
                         input_i.prop( "checked", "checked" );
                     }
-                    let olabel = $( "<label></label>", { css: { clear: "all" } } );
-                    olabel.append( input_i );
+                    input_i.click( function(event) {
+                        _save_userscript_radio.call( this, def, values );
+                    } );
+                    let olabel = $( "<label></label>", { css: { display: "block" } } );
+                    olabel.append( input_i, value );
                     dd.append( olabel );
                 }
                 break;
         }
     }
-
-    let save = $( `<button data-userscript-save='${def.key}'>Save "${label}" Settings</button>` );
-    save.click( function() {
-        _save_userscript_settings(def);
-    } );
-
-    container.append(
-        "<dt></dt>",
-        $("<dd></dd>").append( save )
-    );
 
     if ( !core_prefs ) {
         core_prefs = $("#preferences");
@@ -176,6 +169,23 @@ function _save_userscript_text( def, values ) {
     spinner.removeClass( "fa-spinner fa-spin" );
     spinner.addClass( "fa-check-circle" );
     spinner.css( "color", "green" );
+}
+
+function _save_userscript_radio( def, values ) {
+    let input = $(this);
+    // let spinner = input.next();
+console.log(input);
+    let id = input.attr( "data-userscript-pref" );
+    values[id] = input.val();
+console.log(values);
+    localStorage.setItem(
+        def.key,
+        JSON.stringify( values )
+    );
+
+    // spinner.removeClass( "fa-spinner fa-spin" );
+    // spinner.addClass( "fa-check-circle" );
+    // spinner.css( "color", "green" );
 }
 
 function _toggle_userscript_boolean( event, def, values ) {
@@ -225,59 +235,6 @@ function _toggle_userscript_boolean_array( event, def, values ) {
 
     event.preventDefault();
     event.stopPropagation();
-}
-
-function _save_userscript_settings(def) {
-    "use strict";
-
-    let values = {};
-
-    for ( let i=0; i<def.options.length; i++ ) {
-        let pref    = def.options[i];
-        let this_id = def.key + "_" + pref.key;
-        let is_checked;
-        let all_checkboxes;
-
-        switch ( pref.type ) {
-            case "text":
-                values[ pref.key ] = $(`input[data-userscript-pref=${this_id}]`).first().val();
-                break;
-            case "checkbox":
-                is_checked = $(`input[data-userscript-pref=${this_id}]`).first().prop("checked");
-                values[ pref.key ] = is_checked ? true : false;
-                break;
-            case "array_checkbox":
-                all_checkboxes = $(`input[data-userscript-pref=${this_id}]`);
-                values[ pref.key ] = {};
-                all_checkboxes.map( function() {
-                    values[ pref.key ][ $(this).prop("name") ] = $(this).prop("checked") ? true : false;
-                } );
-                break;
-            case "radio":
-                values[ pref.key ] = $(`input[data-userscript-pref=${this_id}]:checked`).val();
-                break;
-
-        }
-    }
-
-    localStorage.setItem(
-        def.key,
-        JSON.stringify( values )
-    );
-
-    $( `button[data-userscript-save=${def.key}]` ).first().append(
-        "<span class='fa fa-check-circle' style='color: green; padding-left: 0.5em'></span>"
-    );
-
-    window.setTimeout(
-        function() {
-            $( `button[data-userscript-save=${def.key}]` )
-                .first()
-                .find( "span[class^=fa]" )
-                .remove();
-        },
-        1000
-    );
 }
 
 function _userscript_preferences_return_config( def ) {
