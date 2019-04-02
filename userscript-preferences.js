@@ -13,43 +13,34 @@ function userscript_preferences( def ) {
         }
     }
 
+    let config = _userscript_preferences_return_config( def );
+
     if ( "/preferences" === window.location.pathname ) {
-        _userscript_preferences_add_ui( def );
+        _userscript_preferences_add_ui( def, config );
     }
 
-    return _userscript_preferences_return_config( def );
+    return config;
 }
 
-function _userscript_preferences_add_ui( def ) {
+function _userscript_preferences_add_ui( def, values ) {
     "use strict";
 
-    let stored_defaults = {};
-    let stored_defaults_str = localStorage.getItem( def.key );
-    if ( stored_defaults_str ) {
-        try {
-            stored_defaults = JSON.parse( stored_defaults_str );
-        }
-        catch (error) {
-            // console.log("caught error");
-            // console.log(error);
-        }
-    }
-
-    if ( !core_prefs ) {
-        core_prefs = $("#preferences");
-    }
-
+    let container = $( "<span></span>" );
     let label = def.label || def.key;
-    core_prefs.append( `<h2 class='settings-header'>UserScript: ${label}</h2>` );
+    let dl = $("<dl></dl>");
+    container.append( `<h2 class='settings-header'>UserScript: ${label}</h2>` );
+    container.append(dl);
 
-    for ( let i=0; i<def.options.length; i++ ) {
+    for ( let i in def.options ) {
         let pref = def.options[i];
-        let dl = $("<dl></dl>");
+        let this_id = def.key + "_" + pref.key;
+        let this_value = values[ pref.key ];
+        let dt = $("<td></td>");
         let dd = $("<dd></dd>");
+        dl.append( dt, dd );
 
-        core_prefs.append(dl);
-        let this_label = pref.label || pref.key;
-        let dt = $( `<dt>${this_label}</dt>` );
+        dt.text( pref.label || pref.key );
+
         if (pref.help) {
             dt.append( $(
                 "<span></span>",
@@ -60,56 +51,66 @@ function _userscript_preferences_add_ui( def ) {
                 }
             ) );
         }
-        dl.append( dt, dd );
-        let this_value;
-        if ( stored_defaults.hasOwnProperty( pref.key ) ) {
-            this_value = stored_defaults[ pref.key ];
-        }
-        else if ( pref.default ) {
-            this_value = pref.default;
-        }
-        let this_id = def.key + "_" + pref.key;
 
-        let checked;
+        let input = $(
+            "<input/>",
+            {
+                "data-userscript-pref": this_id
+            }
+        );
 
         switch ( pref.type ) {
             case "text":
-                dd.append(
-                    `<input data-userscript-pref='${this_id}' type='text' value='${this_value}' />`
-                );
+                input.prop( {
+                    type: "text",
+                    value: this_value
+                } );
+                dd.append( input );
                 break;
             case "checkbox":
-                checked = this_value ? "checked=checked" : "";
-                dd.append(
-                    `<input data-userscript-pref='${this_id}' type='checkbox' value=1 ${checked}/>`
-                );
+                input.prop( {
+                    type: "checkbox",
+                    value: 1
+                } );
+                if ( this_value ) {
+                    input.prop( "checked", "checked" );
+                }
+                dd.append( input );
                 break;
             case "array_checkbox":
-                for ( let j=0; j<pref.options.length; j++ ) {
+                for ( let j in pref.options ) {
                     let key     = pref.options[j].key;
                     let label   = pref.options[j].label || key;
-                    let checked = ( this_value && this_value.hasOwnProperty(key) && this_value[key] ) ? "checked=checked" : "";
-                    dd.append(
-                        "<label>"+
-                        `<input data-userscript-pref='${this_id}' name='${key}' type='checkbox' value=1 ${checked} />`+
-                        label+
-                        "</label>"+
-                        "<br />"
-                    );
+                    let input_i = input.clone();
+                    input_i.prop( {
+                        name: key,
+                        type: "checkbox",
+                        value: 1
+                    } );
+                    if ( this_value && this_value.hasOwnProperty(key) && this_value[key] ) {
+                        input_i.prop( "checked", "checked" );
+                    }
+                    let olabel = $( "<label></label>", { css: { clear: "all" } } );
+                    olabel.append( input, label );
+                    dd.append( olabel );
                 }
                 break;
             case "radio":
-                // let item_id = this_id + "_" + i;
-                for ( let j=0; j<pref.options.length; j++ ) {
+                for ( let j in pref.options ) {
                     let value = pref.options[j];
-                    let checked = value === this_value ? "checked=checked" : "";
-                    dd.append(
-                        "<label>"+
-                        `<input data-userscript-pref='${this_id}' name='${this_id}' type='radio' value='${value}' ${checked} />`+
-                        value+
-                        "</label>"+
-                        "<br />"
-                    );
+                    let input_i = input.clone();
+                    input_i.prop( {
+                        name: this_id,
+                        type: "radio",
+                        value: value,
+                        html: value
+                    } );
+                    if ( this_value && ( this_value === value ) ) {
+                        input_i.prop( "checked", "checked" );
+                    }
+                    let olabel = $( "<label></label>", { css: { clear: "all" } } );
+                    olabel.append( input_i );
+                    dd.append( olabel );
                 }
                 break;
         }
@@ -120,10 +121,16 @@ function _userscript_preferences_add_ui( def ) {
         _save_userscript_settings(def);
     } );
 
-    core_prefs.append(
+    container.append(
         "<dt></dt>",
         $("<dd></dd>").append( save )
     );
+
+    if ( !core_prefs ) {
+        core_prefs = $("#preferences");
+    }
+
+    core_prefs.append( container );
 }
 
 function _save_userscript_settings(def) {
@@ -179,18 +186,17 @@ function _save_userscript_settings(def) {
     );
 }
 
-function _userscript_preferences_return_config( def, stored_config ) {
+function _userscript_preferences_return_config( def ) {
     "use strict";
 
-    if ( !stored_config ) {
-        let stored_config_str = localStorage.getItem( def.key );
-        try {
-            stored_config = JSON.parse( stored_config_str );
-        }
-        catch (error) {
-            // console.log("caught error");
-            // console.log(error);
-        }
+    let stored_config;
+    let stored_config_str = localStorage.getItem( def.key );
+    try {
+        stored_config = JSON.parse( stored_config_str );
+    }
+    catch (error) {
+        // console.log("caught error");
+        // console.log(error);
     }
 
     if ( !stored_config ) {
