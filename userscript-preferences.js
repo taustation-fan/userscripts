@@ -1,3 +1,4 @@
+/* exported userscript_preferences */
 var core_prefs;
 
 function userscript_preferences( def ) {
@@ -65,14 +66,21 @@ function _userscript_preferences_add_ui( def, values ) {
                 } );
                 dd.append( input );
                 break;
-            case "checkbox":
-                input.prop( {
-                    type: "checkbox",
-                    value: 1
+            case "boolean":
+            case "bool":
+                input = $(
+                    "<button></button",
+                    {
+                        "data-userscript-pref": pref.key,
+                        "data-state": ( this_value ? 1 : 0 ),
+                        class: "toggle",
+                        text: ( this_value ? " On " : " Off " ),
+                        type: "checkbox",
+                        value: 1
+                    } );
+                input.click( function(event) {
+                    _toggle_userscript_boolean.call( this, event, def, values );
                 } );
-                if ( this_value ) {
-                    input.prop( "checked", "checked" );
-                }
                 dd.append( input );
                 break;
             case "array_checkbox":
@@ -129,6 +137,26 @@ function _userscript_preferences_add_ui( def, values ) {
     }
 
     core_prefs.append( container );
+}
+
+function _toggle_userscript_boolean( event, def, values ) {
+    let button = $(this);
+    let id = button.attr( "data-userscript-pref" );
+    let on = 1 == button.attr( "data-state" ) ? true : false;
+
+    button.attr( "data-state", on ? 0 : 1 );
+
+    values[id] = on ? false : true;
+
+    localStorage.setItem(
+        def.key,
+        JSON.stringify( values )
+    );
+
+    button.text( on ? " Off " : " On " );
+
+    event.preventDefault();
+    event.stopPropagation();
 }
 
 function _save_userscript_settings(def) {
