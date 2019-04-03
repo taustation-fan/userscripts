@@ -32,7 +32,6 @@ function _userscript_preferences_add_ui( def, values ) {
 
     for ( let i in def.options ) {
         let pref = def.options[i];
-        let this_id = def.key + "_" + pref.key;
         let has_value = values.hasOwnProperty( pref.key );
         let this_value = values[ pref.key ];
         let dt = $("<dt></dt>");
@@ -56,7 +55,7 @@ function _userscript_preferences_add_ui( def, values ) {
         let input = $(
             "<input/>",
             {
-                "data-userscript-pref": pref.key
+                name: pref.key
             }
         );
 
@@ -82,8 +81,8 @@ function _userscript_preferences_add_ui( def, values ) {
                 input = $(
                     "<button></button",
                     {
-                        "data-userscript-pref": pref.key,
                         "data-state": ( this_value ? 1 : 0 ),
+                        name: pref.key,
                         class: "toggle",
                         text: ( this_value ? " On " : " Off " )
                     } );
@@ -100,8 +99,8 @@ function _userscript_preferences_add_ui( def, values ) {
                     input = $(
                         "<button></button",
                         {
-                            "data-userscript-pref": pref.key,
                             "data-userscript-item": key,
+                            name: pref.key,
                             class: "toggle"
                         } );
                     if ( has_value && this_value.hasOwnProperty(key) && this_value[key] ) {
@@ -125,7 +124,7 @@ function _userscript_preferences_add_ui( def, values ) {
                     let value = pref.options[j];
                     let input_i = input.clone();
                     input_i.prop( {
-                        name: this_id,
+                        name: pref.key,
                         type: "radio",
                         value: value,
                         text: value
@@ -147,7 +146,7 @@ function _userscript_preferences_add_ui( def, values ) {
                 input = $(
                     "<select></select>",
                     {
-                        "data-userscript-pref": pref.key,
+                        name: pref.key,
                         style: "margin-right: 0.5em"
                     } );
                 for ( let j in pref.options ) {
@@ -184,7 +183,7 @@ function _userscript_preferences_add_ui( def, values ) {
 function _save_userscript_field( def, values, feedback ) {
     let input = $(this);
 
-    let id = input.attr( "data-userscript-pref" );
+    let id = input.prop( "name" );
     values[id] = input.val();
 
     localStorage.setItem(
@@ -197,7 +196,7 @@ function _save_userscript_field( def, values, feedback ) {
 
 function _toggle_userscript_boolean( event, def, values ) {
     let button = $(this);
-    let id = button.attr( "data-userscript-pref" );
+    let id = button.prop( "name" );
     let on = 1 == button.attr( "data-state" ) ? true : false;
 
     button.attr( "data-state", on ? 0 : 1 );
@@ -217,7 +216,7 @@ function _toggle_userscript_boolean( event, def, values ) {
 
 function _toggle_userscript_boolean_array( event, def, values ) {
     let button = $(this);
-    let outer_id = button.attr( "data-userscript-pref" );
+    let outer_id = button.prop( "name" );
     let inner_id = button.attr( "data-userscript-item" );
     let on = 1 == button.attr( "data-state" ) ? true : false;
 
