@@ -33,6 +33,7 @@ function _userscript_preferences_add_ui( def, values ) {
     for ( let i in def.options ) {
         let pref = def.options[i];
         let this_id = def.key + "_" + pref.key;
+        let has_value = values.hasOwnProperty( pref.key );
         let this_value = values[ pref.key ];
         let dt = $("<dt></dt>");
         let dd = $("<dd></dd>");
@@ -103,7 +104,7 @@ function _userscript_preferences_add_ui( def, values ) {
                             "data-userscript-item": key,
                             class: "toggle"
                         } );
-                    if ( this_value && this_value.hasOwnProperty(key) && this_value[key] ) {
+                    if ( has_value && this_value.hasOwnProperty(key) && this_value[key] ) {
                         input.prop( "data-state", 1 );
                         input.text( " On " );
                     }
@@ -129,7 +130,7 @@ function _userscript_preferences_add_ui( def, values ) {
                         value: value,
                         text: value
                     } );
-                    if ( this_value && ( this_value === value ) ) {
+                    if ( has_value && ( this_value === value ) ) {
                         input_i.prop( "checked", "checked" );
                     }
                     input_i.click( function(event) {
