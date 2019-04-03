@@ -61,7 +61,7 @@ function _userscript_preferences_add_ui( def, values ) {
 
         switch ( pref.type ) {
             case "text":
-                input.prop( {
+                input.attr( {
                     type: "text",
                     value: this_value
                 } );
@@ -81,10 +81,10 @@ function _userscript_preferences_add_ui( def, values ) {
                 input = $(
                     "<button></button",
                     {
-                        "data-state": ( this_value ? 1 : 0 ),
                         name: pref.key,
                         class: "toggle",
-                        text: ( this_value ? " On " : " Off " )
+                        text: ( this_value ? " On " : " Off " ),
+                        prop: { "data-state": ( this_value ? 1 : 0 ) }
                     } );
                 input.click( function(event) {
                     _toggle_userscript_boolean.call( this, event, def, values );
@@ -99,9 +99,9 @@ function _userscript_preferences_add_ui( def, values ) {
                     input = $(
                         "<button></button",
                         {
-                            "data-userscript-item": key,
                             name: pref.key,
-                            class: "toggle"
+                            class: "toggle",
+                            prop: { "data-userscript-item": key }
                         } );
                     if ( has_value && this_value.hasOwnProperty(key) && this_value[key] ) {
                         input.prop( "data-state", 1 );
@@ -123,7 +123,7 @@ function _userscript_preferences_add_ui( def, values ) {
                 for ( let j in pref.options ) {
                     let value = pref.options[j];
                     let input_i = input.clone();
-                    input_i.prop( {
+                    input_i.attr( {
                         name: pref.key,
                         type: "radio",
                         value: value,
@@ -183,7 +183,7 @@ function _userscript_preferences_add_ui( def, values ) {
 function _save_userscript_field( def, values, feedback ) {
     let input = $(this);
 
-    let id = input.prop( "name" );
+    let id = input.attr( "name" );
     values[id] = input.val();
 
     localStorage.setItem(
@@ -196,10 +196,10 @@ function _save_userscript_field( def, values, feedback ) {
 
 function _toggle_userscript_boolean( event, def, values ) {
     let button = $(this);
-    let id = button.prop( "name" );
-    let on = 1 == button.attr( "data-state" ) ? true : false;
+    let id = button.attr( "name" );
+    let on = 1 === Number( button.prop( "data-state" ) ) ? true : false;
 
-    button.attr( "data-state", on ? 0 : 1 );
+    button.prop( "data-state", on ? 0 : 1 );
 
     values[id] = on ? false : true;
 
@@ -216,11 +216,11 @@ function _toggle_userscript_boolean( event, def, values ) {
 
 function _toggle_userscript_boolean_array( event, def, values ) {
     let button = $(this);
-    let outer_id = button.prop( "name" );
-    let inner_id = button.attr( "data-userscript-item" );
-    let on = 1 == button.attr( "data-state" ) ? true : false;
+    let outer_id = button.attr( "name" );
+    let inner_id = button.prop( "data-userscript-item" );
+    let on = 1 === Number( button.prop( "data-state" ) ) ? true : false;
 
-    button.attr( "data-state", on ? 0 : 1 );
+    button.prop( "data-state", on ? 0 : 1 );
 
     if ( !values.hasOwnProperty(outer_id) ) {
         values[outer_id] = {};
