@@ -73,7 +73,7 @@ function _userscript_preferences_add_ui( def, values ) {
                         _userscript_preferences_waiting( feedback );
                     } );
                 input.donetyping( function() {
-                    _save_userscript_text.call( this, def, values, feedback );
+                    _save_userscript_field.call( this, def, values, feedback );
                 } );
                 dd.append( input, feedback );
                 break;
@@ -133,9 +133,9 @@ function _userscript_preferences_add_ui( def, values ) {
                     if ( has_value && ( this_value === value ) ) {
                         input_i.prop( "checked", "checked" );
                     }
-                    input_i.click( function(event) {
+                    input_i.click( function() {
                         _userscript_preferences_waiting( feedback );
-                        _save_userscript_radio.call( this, def, values, feedback );
+                        _save_userscript_field.call( this, def, values, feedback );
                     } );
                     let olabel = $( "<label></label>", { css: { "margin-right": "0.5em" } } );
                     olabel.append( input_i, value );
@@ -153,22 +153,9 @@ function _userscript_preferences_add_ui( def, values ) {
     core_prefs.append( container );
 }
 
-function _save_userscript_text( def, values, feedback ) {
+function _save_userscript_field( def, values, feedback ) {
     let input = $(this);
 
-    let id = input.attr( "data-userscript-pref" );
-    values[id] = input.val();
-
-    localStorage.setItem(
-        def.key,
-        JSON.stringify( values )
-    );
-
-    _userscript_preferences_ok( feedback );
-}
-
-function _save_userscript_radio( def, values, feedback ) {
-    let input = $(this);
     let id = input.attr( "data-userscript-pref" );
     values[id] = input.val();
 
