@@ -45,12 +45,13 @@ function _userscript_preferences_add_ui( def, values ) {
                 "<span></span>",
                 {
                     class: "fa fa-question-circle",
-                    style: "padding-left: 0.5em;",
+                    style: "margin-left: 0.5em;",
                     title: pref.help
                 }
             ) );
         }
 
+        let feedback = $( "<span></span>" );
         let input = $(
             "<input/>",
             {
@@ -64,21 +65,16 @@ function _userscript_preferences_add_ui( def, values ) {
                     type: "text",
                     value: this_value
                 } );
+                input.css( { "margin-right": "0.5em" } );
                 input.on(
                     "keyup keypress paste",
                     function() {
-                        let spinner = $(this).next();
-                        spinner.css( "color", "" );
-                        spinner.removeClass("fa-check-circle");
-                        spinner.addClass("fa fa-spinner fa-spin");
+                        _userscript_preferences_waiting( feedback );
                     } );
                 input.donetyping( function() {
-                    _save_userscript_text.call( this, def, values );
+                    _save_userscript_text.call( this, def, values, feedback );
                 } );
-                dd.append(
-                    input,
-                    $( "<span></span>", { css: { "padding": "0 0.5em" } } )
-                );
+                dd.append( input, feedback );
                 break;
             case "boolean":
             case "bool":
@@ -137,12 +133,14 @@ function _userscript_preferences_add_ui( def, values ) {
                         input_i.prop( "checked", "checked" );
                     }
                     input_i.click( function(event) {
-                        _save_userscript_radio.call( this, def, values );
+                        _userscript_preferences_waiting( feedback );
+                        _save_userscript_radio.call( this, def, values, feedback );
                     } );
-                    let olabel = $( "<label></label>", { css: { display: "block" } } );
+                    let olabel = $( "<label></label>", { css: { "margin-right": "0.5em" } } );
                     olabel.append( input_i, value );
                     dd.append( olabel );
                 }
+                dd.append( feedback );
                 break;
         }
     }
@@ -154,9 +152,8 @@ function _userscript_preferences_add_ui( def, values ) {
     core_prefs.append( container );
 }
 
-function _save_userscript_text( def, values ) {
+function _save_userscript_text( def, values, feedback ) {
     let input = $(this);
-    let spinner = input.next();
 
     let id = input.attr( "data-userscript-pref" );
     values[id] = input.val();
@@ -166,12 +163,10 @@ function _save_userscript_text( def, values ) {
         JSON.stringify( values )
     );
 
-    spinner.removeClass( "fa-spinner fa-spin" );
-    spinner.addClass( "fa-check-circle" );
-    spinner.css( "color", "green" );
+    _userscript_preferences_ok( feedback );
 }
 
-function _save_userscript_radio( def, values ) {
+function _save_userscript_radio( def, values, feedback ) {
     let input = $(this);
     let id = input.attr( "data-userscript-pref" );
     values[id] = input.val();
@@ -180,6 +175,8 @@ function _save_userscript_radio( def, values ) {
         def.key,
         JSON.stringify( values )
     );
+
+    _userscript_preferences_ok( feedback );
 }
 
 function _toggle_userscript_boolean( event, def, values ) {
@@ -229,6 +226,18 @@ function _toggle_userscript_boolean_array( event, def, values ) {
 
     event.preventDefault();
     event.stopPropagation();
+}
+
+function _userscript_preferences_waiting( el ) {
+    el.css( "color", "" );
+    el.removeClass("fa-check-circle");
+    el.addClass("fa fa-spinner fa-spin");
+}
+
+function _userscript_preferences_ok( el ) {
+    el.removeClass( "fa-spinner fa-spin" );
+    el.addClass( "fa fa-check-circle" );
+    el.css( "color", "green" );
 }
 
 function _userscript_preferences_return_config( def ) {
