@@ -143,6 +143,34 @@ function _userscript_preferences_add_ui( def, values ) {
                 }
                 dd.append( feedback );
                 break;
+            case "select":
+                input = $(
+                    "<select></select>",
+                    {
+                        "data-userscript-pref": pref.key,
+                        style: "margin-right: 0.5em"
+                    } );
+                for ( let j in pref.options ) {
+                    let opt = pref.options[j];
+                    let value = Array.isArray( opt ) ? opt[0] : opt.value;
+                    let label = Array.isArray( opt ) ? opt[1] : opt.label;
+                    let option = $( "<option></option>",
+                        {
+                            value: value,
+                            text: label
+                        } );
+                    if ( has_value && ( this_value === value ) ) {
+                        option.prop( "selected", "selected" );
+                    }
+                    input.append( option );
+                }
+                input.change( function() {
+                    _userscript_preferences_waiting( feedback );
+                    _save_userscript_field.call( this, def, values, feedback );
+                } );
+                dd.append( input, feedback );
+
+                break;
         }
     }
 
