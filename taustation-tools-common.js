@@ -71,9 +71,9 @@ function tST_add_base_UI() {
         let timer_width = target.css('width'); // If target didn't match anything, this returns undefined.
         timer_width = (timer_width ? 'width:' + timer_width + ';' : '');
 
-        // Use "position:absolute;" to avoid shifting the page content downwards,
-        // then add the area's current width so we can still center it.
-        new_ui_html = '<ul id="tST-icons-region" style="position:absolute; ' + timer_width + '">\n</ul>\n';
+        // Since this id's CSS uses "position:absolute;" (to avoid shifting the page content
+        // downwards), add the area's current width so we can still center it.
+        new_ui_html = '<ul id="tST-icons-region" style="' + timer_width + '">\n</ul>\n';
 
         if (target.length) {
             target.parent().addClass('tST-icons-adjustment');

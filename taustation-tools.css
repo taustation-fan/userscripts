@@ -47,12 +47,13 @@ Regions for UI added by userscripts.
 An icon bar, that appears below the GCT time display at the top of the page.
 Each script adds its icon to the list; click an icon to show/hide the given script's UI.
 
-(Assumes "position: absolute; width: [calculated]px;" (to avoid shifting the page down),
- which is added by taustation-tools-common.js after it calculates the current width.
+(Assumes "width: [calculated]px;" (to avoid shifting the page down),
+ which is added by taustation-tools-common.js.
 */
 
 #tST-icons-region {
     z-index: 1;
+    position: absolute;
     display: flex;
     justify-content: center;
     padding: 0;
