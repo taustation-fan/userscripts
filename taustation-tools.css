@@ -4,7 +4,7 @@ CSS formatting that supports .../taustation-tools-common.js & related UserScript
  - name         taustation-tools.css
  - namespace    https://github.com/taustation-fan/userscripts/
  - downloadURL  https://github.com/taustation-fan/userscripts/raw/master/taustation-tools.css
- - version      0.3
+ - version      0.4
  - description  Common CSS formatting shared by my Tau Station userscripts.
  - author       Mark Schurman (https://github.com/quasidart)
  - match        https://alpha.taustation.space/*
@@ -17,6 +17,7 @@ Changelist:
  - v0.1: Initial commit.
  - v0.2: New: Icons for client scripts (clicking icon shows/hides each script's UI)
  - v0.3: Set floatbox max-width, to be friendlier to mobile screens.
+ - v0.4: Updated icons-area CSS based on new location under GCT info (always present).
 */
 
 /*
@@ -25,7 +26,7 @@ Regions for UI added by userscripts.
 
 /* Top-level region, containing individual userscripts' UI regions.
    (Generally only one per page, unless scripts need to add UI in different areas.) */
-.tST-container {
+   .tST-container {
     display: flow-root;
     border: 1px solid #13628b;
     background-color: #242634;
@@ -43,9 +44,36 @@ Regions for UI added by userscripts.
 }
 
 /*
-An icon bar, that appears in the left half of the sidebar's row of right-justified icons.
+An icon bar, that appears below the GCT time display at the top of the page.
 Each script adds its icon to the list; click an icon to show/hide the given script's UI.
 */
+
+/* Shift the GCT display upward, to make room for icons below it.
+   The amounts vary, based on how GCT is displayed for the current screen width. */
+
+/* Smallest screens (width < 450 pixels): Mobile page layout; GCT shows only dd/ss:uuu, in smaller font */
+.coordinated-time.tST-icons-adjustment { margin-top: -0.4em; }
+#tST-icons-region                      { margin-top:  0.3em; }
+
+/* Less-small screens (450+ pixels wide): Mobile page layout; GCT shows only dd/ss:uuu, in normal font (slightly taller than in narrower screens). */
+@media screen and (min-width: 28.125em) {
+    .coordinated-time.tST-icons-adjustment { margin-top: -0.4em; } /* margin-top: -0.3em; */
+    #tST-icons-region                      { margin-top:  0.2em; } /* margin-top: -0.3em; */
+}
+
+/* Mid-size screens (500+ pixels wide): Mobile page layout; full GCT display (incl. labels & borders). */
+@media screen and (min-width: 31.25em) {
+    .coordinated-time.tST-icons-adjustment { margin-top: -0.7em; }
+    #tST-icons-region                      { margin-top:  0.1em; }
+}
+
+/* Large screens (784+ pixels wide): Mobile page layout; Bug/Shop buttons are full size (taller header). */
+@media screen and (min-width: 49em) {
+    .coordinated-time.tST-icons-adjustment { margin-top:  -1em; }
+    #tST-icons-region                      { margin-top: 0.4em; }
+}
+
+/* Old "icons list" approach. (Icons near the top of the sidebar.) */
 .tST-icons-list {
     list-style-type: none;
     margin-top: 0;
@@ -54,6 +82,7 @@ Each script adds its icon to the list; click an icon to show/hide the given scri
     display: flex;
 }
 
+/* Individual icons. */
 .tST-icon-link {
     display: flex;
     border: 1px solid #0000;
