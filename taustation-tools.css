@@ -49,7 +49,7 @@ Each script adds its icon to the list; click an icon to show/hide the given scri
 
 (Assumes "width: [calculated]px;" (to avoid shifting the page down),
  which is added by taustation-tools-common.js.
-*/
+* /
 
 #tST-icons-region {
     z-index: 1;
@@ -58,7 +58,7 @@ Each script adds its icon to the list; click an icon to show/hide the given scri
     justify-content: center;
     padding: 0;
 }
-
+*/
 /* Shift the GCT display upward, to make room for icons below it.
    The amounts vary, based on how GCT is displayed for the current screen width. */
 
@@ -66,7 +66,7 @@ Each script adds its icon to the list; click an icon to show/hide the given scri
 .coordinated-time.tST-icons-adjustment { margin-top: -0.4em; }
 #tST-icons-region                      { margin-top:  0.3em; }
 
-/* Less-small screens (450+ pixels wide): Mobile page layout; GCT shows only dd/ss:uuu, in normal font (slightly taller). */
+/* Less-small screens (450+ pixels wide): Mobile page layout; GCT shows only dd/ss:uuu, in normal font (slightly taller than in narrower screens). */
 @media screen and (min-width: 28.125em) {
     .coordinated-time.tST-icons-adjustment { margin-top: -0.4em; } /* margin-top: -0.3em; */
     #tST-icons-region                      { margin-top:  0.2em; } /* margin-top: -0.3em; */

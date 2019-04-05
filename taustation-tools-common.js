@@ -73,7 +73,8 @@ function tST_add_base_UI() {
 
         // Since this id's CSS uses "position:absolute;" (to avoid shifting the page content
         // downwards), add the area's current width so we can still center it.
-        new_ui_html = '<ul id="tST-icons-region" style="' + timer_width + '">\n</ul>\n';
+        new_ui_html = '<ul id="tST-icons-region" style="z-index:1; display:flex; padding:0;\n' +
+                      '    justify-content:center; position:absolute; ' + timer_width + '">\n</ul>\n';
 
         if (target.length) {
             target.parent().addClass('tST-icons-adjustment');
