@@ -2,11 +2,10 @@
 // @name         taustation-tools-common
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js
-// @version      0.3
-// @description  Common code shared by my Tau Station userscripts.
+// @version      0.4
+// @description  Common code shared by Tau Station userscripts.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
-// @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
 //
@@ -19,6 +18,7 @@
 //  - v0.1: Initial commit.
 //  - v0.2: New: Icons for client scripts (clicking icon shows/hides each script's UI)
 //  - v0.3: Plays better with icon_bar userscript, and supports combat page's new stripped-down UI (non-combat UI items now absent).
+//  - v0.4: Pulls player name from Combat UI when needed (since it lacks the sidebar), and moved icons to under GCT display (always present).
 //
 
 //////////////////////////////
@@ -39,7 +39,7 @@ var tST_config = {
 // End: User Configuration.
 //////////////////////////////
 
-$(document).ready(tST_main);
+var is_firefox = (navigator.userAgent.toLowerCase().indexOf('firefox') > -1);
 
 //
 // UI variables.
@@ -54,7 +54,8 @@ var player_name;
 var log_prefix = 'TauStation Tools (common): ';
 
 async function tST_main() {
-    add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
+    //u add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
+    add_css_link('https://raw.githubusercontent.com/taustation-fan/userscripts/dev/combat-log-scratch/taustation-tools.css');
     tST_add_base_UI();
 }
 
@@ -65,21 +66,18 @@ function tST_add_base_UI() {
     // Add an area where the client scripts can place their icons.
     tST_icons = $('#tST-icons-region');
     if (! tST_icons.length) {
-        var special_layout = '';
+        target = $('.time-container');
 
-        target = $('.social-navigation');
-        if (! target.length) {
-            target = $('#content-container');
-            // If we aren't slotting the icons next to the player icon (as a column), show them in a horizontal row.
-            special_layout = ' display:flex;';
-        }
+        let timer_width = target.css('width'); // If target didn't match anything, this returns undefined.
+        timer_width = (timer_width ? 'width:' + timer_width + ';' : '');
 
-        // If this doesn't have an explicit z-index, the avatar-decoration-container ends up on
-        // a higher layer than the first icon (leaving that icon unresponsive to the mouse).
-        new_ui_html = `<ul id="tST-icons-region" class="avatar-messages" style="float:left; z-index:1;${special_layout}">\n</ul>\n`;
+        // Use "position:absolute;" to avoid shifting the page content downwards,
+        // then add the area's current width so we can still center it.
+        new_ui_html = '<ul id="tST-icons-region" style="position:absolute; ' + timer_width + '">\n</ul>\n';
 
         if (target.length) {
-            target.before(new_ui_html);
+            target.parent().addClass('tST-icons-adjustment');
+            target.append(new_ui_html);
         } else {
             console.log(log_prefix + 'Warning: No container for scripts\' icons, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
             $('body').insert(new_ui_html);
@@ -217,13 +215,19 @@ function tST_add_base_UI() {
 //
 
     function tST_get_storage_prefix(script_prefix) {
-        // Get the player's name, to let us store different session data for different player characters.
+        // Get the player's name from the sidebar, to let us store different session data for different player characters.
+        // (Note: Multiple characters per person are against the game's ToS; however, one computer could be used by
+        // different people (e.g., fmaily members) for different characters.
         if (! player_name) {
             player_name = $('#player-name').text();
-            if (player_name.length > 0) {
-                // If the user is part of a Syndicate or has VIP, drop the "[foo]" prefix/suffix.
-                script_prefix += player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, '$2') + "_";
-            }
+        }
+        if (! player_name) {
+            // If in combat, we have to pull this from the Combat UI (since it lacks the sidebar).
+            player_name = $('.combat-player--name:first').text().replace(/^(You |Player )/, '');
+        }
+        if (player_name.length > 0) {
+            // If the user is part of a Syndicate or has VIP, drop the "[foo]" prefix/suffix.
+            script_prefix += player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, '$2').trim() + "_";
         }
         return script_prefix;
     }
@@ -443,3 +447,5 @@ function getHashForJQueryObject(jq_obj) {
 //
 // #endregion Helper methods: Simplify jQuery code.
 ////////////////////
+
+$(document).ready(tST_main);
