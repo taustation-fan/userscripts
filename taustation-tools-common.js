@@ -55,7 +55,7 @@ var log_prefix = 'TauStation Tools (common): ';
 
 async function tST_main() {
     //u add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
-    add_css_link('https://raw.githubusercontent.com/taustation-fan/userscripts/dev/combat-log-scratch/taustation-tools.css');
+    add_css_link('https://cdn.jsdelivr.net/gh/taustation-fan/userscripts@dev/combat-log-scratch/taustation-tools.css');
     tST_add_base_UI();
 }
 
@@ -216,8 +216,8 @@ function tST_add_base_UI() {
 
     function tST_get_storage_prefix(script_prefix) {
         // Get the player's name from the sidebar, to let us store different session data for different player characters.
-        // (Note: Multiple characters per person are against the game's ToS; however, one computer could be used by
-        // different people (e.g., fmaily members) for different characters.
+        // (Note: Multiple characters per person are against the game's ToS; however, one computer might be used by
+        //  different people (e.g., family members) for different characters.)
         if (! player_name) {
             player_name = $('#player-name').text();
         }
