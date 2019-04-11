@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         discreet_keyboard_navigation
 // @namespace    https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @version      1.0
+// @version      1.1
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
-// @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available in the scriot source.
+// @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available on User Preferences page.
 // @match        https://alpha.taustation.space/*
+// @require      https://code.jquery.com/jquery-3.3.1.min.js
+// @require      https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // @grant        none
 // ==/UserScript==
 
@@ -16,34 +18,16 @@
 // for would-be attackers. It is also greatly reduces RSI flare-up from too
 // much mouse use for me.
 
+// Nothing user-configurable below
+// To configure, visit in-game User Preferences (/preferences)
+
 (function() {
     'use strict';
 
-    // Set to key to press (with control) to step the discreet work
-    let KEY_PRESS = 'd';
-
-    // When true, after mission is complete, will return to discreet area
-    // to start the next mission. When false, pressing Ctrl-d after
-    // completing the mission will do nothing.
-    let LOOP_AFTER_COMPLETION = true;
-
-    // When true, adjust style of icon bar to allow more icons and then
-    // insert an icon which will perform the next discreet action. This is
-    // useful on mobile where keyboard navigation is useless. However, due
-    // to Tau Station scrolling down to mission steps, you will do a
-    // mixture of tapping the discreet icon and tapping the usual Tau
-    // Station mission steps. This is still quite helpful on mobile since
-    // it still reduces scrolling and tapping, just not as convenient as on
-    // desktop. This combined with the fact that it messes with the icon
-    // box style means I leave it disabled by default.
-    let ADD_DISCREET_ICON = false;
-
-
-    // JUST IMPLEMENTATION BELOW, NOTHING MORE TO CONFIGURE!
-    // -----------------------------------------------------
+    let options = userscript_preferences( get_prefs_spec() );
 
     // If we are adding an icon, we need more room!
-    if (ADD_DISCREET_ICON) {
+    if (options.add_discreet_icon) {
         let head = document.getElementsByTagName('head')[0];
         let s = document.createElement('style');
         s.setAttribute('type', 'text/css');
@@ -124,7 +108,7 @@
         }
 
         // You go back, Jack, do it again
-        if (LOOP_AFTER_COMPLETION) {
+        if (options.loop_after_completion) {
             ns = document.querySelectorAll('.mission-updates');
             for (let i = 0; i < ns.length; i++) {
                 if (ns[i].textContent.match(/You have completed the "Anonymous" mission/)) {
@@ -187,6 +171,51 @@
         return li;
     }
 
+    // Spec for userscript-preferences.js library
+    function get_prefs_spec() {
+        return {
+            key: "discreet_kb_nav_prefs",
+            label: "Discreet Keyboard Navigation",
+            options: [
+                {
+                    key: "key_press",
+                    label: "Key to press to step the discreet work",
+                    type: "text",
+                    default: "d"
+                },
+                {
+                    key: "key_modifier",
+                    label: "Modifier key to combine with above key",
+                    type: "select",
+                    default: "ctrlKey",
+                    options: [
+                        { value: "", label: "(none)" },
+                        { value: "ctrlKey", label: "CTRL" },
+                        { value: "altKey", label: "ALT" },
+                    ]
+                },
+                {
+                    key: "loop_after_completion",
+                    label: "Loop After Completion",
+                    help: "After mission is complete, will return to discreet area to start the next mission",
+                    type: "boolean",
+                    default: true
+                },
+                {
+                    key: "add_discreet_icon",
+                    label: "Add Discreet Icon",
+                    help: "Rearrange icon bar and add an icon to perform next step. Useful on mobiles",
+                    type: "boolean"
+                },
+                {
+                    key: "debug",
+                    label: "Debug",
+                    type: "boolean"
+                }
+            ]
+        };
+    }
+
 
     // Set it up
     // ---------
@@ -200,14 +229,24 @@
     }
 
     if (enable) {
-        if (ADD_DISCREET_ICON) {
+        if (options.add_discreet_icon) {
             let icon = add_icon("fa-bookmark", { "style": "color: #c24004;" });
             if (icon) { icon.onclick = _discreet_step; }
         }
 
-        // Listen for Control-d then perform a step
+        // Listen for bound key-combination then perform a step
         document.addEventListener('keydown', (event) => {
-            if (event.ctrlKey && KEY_PRESS == event.key) {
+            let match = false;
+            if ( options.key_modifier.length > 0 && options.hasOwnProperty("key_modifier") ) {
+                if ( event[ options.key_modifier ] && event.key === options.key_press ) {
+                    match = true;
+                }
+            }
+            else if ( event.key === options.key_press && !event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey ) { // No modifier configured
+                match = true;
+            }
+
+            if (match) {
                 _discreet_step();
                 event.preventDefault();
                 event.stopPropagation();
