@@ -27,6 +27,8 @@
 
     let options = userscript_preferences( get_prefs_spec() );
 
+    // stop trigger-happy fingers from following a link twice before page reload
+    let followed_link = false;
     // If we are adding an icon, we need more room!
     if (options.add_discreet_icon) {
         let head = document.getElementsByTagName('head')[0];
@@ -77,10 +79,15 @@
         let node;
         let ns;
 
+        if (followed_link) {
+            return;
+        }
+
         // People page with a mission NPC
         node = document.querySelector('a.has-mission')
         if (node) {
             window.location.href = node.getAttribute('href');
+            followed_link = true;
             return;
         }
 
@@ -105,6 +112,7 @@
         node = document.querySelector('a[href="/area/discreet-work/accept"]');
         if (node) {
             window.location.href = node.getAttribute('href');
+            followed_link = true;
             return;
         }
 
@@ -114,6 +122,7 @@
             for (let i = 0; i < ns.length; i++) {
                 if (ns[i].textContent.match(/You have completed the "Anonymous" mission/)) {
                     window.location.href = '/travel/area/discreet-work';
+                    followed_link = true;
                     return;
                 }
             }
