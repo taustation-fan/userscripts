@@ -113,6 +113,7 @@
             for (let i = 0; i < ns.length; i++) {
                 if (ns[i].textContent.match(/You have completed the "Anonymous" mission/)) {
                     window.location.href = '/travel/area/discreet-work';
+                    return;
                 }
             }
         }
