@@ -5,7 +5,8 @@
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
 // @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available on User Preferences page.
-// @match        https://alpha.taustation.space/*
+// @match        https://alpha.taustation.space/area/*
+// @match        https://alpha.taustation.space/character/*
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // @grant        none
