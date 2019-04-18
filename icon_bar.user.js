@@ -2,28 +2,89 @@
 // @name        taustation_icon_bar
 // @namespace   https://github.com/taustation-fan
 // @description Extension to add quick-link icons to the icon bar at taustation.space
+// @downloadURL https://github.com/taustation-fan/userscripts/raw/master/icon_bar.user.js
 // @match       https://alpha.taustation.space/*
-// @version     3
+// @version     4
 // @author      duelafn
+// @require     https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    let SHIP_ID = "000-AA005";               // Set to YOUR ship serial number
+    // To configure this script, visit the in-game Preferences page (/preferences).
+    let options = userscript_preferences( icon_bar_preferences_definition() );
 
-    // Disable any key or icon by setting it to an empty string.
-    let KEY_GOTO_HOTEL = 'h';
-    let KEY_GOTO_SHIP  = 's';
-
-    // May set icon to any font-awesome 4 icon name.
-    let ICON_HOTEL    = 'fa-bed';            // Bed icon: go to hotel room (needs two clicks)
-    let ICON_SHIP     = 'fa-space-shuttle';  // Spaceship icon: go to ship (needs two clicks, and set serial number!)
-    let ICON_WELL_FED = 'fa-cutlery';        // Fork and Knife icon: Displayed if currently "Well-Fed"
-
-
-    // JUST IMPLEMENTATION BELOW, NOTHING MORE TO CONFIGURE!
-    // -----------------------------------------------------
+    function icon_bar_preferences_definition() {
+        return {
+            player_key: 'icon_bar_prefs',
+            label: 'Icon Bar',
+            options: [
+                {
+                    label:   'Action: "Go to your hotel room" icon:',
+                    help:    'To use, activate the icon twice.'
+                },
+                {
+                    key:     'KEY_GOTO_HOTEL',
+                    label:   '   • Hotkey: (if desired)',
+                    type:    'text',
+                    default: 'h'
+                },
+                {
+                    key:     'ICON_HOTEL',
+                    label:   '   • Icon: (any Font-Awesome 4 icon name)',
+                    type:    'text',
+                    default: 'fa-bed'
+                },
+                {
+                    label:   'Action: "Go to your ship" icon:',
+                    help:    'To use, activate the icon twice, allowing page to reload between attempts.'
+                },
+                {
+                    key:     'SHIP_ID',
+                    label:   '   • Ship registration number:',
+                    help:    'If this field is blank, the Ship icon is not added.',
+                    type:    'text'
+                },
+                {
+                    key:     'KEY_GOTO_SHIP',
+                    label:   '   • Hotkey: (if desired)',
+                    type:    'text',
+                    default: 's'
+                },
+                {
+                    key:     'ICON_SHIP',
+                    label:   '   • Icon:',
+                    type:    'text',
+                    default: 'fa-space-shuttle'
+                },
+                {
+                    label:   'Status: "Well-fed" icon:',
+                    help:    'Indicates whether the player is currently "Well-Fed".'
+                },
+                {
+                    key:     'ICON_WELL_FED',
+                    label:   '   • Icon:',
+                    type:    'text',
+                    default: 'fa-cutlery'
+                },
+                {
+                    label:   'General configuration:'
+                },
+                {
+                    key:     'MODIFIER_KEY',
+                    label:   '   • Modifier key to combine with above hotkeys:',
+                    type:    'select',
+                    default: 'ctrlKey',
+                    options: [
+                        { value: '',        label: '(none)' },
+                        { value: 'ctrlKey', label: 'CTRL' },
+                        { value: 'altKey',  label: 'ALT' },
+                    ]
+                },
+            ]
+        };
+    }
 
     // Helper functions
     function tag() {
@@ -44,7 +105,10 @@
     }
 
     function add_icon(icon, opt={}) {
-        let icons = document.querySelector(".avatar-links");
+        // The 2019-04-18 update inserted another avatar-links area above the
+        // existing one, for character indicators (Visa, Bodyguard, and VIP).
+        // It wraps poorly with >3 icons, so keep ours in the original area.
+        let icons = document.querySelector(".avatar-links:last-of-type");
         if (!icons) { return; }
 
         let li = tag("li", { "class": "avatar-links--item" },
@@ -60,7 +124,7 @@
     // Fork and Knife icon: Displayed if currently "Well-Fed"
     // Also hides the well-fed buff banner (shows it temporarily if you hover
     // over the fork and knife, keeps it displayed if you click the icon).
-    if (ICON_WELL_FED) {
+    if (options.ICON_WELL_FED) {
         let buff_div = document.querySelector(".buff-messages");
         if (!buff_div) { return; }
         let display = buff_div.style.display;
@@ -70,7 +134,7 @@
             function(tr, idx, rs) {
                 if (idx > 0) { // skip header
                     if (tr.children[0].textContent === 'Well fed') {
-                        let icon = add_icon(ICON_WELL_FED, { "tip": "Well fed", "style": "color: #66bb6a;" });
+                        let icon = add_icon(options.ICON_WELL_FED, { "tip": "Well fed", "style": "color: #66bb6a;" });
                         if (icon) {
                             icon.onmouseover = function() { buff_div.style.display = display; };
                             icon.onmouseout  = function() { if (unknown == 0) { buff_div.style.display = "none"; } };
@@ -94,27 +158,29 @@
     } else {
         hotel_href = "/area/hotel-rooms/enter-room";
     }
-    if (ICON_HOTEL) {
-        add_icon(ICON_HOTEL, { "href": hotel_href, "tip": "GoTo Room" });
+    if (options.ICON_HOTEL) {
+        add_icon(options.ICON_HOTEL, { "href": hotel_href, "tip": "GoTo Room" });
     }
 
     let ship_href;
-    if (SHIP_ID && SHIP_ID != "000-AA005") {
-        ship_href = location.pathname.endsWith("/area/docks") ? "/area/docks/board_ship/" + SHIP_ID : "/area/docks";
-        if (ICON_SHIP) {
-            add_icon(ICON_SHIP, { "href": ship_href, "tip": "GoTo Ship" });
+    if (options.SHIP_ID && options.SHIP_ID != "000-AA005") {
+        ship_href = location.pathname.endsWith("/area/docks") ? "/area/docks/board_ship/" + options.SHIP_ID : "/area/docks";
+        if (options.ICON_SHIP) {
+            add_icon(options.ICON_SHIP, { "href": ship_href, "tip": "GoTo Ship" });
         }
     }
 
     // Listen for Control-* then perform action
     document.addEventListener('keydown', (event) => {
-        if (event.ctrlKey) {
-            if (KEY_GOTO_HOTEL == event.key) {
+        if ((! options.MODIFIER_KEY) ||
+            (options.MODIFIER_KEY === 'ctrlKey' && event.ctrlKey) ||
+            (options.MODIFIER_KEY === 'altKey'  && event.altKey)    ){
+            if (options.KEY_GOTO_HOTEL == event.key) {
                 window.location.href = hotel_href;
                 event.preventDefault();
                 event.stopPropagation();
             }
-            if (ship_href && KEY_GOTO_SHIP == event.key) {
+            if (ship_href && options.KEY_GOTO_SHIP == event.key) {
                 window.location.href = ship_href;
                 event.preventDefault();
                 event.stopPropagation();
@@ -124,14 +190,14 @@
 
     // CSS needed to make room for the additional icons
     var head = document.getElementsByTagName('head')[0];
-    if (head && (ICON_HOTEL || ICON_SHIP || ICON_WELL_FED)) {
+    if (head && (options.ICON_HOTEL || (options.ICON_SHIP && options.SHIP_ID) || options.ICON_WELL_FED)) {
         head.appendChild(tag(
             'style',
             { 'type': 'text/css' },
             `
             /* Spacing between action buttons (icons) */
             .avatar-links li + li { margin-left: 0em !important; }
-            .avatar-links li a { width: 1.75em; }
+            .avatar-links li a { width: 1.75em !important; }
             .avatar-links li .fa { margin-top: 0.8em; }
             @media (min-width: 1080px) { .avatar-links li .fa { margin-top: 0.33em; } }
         `));
