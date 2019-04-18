@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         discreet_keyboard_navigation
 // @namespace    https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @version      1.2
+// @version      1.3
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
 // @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available on User Preferences page.
+// @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
 // @match        https://alpha.taustation.space/area/*
 // @match        https://alpha.taustation.space/character/*
 // @match        https://alpha.taustation.space/preferences
@@ -38,7 +39,7 @@
         s.appendChild(document.createTextNode(`
             /* Spacing between action buttons (icons) */
             .avatar-links li + li { margin-left: 0em !important; }
-            .avatar-links li a { width: 1.75em; }
+            .avatar-links li a { width: 1.75em !important; }
             .avatar-links li .fa { margin-top: 0.8em; }
             @media (min-width: 1080px) { .avatar-links li .fa { margin-top: 0.33em; } }
         `));
@@ -172,7 +173,7 @@
 
     // Add an icon to the icon bar
     function add_icon(icon, opt={}) {
-        let icons = document.querySelector(".avatar-links");
+        let icons = document.querySelector(".avatar-links:last-of-type");
         if (!icons) { return; }
 
         let li = tag("li", { "class": "avatar-links--item" },
