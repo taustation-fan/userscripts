@@ -2,7 +2,7 @@
 // @name         TauHead Data Gatherer
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_data_gatherer.user.js
-// @version      1.9
+// @version      2.0
 // @description  Post data to TauHead API
 // @match        https://alpha.taustation.space/area/*
 // @match        https://alpha.taustation.space/character/details/*
@@ -50,7 +50,7 @@
 // Nothing user-configurable below
 //
 var tauhead_domain = "https://www.tauhead.com";
-var api_version    = "1.9";
+var api_version    = "2.0";
 
 // UI variables.
 var th_init_button_ui;
@@ -122,8 +122,8 @@ function tauhead_main() {
         tauhead_discreet_work_search();
     }
     else if ( page_path.startsWith("/area/the-wrecks") ) {
-        tauhead_wrecks_salvage_loot()        ||
         tauhead_wrecks_looking_for_trouble() ||
+        tauhead_wrecks_salvage_loot()        ||
         tauhead_wrecks_sewers();
     }
 }
@@ -294,15 +294,6 @@ function tauhead_wrecks_salvage_loot() {
         return;
     }
 
-    if ( !lines.text().match( /Your Stamina is now at \d+%/i ) ) {
-        return;
-    }
-
-    // Don't want to match this - it must be L4T, not salvageing
-    if ( lines.text().match( /Your Agility is now at \d+%/i ) ) {
-        return;
-    }
-
     let data = {
         action:          "wrecks_salvage_loot",
         current_station: tauhead_get_current_station(),
@@ -311,6 +302,8 @@ function tauhead_wrecks_salvage_loot() {
 
     if ( lines.text().match( /You did not find anything of value/i ) ) {
         data.salvage_success = 0;
+        tauhead_post( data, "Logged salvage result" );
+        return true;
     }
     else if ( lines.text().match( /You found a /i ) ) {
         let loot = tauhead_first_capture_that_matches( lines, /"([^"]+)" has been added to your inventory/i );
@@ -320,13 +313,11 @@ function tauhead_wrecks_salvage_loot() {
 
         data.salvage_success = 1;
         data.salvage_loot    = loot;
-    }
-    else {
-        return;
+        tauhead_post( data, "Logged salvage loot" );
+        return true;
     }
 
-    tauhead_post( data, "Logged salvage loot" );
-    return true;
+    return;
 }
 
 function tauhead_wrecks_looking_for_trouble() {
@@ -336,30 +327,24 @@ function tauhead_wrecks_looking_for_trouble() {
         return;
     }
 
-    if (
-        lines.text().match( /Your Agility is now at \d+%/i ) &&
-        lines.text().match( /Your Stamina is now at \d+%/i )
-    ) {
-        // Searching for a campaign
-        if ( lines.text().match( /You did not find anyone/i ) ) {
-            tauhead_wrecks_looking_for_trouble_search( false );
-            return true;
-        }
+    let campaign = lines.text().match(
+        /You have accepted the "[^"]+ Look for trouble Level (\d+) Difficulty (\w+)" campaign/i
+    );
 
-        let campaign = lines.text().match(
-            /You have accepted the "[^"]+ Look for trouble Level (\d+) Difficulty (\w+)" campaign/i
-        );
-        if (campaign) {
-            tauhead_wrecks_looking_for_trouble_search( true, campaign[1], campaign[2] );
-        }
+    if (campaign) {
+        tauhead_wrecks_looking_for_trouble_search( true, campaign[1], campaign[2] );
+        return true;
+    }
+    else if ( lines.text().match( /You did not find anyone/i ) ) {
+        tauhead_wrecks_looking_for_trouble_search( false );
         return true;
     }
 
-    let match = lines.text().match(
+    let complete = lines.text().match(
         /You have completed the "[^"]+ Look for trouble Level (\d+) Difficulty (\w+)" campaign/i
     );
 
-    if ( !match ) {
+    if ( !complete ) {
         return;
     }
 
@@ -368,8 +353,8 @@ function tauhead_wrecks_looking_for_trouble() {
     let data = {
         action:              "wrecks_looking_for_trouble_loot",
         current_station:     tauhead_get_current_station(),
-        campaign_level:      match[1],
-        campaign_difficulty: match[2],
+        campaign_level:      complete[1],
+        campaign_difficulty: complete[2],
         campaign_loot:       loot,
         player_level:        tauhead_get_player_level(),
     };
@@ -599,7 +584,6 @@ function tauhead_post( data, message ) {
     }
 
     data.api_version = api_version;
-
     $(".social-navigation")
         .first()
         .append(
