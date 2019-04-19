@@ -2,7 +2,7 @@
 // @name         Storage Tracker
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/storage_tracker.user.js
-// @version      1.5
+// @version      1.6
 // @description  Track Storage items, and show owned items in Public Market
 // @match        https://alpha.taustation.space/area/electronic-market*
 // @match        https://alpha.taustation.space/area/vendors/*
@@ -18,7 +18,7 @@
 //
 // localStorage-related variables.
 //
-var storage_key_prefix = "tSStorage_"; // Actual prefix includes player name: e.g., "tSStorage_PlayerName_".
+var localStorage_key = "storage_tracker";
 var player_name;
 var coretechs_storage;
 
@@ -38,15 +38,6 @@ function tSStorageTracker_main() {
     }
 
     config = userscript_preferences( storage_tracker_prefs() );
-
-    // Get the player's name, to let us store different session data for different player characters.
-    if (! player_name) {
-        player_name = $('#player-name').text();
-        if (player_name.length > 0) {
-            // If the user is part of a Syndicate or has VIP, drop the "[foo]" prefix/suffix.
-            storage_key_prefix += player_name.replace(/^( *\[...\] +)?([^( ]+)( +\(VIP\) *)?/, '$2') + "_";
-        }
-    }
 
     var page_path = window.location.pathname;
 
@@ -119,7 +110,7 @@ function tSStorageTracker_print_rations() {
 }
 
 function tSStorageTracker_load_from_localStorage() {
-    coretechs_storage = localStorage.getItem( storage_key_prefix + "_storage_tracker" );
+    coretechs_storage = localStorage.getItem( localStorage_key );
 
     if ( !coretechs_storage ) {
         tSStorageTracker_update_UI("No stored items found - visit Coretechs / Storage first");
@@ -172,7 +163,7 @@ function tSStorageTracker_update_localStorage_from_coretechs_storage() {
     coretechs_storage.storage.date  = date;
     coretechs_storage.storage.items_by_location = items;
     coretechs_storage.storage.item_totals       = count;
-    localStorage.setItem( storage_key_prefix + "_storage_tracker", JSON.stringify(coretechs_storage) );
+    localStorage.setItem( localStorage_key, JSON.stringify(coretechs_storage) );
 
     var count = Object.keys(count).length;
     tSStorageTracker_update_UI("Saved [" + count + "] unique items");
@@ -209,7 +200,7 @@ function tSStorageTracker_update_localStorage_from_inventory() {
     coretechs_storage.carried = {};
     coretechs_storage.carried.items = items;
     coretechs_storage.carried.date  = date;
-    localStorage.setItem( storage_key_prefix + "_storage_tracker", JSON.stringify(coretechs_storage) );
+    localStorage.setItem( localStorage_key, JSON.stringify(coretechs_storage) );
 
     var count = Object.keys(items).length;
     tSStorageTracker_update_UI("Saved [" + count + "] unique carried items");
