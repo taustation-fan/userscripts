@@ -81,9 +81,9 @@ function tSStorageTracker_count_vip(counts) {
 function tSStorageTracker_print_vip() {
     var vip_storage = tSStorageTracker_count_vip(coretechs_storage.storage.item_totals);
     var vip_inventory = tSStorageTracker_count_vip(coretechs_storage.carried.items);
-    console.log('Days of VIP in storage: ', vip_storage);
-    console.log('Days of VIP in inventory: ', vip_inventory);
-    console.log('Days of VIP total: ', vip_storage + vip_inventory);
+    tSStorageTracker_update_UI(`Days of VIP in storage: ${vip_storage}`);
+    tSStorageTracker_update_UI(`Days of VIP in inventory: ${vip_inventory}`);
+    tSStorageTracker_update_UI(`Days of VIP total: ${vip_storage + vip_inventory}`);
 }
 
 function tSStorageTracker_count_rations(counts) {
@@ -103,7 +103,7 @@ function tSStorageTracker_print_rations() {
          var key = 'ration-' + tier;
          var count = (stored[key] || 0) + (carried[key] || 0);
          if (count > 0) {
-             console.log('Ration tier ' + tier + ': ' + count);
+             tSStorageTracker_update_UI('Ration tier ' + tier + ': ' + count);
          }
      }
 }
