@@ -2,7 +2,7 @@
 // @name         Storage Tracker
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/storage_tracker.user.js
-// @version      1.7
+// @version      1.8
 // @description  Track Storage items, and show owned items in Public Market
 // @match        https://alpha.taustation.space/area/electronic-market*
 // @match        https://alpha.taustation.space/area/vendors/*
@@ -354,6 +354,9 @@ function tSStorageTracker_delete_old_localStorage() {
     for ( let i=0, len=localStorage.length; i<len; i++ ) {
         let key = localStorage.key( i );
         if ( key.match( /^tSStorage_/ ) ) {
+            names.push( key );
+        }
+        else if ( key.match( /^storage_tracker_/ ) && key !== "storage_tracker_prefs" ) {
             names.push( key );
         }
     }
