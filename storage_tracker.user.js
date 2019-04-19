@@ -8,8 +8,10 @@
 // @match        https://alpha.taustation.space/area/vendors/*
 // @match        https://alpha.taustation.space/character/inventory
 // @match        https://alpha.taustation.space/coretechs/storage
+// @match        https://alpha.taustation.space/preferences
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
+// @require      https://github.com/taustation-fan/userscripts/raw/master/userscript-preferences.js
 // @require      https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js
 // ==/UserScript==
 
@@ -22,7 +24,7 @@ var coretechs_storage;
 
 // UI variables.
 var tSStorage_region;
-
+var config;
 //
 
 $(document).ready(tSStorageTracker_main);
@@ -34,6 +36,8 @@ function tSStorageTracker_main() {
         tSStorageTracker_update_UI("localStorage browser feature not available");
         return;
     }
+
+    config = userscript_preferences( storage_tracker_prefs() );
 
     // Get the player's name, to let us store different session data for different player characters.
     if (! player_name) {
@@ -62,8 +66,14 @@ function tSStorageTracker_main() {
         tSStorageTracker_load_from_localStorage();
         tSStorageTracker_update_localStorage_from_inventory();
         tSStorageTracker_decorate_inventory();
-        tSStorageTracker_print_vip();
-        tSStorageTracker_print_rations();
+
+        if ( config.inventory_summarize_vip ) {
+            tSStorageTracker_print_vip();
+        }
+
+        if ( config.inventory_summarize_rations ) {
+            tSStorageTracker_print_rations();
+        }
     }
 }
 
@@ -322,4 +332,23 @@ function tSStorageTracker_storage_available() {
             // acknowledge QuotaExceededError only if there's something already stored
             storage.length !== 0;
     }
+}
+
+function storage_tracker_prefs() {
+    return {
+        player_key: "storage_tracker_prefs",
+        label: "Storage Tracker",
+        options: [
+            {
+                key: "inventory_summarize_vip",
+                label: "Show VIP summary on Inventory page",
+                type: "boolean"
+            },
+            {
+                key: "inventory_summarize_rations",
+                label: "Show Ration summary on Inventory page",
+                type: "boolean"
+            }
+        ]
+    };
 }
