@@ -4,7 +4,10 @@
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/storage_tracker.user.js
 // @version      1.5
 // @description  Track Storage items, and show owned items in Public Market
-// @match        https://alpha.taustation.space/*
+// @match        https://alpha.taustation.space/area/electronic-market*
+// @match        https://alpha.taustation.space/area/vendors/*
+// @match        https://alpha.taustation.space/character/inventory
+// @match        https://alpha.taustation.space/coretechs/storage
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js
