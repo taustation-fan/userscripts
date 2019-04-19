@@ -285,12 +285,16 @@ function tSStorageTracker_decorate_item_slots(slots, container_offset, label_off
 }
 
 function tSStorageTracker_update_UI(message) {
+    let prefix = "[Storage Tracker] ";
     if ( tSStorage_region === undefined ) {
-        let content_section = $(".content-container").first();
-        tSStorage_region = $('<div id="tSStorage_region"></div>').prependTo(content_section);
+        let content_section = $(".avatar-bar-container").first();
+        tSStorage_region = $('<div id="tSStorage_region"></div>').insertAfter(content_section);
+    }
+    else {
+        prefix = "";
     }
 
-    tSStorage_region.html("[Storage Tracker] "+message);
+    tSStorage_region.html( tSStorage_region.html() + `${prefix}${message}<br/>` );
 }
 
 function tSStorageTracker_storage_available() {
