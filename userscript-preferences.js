@@ -6,10 +6,11 @@ function userscript_preferences( def ) {
 
     if ( !def.key ) {
         if ( def.player_key ) {
-            def.key = _userscript_preferences_key_from_player_key( def.player_key );
+            console.log("userscript_preferences() no longer supports a 'player_key', please update your code to use 'key' instead.");
+            def.key = def.player_key;
         }
         else {
-            console.log("userscript_preferences() needs either a 'key' or 'player_key'");
+            console.log("userscript_preferences() needs a 'key'");
             return;
         }
     }
@@ -293,23 +294,6 @@ function _userscript_preferences_return_config( def ) {
     }
 
     return config;
-}
-
-var player_name;
-
-function _userscript_preferences_key_from_player_key( key ) {
-    "use strict";
-
-    // Get the player's name, to let us store different data for different player characters.
-    if ( !player_name ) {
-        player_name = $("#player-name").text();
-        player_name = $.trim( player_name );
-
-        // Remove [VIP] and [SYN]
-        player_name = player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, "$2");
-    }
-
-    return `${key}_${player_name}`;
 }
 
 ;(function($){
