@@ -2,7 +2,7 @@
 // @name         Storage Tracker
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/storage_tracker.user.js
-// @version      1.6
+// @version      1.7
 // @description  Track Storage items, and show owned items in Public Market
 // @match        https://alpha.taustation.space/area/electronic-market*
 // @match        https://alpha.taustation.space/area/vendors/*
@@ -329,7 +329,7 @@ function tSStorageTracker_storage_available() {
 
 function storage_tracker_prefs() {
     return {
-        player_key: "storage_tracker_prefs",
+        key: "storage_tracker_prefs",
         label: "Storage Tracker",
         options: [
             {
