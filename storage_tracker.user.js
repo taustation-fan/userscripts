@@ -113,6 +113,8 @@ function tSStorageTracker_load_from_localStorage() {
     coretechs_storage = localStorage.getItem( localStorage_key );
 
     if ( !coretechs_storage ) {
+        tSStorageTracker_delete_old_localStorage();
+
         tSStorageTracker_update_UI("No stored items found - visit Coretechs / Storage first");
         coretechs_storage = {};
         return;
@@ -342,4 +344,21 @@ function storage_tracker_prefs() {
             }
         ]
     };
+}
+
+function tSStorageTracker_delete_old_localStorage() {
+    // Can be removed after a period of time,
+    // once all/most users have updated to 1.6
+    let names = [];
+
+    for ( let i=0, len=localStorage.length; i<len; i++ ) {
+        let key = localStorage.key( i );
+        if ( key.match( /^tSStorage_/ ) ) {
+            names.push( key );
+        }
+    }
+
+    for ( let i=0, len=names.length; i<len; i++ ) {
+        localStorage.removeItem( names[i] );
+    }
 }
