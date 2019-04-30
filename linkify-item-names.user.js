@@ -2,12 +2,13 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.11.5
+// @version      1.12.1
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
+// @require      https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // ==/UserScript==
 //
 // License: CC-BY-SA
@@ -25,6 +26,7 @@
 //  - v1.11: For 2019-02-05 TauStation Update: Handle renamed items; also, in "/coretechs/storage", flags items with mismatched slugs (to call out subsequently renamed items, so they can be special-cased in this script using lookup_slug / lookup_slug_regexp).
 //  - v1.11.*: Minor updates (special-case slugs, slug generator fine-tuning)
 //  - v1.11.5: Update for "/syndicate/campaign-result" page (which replaced modal overlay dialog).
+//  - v1.12.0: Switch config to use userscript-preferences.js
 //
 
 // TODO List: (things not yet implemented or ready)
@@ -33,26 +35,19 @@
 // Action Items: (things ready & waiting for action)
 //
 
-//////////////////////////////
-// Begin: User Configuration.
-//
-
-var linkify_config = {
-    'debug': false,
-    'open_links_in_new_tab': true,  // If true: Clicking an item link opens the item page in a new tab.
-    'check_if_item_exists_in_ls': true, // If true: preserves existing values in localStorage, otherwise overwrites them
-};
-
-//
-// End: User Configuration.
+// Nothing user-configurable below
+// To configure, visit in-game User Preferences (/preferences)
 //////////////////////////////
 
+var linkify_config;
 var log_prefix = 'Linkify item names: ';
 var ls_prefix = 'lins_'; // Linkify Item Names Storage
 
 $(document).ready(linkify_all_item_names);
 
 async function linkify_all_item_names() {
+    linkify_config = userscript_preferences( linkify_preferences_definition() );
+
     if (window.location.pathname.startsWith('/character/details/')) {
         linkify_items_in_character_details();
     }
@@ -561,6 +556,36 @@ function react_when_updated(jQuery, filter, Fn_of_node, config, timer) {
 function stop_reacting_to_updates() {
     observer.disconnect();
     debug(log_prefix + 'Disconnected MutationObserver.');
+}
+
+// Preferences
+
+function linkify_preferences_definition() {
+    return {
+        key:      "linkify_item_names_prefs",
+        label:    "Linkify Item Names",
+        options: [
+            {
+                key:     "open_links_in_new_tab",
+                label:   "Open Links in New Tab",
+                help:    "If true: Clicking an item link opens the item page in a new tab",
+                type:    "boolean",
+                default: true
+            },
+            {
+                key:     "check_if_item_exists_in_ls",
+                label:   "Check if Item Exists in localStorage",
+                help:    "If true: preserves existing values in localStorage, otherwise overwrites them",
+                type:    "boolean",
+                default: true
+            },
+            {
+                key:   "debug",
+                label: "Debug",
+                type:  "boolean"
+            }
+        ]
+    };
 }
 
 //
