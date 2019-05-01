@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.9.1
+// @version  1.9.2
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
@@ -263,7 +263,7 @@ function gs_taustation_enhance() {
 
     function navigation_preferences_definition() {
         return {
-            player_key: "extended_nav_prefs",
+            key: "extended_nav_prefs",
             label: "Extended Navigation",
             options: [
                 {
