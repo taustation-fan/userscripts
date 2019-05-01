@@ -185,7 +185,8 @@ function _save_userscript_field( def, values, feedback ) {
     let input = $(this);
 
     let id = input.attr( "name" );
-    values[id] = input.val();
+    let val = input.val();
+    values[id] = $.isNumeric(val) ? Number(val) : val;
 
     localStorage.setItem(
         def.key,
