@@ -120,6 +120,19 @@ function _userscript_preferences_add_ui( def, values ) {
                     dd.append( olabel );
                 }
                 break;
+            case "color":
+                input.attr( {
+                    type: "color",
+                    value: this_value
+                } );
+                input.css( { "margin-right": "0.5em" } );
+                input.on(
+                    "input",
+                    function() {
+                        _save_userscript_field.call( this, def, values, feedback );
+                    } );
+                dd.append( input, feedback );
+                break;
             case "radio":
                 for ( let j in pref.options ) {
                     let value = pref.options[j];
