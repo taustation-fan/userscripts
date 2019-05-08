@@ -66,7 +66,8 @@ function _userscript_preferences_add_ui( def, values ) {
                     type: "text",
                     value: this_value
                 } );
-                input.css( { "margin-right": "0.5em" } );
+                input.addClass("i-txt");
+                input.css( { "margin-right": "0.5em", "width": "unset" } );
                 input.on(
                     "keyup keypress paste",
                     function() {
@@ -134,6 +135,9 @@ function _userscript_preferences_add_ui( def, values ) {
                 dd.append( input, feedback );
                 break;
             case "radio":
+                // Move margin-bottom into each radio button's label, for better spacing.
+                dd.css( { "margin-bottom": "unset" });
+                let radio_container = $( "<dd/>", { css: { "margin-bottom": "unset", "margin-right": "0.5em" } } );
                 for ( let j in pref.options ) {
                     let value = pref.options[j];
                     let input_i = input.clone();
@@ -150,18 +154,29 @@ function _userscript_preferences_add_ui( def, values ) {
                         _userscript_preferences_waiting( feedback );
                         _save_userscript_field.call( this, def, values, feedback );
                     } );
-                    let olabel = $( "<label></label>", { css: { "margin-right": "0.5em" } } );
-                    olabel.append( input_i, value );
-                    dd.append( olabel );
+                    let olabel = $( "<label></label>", { css: { "margin-bottom": "1em", "color": "inherit" } } );
+                    olabel.append(value);
+                    olabel.click( function() {
+                        input_i.click();
+                    } );
+                    // Tau Station's CSS for radio buttons makes certain assumptions, which don't all work here.
+                    input_i.css( {
+                        "top": "inherit",
+                        "left": "inherit",
+                        "z-index": "1"
+                    } );
+                    let ospan = $( "<span/>", { class: "rad-ctl", css: { "vertical-align": "inherit" } } );
+                    ospan.append( input_i, olabel );
+                    radio_container.append( ospan );
                 }
-                dd.append( feedback );
+                dd.append( radio_container, feedback );
                 break;
             case "select":
                 input = $(
                     "<select></select>",
                     {
                         name: pref.key,
-                        style: "margin-right: 0.5em"
+                        style: "margin-right: 0.5em; padding: 0.3em; padding-right: 0.8em;"
                     } );
                 for ( let j in pref.options ) {
                     let opt = pref.options[j];
@@ -181,7 +196,10 @@ function _userscript_preferences_add_ui( def, values ) {
                     _userscript_preferences_waiting( feedback );
                     _save_userscript_field.call( this, def, values, feedback );
                 } );
-                dd.append( input, feedback );
+                let select_container = $( "<div/>", { class: "select-control", css: { "margin-right": "0.5em" } } );
+                select_container.append( input );
+                dd.css( { "width": "unset", "display": "inline-flex" } );
+                dd.append( select_container, feedback );
 
                 break;
         }
