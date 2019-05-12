@@ -101,7 +101,7 @@ clickable links
 `discreet_keyboard_navigation.user.js` adds a keyboard shortcut (control-d)
 and optional icon (useful for mobile) to perform discreet work steps.
 Parses the page to jump to the correct station areas and talk to the right
-people. Some configuration options available in the script source.
+people. Adds configuration options to the in-game User Preferences page.
 
 ## Storage Tracker
 
