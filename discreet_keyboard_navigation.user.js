@@ -134,6 +134,14 @@
             }
         }
 
+        // Fallback in case of error (bug 41) or manual movement
+        // If in an area with a mission "people" tab, click the tab
+        node = document.querySelector('a[href="#/people"]');
+        if (node && node.querySelector('.mission-flag--img')) {
+            node.click();
+            return;
+        }
+
         console.log("No discreet mission actions found.")
     }
 
