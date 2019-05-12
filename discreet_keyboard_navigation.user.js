@@ -76,6 +76,13 @@
         return null;
     }
 
+    function goto_url(url) {
+        if (!followed_link) {
+            followed_link = true;
+            window.location.href = url;
+        }
+    }
+
     // _discreet_step: Perform the next action required by the discreet mission
     function _discreet_step() {
         let node;
@@ -88,8 +95,7 @@
         // People page with a mission NPC
         node = document.querySelector('a.has-mission')
         if (node) {
-            window.location.href = node.getAttribute('href');
-            followed_link = true;
+            goto_url(node.getAttribute('href'));
             return;
         }
 
@@ -113,8 +119,7 @@
         // "Accept" mission button on main discreet-work page
         node = document.querySelector('a[href="/area/discreet-work/accept"]');
         if (node) {
-            window.location.href = node.getAttribute('href');
-            followed_link = true;
+            goto_url(node.getAttribute('href'));
             return;
         }
 
@@ -123,8 +128,7 @@
             ns = document.querySelectorAll('.mission-updates');
             for (let i = 0; i < ns.length; i++) {
                 if (ns[i].textContent.match(/You have completed the "Anonymous" mission/)) {
-                    window.location.href = '/travel/area/discreet-work';
-                    followed_link = true;
+                    goto_url('/travel/area/discreet-work');
                     return;
                 }
             }
@@ -144,8 +148,7 @@
                     if (href.indexOf("#/people") < 0) {
                         href = href + "#/people";
                     }
-                    window.location.href = href;
-                    followed_link = true;
+                    goto_url(href);
                     return true;
                 }
             }
