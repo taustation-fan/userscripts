@@ -176,7 +176,7 @@ function _userscript_preferences_add_ui( def, values ) {
                     "<select></select>",
                     {
                         name: pref.key,
-                        style: "margin-right: 0.5em; padding: 0.3em; padding-right: 0.8em;"
+                        css: { "margin-right": "0.5em", padding: "0.3em", "padding-right": "1.5em", width: "auto" }
                     } );
                 for ( let j in pref.options ) {
                     let opt = pref.options[j];
@@ -196,7 +196,7 @@ function _userscript_preferences_add_ui( def, values ) {
                     _userscript_preferences_waiting( feedback );
                     _save_userscript_field.call( this, def, values, feedback );
                 } );
-                let select_container = $( "<div/>", { class: "select-control", css: { "margin-right": "1.5em", "width": "auto" } } );
+                let select_container = $( "<div/>", { class: "select-control", css: { "margin-right": "1.5em" } } );
                 select_container.append( input );
                 dd.append( select_container, feedback );
 
