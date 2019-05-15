@@ -196,9 +196,8 @@ function _userscript_preferences_add_ui( def, values ) {
                     _userscript_preferences_waiting( feedback );
                     _save_userscript_field.call( this, def, values, feedback );
                 } );
-                let select_container = $( "<div/>", { class: "select-control", css: { "margin-right": "0.5em" } } );
+                let select_container = $( "<div/>", { class: "select-control", css: { "margin-right": "1.5em", "width": "auto" } } );
                 select_container.append( input );
-                dd.css( { "width": "unset", "display": "inline-flex" } );
                 dd.append( select_container, feedback );
 
                 break;
