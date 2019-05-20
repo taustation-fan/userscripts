@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.9.2
+// @version  1.9.3
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
@@ -196,8 +196,8 @@ function gs_taustation_enhance() {
         } else if (
             // We are onboard a private ship, or are traveling in a shuttle (not merely in an area page).
             // (The link back to the area page just uses '/area/', so it's not helpful here.)
-            $('.global-timer[data-timer-type="travel"]').length ||
-            $('.areas a[href="/area/docks/leave_ship"]').length
+            $('.timer[data-timer-type="travel"], ' +
+              '.areas a[href="/area/docks/leave_ship"]').length
         ) {
             attrs = {
                 'class': 'fa fa-space-shuttle',
@@ -229,7 +229,7 @@ function gs_taustation_enhance() {
             return;
         }
 
-        if (! $('#employment_panel').find('a[href="/travel/area/job-center"],a[href="/area/job-center"]').length) {
+        if ($('#employment_panel').find('.employment-title').length) {
             // A career is currently active: Show the link to leave your career.
             $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
                 .after('<li class="area"><span style="padding-left: 2em">→</span> <a href="/character/quit-career">Change career</a></li>\n');
