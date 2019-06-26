@@ -127,7 +127,7 @@
         if (options.loop_after_completion) {
             ns = document.querySelectorAll('.mission-updates');
             for (let i = 0; i < ns.length; i++) {
-                if (ns[i].textContent.match(/You have completed the "Anonymous" mission/)) {
+                if (ns[i].textContent.match(/You have completed the "Discreet Work"/)) {
                     goto_url('/travel/area/discreet-work');
                     return;
                 }
@@ -249,8 +249,8 @@
     // we don't have a page reload so the loop feature will still work.
     let enable = location.pathname.endsWith("/area/discreet-work");
     if (!enable) {
-        let mission = document.querySelector('a[href="/mission"]');
-        enable = (mission && mission.textContent === "Anonymous");
+        let mission = document.querySelector('#employment_panel a[href="/mission"]');
+        enable = (mission && mission.textContent === "Discreet Work");
     }
 
     if (enable) {
