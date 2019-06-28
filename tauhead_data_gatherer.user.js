@@ -2,7 +2,7 @@
 // @name         TauHead Data Gatherer
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_data_gatherer.user.js
-// @version      2.0
+// @version      2.1
 // @description  Post data to TauHead API
 // @match        https://alpha.taustation.space/area/*
 // @match        https://alpha.taustation.space/character/details/*
@@ -50,7 +50,7 @@
 // Nothing user-configurable below
 //
 var tauhead_domain = "https://www.tauhead.com";
-var api_version    = "2.0";
+var api_version    = "2.1";
 
 // UI variables.
 var th_init_button_ui;
@@ -306,7 +306,7 @@ function tauhead_wrecks_salvage_loot() {
         return true;
     }
     else if ( lines.text().match( /You found a /i ) ) {
-        let loot = tauhead_first_capture_that_matches( lines, /"([^"]+)" has been added to your inventory/i );
+        let loot = tauhead_first_capture_that_matches( lines, /You found a (.+)./i );
         if ( !loot ) {
             return;
         }
