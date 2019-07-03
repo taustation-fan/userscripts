@@ -59,6 +59,7 @@ function _userscript_preferences_add_ui( def, values ) {
                 name: pref.key
             }
         );
+        let array;
 
         switch ( pref.type ) {
             case "text":
@@ -95,9 +96,10 @@ function _userscript_preferences_add_ui( def, values ) {
                 break;
             case "boolean_array":
             case "bool_array":
-                for ( let j in pref.options ) {
-                    let key   = Array.isArray( pref.options[j] ) ? pref.options[j][0] : pref.options[j].value;
-                    let label = Array.isArray( pref.options[j] ) ? pref.options[j][1] : pref.options[j].label;
+                array = pref.options instanceof Map ? Array.from( pref.options ) : pref.options;
+                for ( let j in array ) {
+                    let key   = Array.isArray( array[j] ) ? array[j][0] : array[j].value;
+                    let label = Array.isArray( array[j] ) ? array[j][1] : array[j].label;
                     if ( typeof label === "undefined" || label === null ) {
                         label = key;
                     }
@@ -181,10 +183,14 @@ function _userscript_preferences_add_ui( def, values ) {
                         name: pref.key,
                         css: { "margin-right": "0.5em", padding: "0.3em", "padding-right": "1.5em", width: "auto" }
                     } );
-                for ( let j in pref.options ) {
-                    let opt = pref.options[j];
+                array = pref.options instanceof Map ? Array.from( pref.options ) : pref.options;
+                for ( let j in array ) {
+                    let opt = array[j];
                     let value = Array.isArray( opt ) ? opt[0] : opt.value;
                     let label = Array.isArray( opt ) ? opt[1] : opt.label;
+                    if ( typeof label === "undefined" || label === null ) {
+                        label = value;
+                    }
                     let option = $( "<option></option>",
                         {
                             value: value,
