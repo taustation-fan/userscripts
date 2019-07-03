@@ -96,8 +96,11 @@ function _userscript_preferences_add_ui( def, values ) {
             case "boolean_array":
             case "bool_array":
                 for ( let j in pref.options ) {
-                    let key     = pref.options[j].key;
-                    let label   = pref.options[j].label || key;
+                    let key   = Array.isArray( pref.options[j] ) ? pref.options[j][0] : pref.options[j].value;
+                    let label = Array.isArray( pref.options[j] ) ? pref.options[j][1] : pref.options[j].label;
+                    if ( typeof label === "undefined" || label === null ) {
+                        label = key;
+                    }
                     input = $(
                         "<button></button",
                         {
