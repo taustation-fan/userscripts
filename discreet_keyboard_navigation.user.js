@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         discreet_keyboard_navigation
 // @namespace    https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @version      1.4
+// @version      1.5
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
 // @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available on User Preferences page.
@@ -40,8 +40,8 @@
             /* Spacing between action buttons (icons) */
             .avatar-links li + li { margin-left: 0em !important; }
             .avatar-links li a { width: 1.75em !important; }
-            .avatar-links li .fa { margin-top: 0.8em; }
-            @media (min-width: 1080px) { .avatar-links li .fa { margin-top: 0.33em; } }
+            .avatar-links li .fa { margin-top: 0.5em; }
+            @media (min-width: 1200px) { .avatar-links li .fa { margin-top: 0.75em; } }
         `));
         head.appendChild(s);
     }
@@ -256,7 +256,29 @@
     if (enable) {
         if (options.add_discreet_icon) {
             let icon = add_icon("fa-bookmark", { "style": "color: #c24004;" });
-            if (icon) { icon.onclick = _discreet_step; }
+            if (icon) {
+                icon.onclick = _discreet_step;
+
+                // Adjust the spacing between all icons on the row.
+                // (The 2019-06-25 update moved the social icons into a full-width
+                // row below the avatar photo & character indicator icons. Now, our
+                // icon looks better at the end of the character indicator icons row
+                // -- but we need to make sure there's room for all icons present.)
+                let num_visible_icons = 0;
+                let icons_in_row = document.querySelector(".avatar-links:last-of-type").children;
+                for (var ii = 0; ii < icons_in_row.length; ii++) {
+                    if (! icons_in_row[ii].hasAttribute("hidden")) {
+                        num_visible_icons++;
+                    }
+                }
+                let new_width = (100 / num_visible_icons) + "%";
+                for (ii = 0; ii < icons_in_row.length; ii++) {
+                    if (! icons_in_row[ii].hasAttribute("hidden")) {
+                        icons_in_row[ii].style.width = new_width;
+                        icons_in_row[ii].style.minWidth = "24px";
+                    }
+                }
+            }
         }
 
         // Listen for bound key-combination then perform a step
