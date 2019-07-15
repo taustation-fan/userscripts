@@ -33,6 +33,29 @@ function _userscript_preferences_add_ui( def, values ) {
 
     for ( let i in def.options ) {
         let pref = def.options[i];
+
+        if ( pref.type === "heading" || pref.type === "paragraph" ) {
+            let tag;
+            let attrs = {};
+            if ( pref.type === "heading" ) {
+                tag = "<h3></h3>";
+                attrs.class = "settings-header";
+            }
+            else {
+                tag = "<p></p>";
+            }
+
+            if ( pref.hasOwnProperty( "html" ) ) {
+                attrs.html = pref.html;
+            }
+            else if ( pref.hasOwnProperty( "text" ) ) {
+                attrs.text = pref.text;
+            }
+
+            $( tag, attrs ).appendTo( container );
+            continue;
+        }
+
         let has_value = values.hasOwnProperty( pref.key );
         let this_value = values[ pref.key ];
         let dt = $("<dt></dt>");
