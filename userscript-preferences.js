@@ -346,7 +346,7 @@ function _userscript_preferences_return_config( def ) {
             continue;
         }
 
-        if ( pref.default ) {
+        if ( pref.hasOwnProperty( "default" ) ) {
             config[ pref.key ] = pref.default;
         }
 
