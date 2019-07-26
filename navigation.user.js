@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.9.3
+// @version  1.9.4
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
@@ -24,8 +24,21 @@ function gs_taustation_enhance() {
     // hide bond spending options without confirmation dialog.
 
     // bond to credits conversion in the bank
-    if ( options.hide_bond_conversion_in_bank ) {
+    if ( options.hide_bond_conversion_in_bank && window.location.pathname.startsWith('/area/bank') ) {
         $('.bond-to-credits').hide();
+
+        // Note: In Mobile view, the confirm dialog will now overlap the People tab --
+        // but it sits under the tab (not laying on top of it), so it can't be clicked.
+        // (The dialog is added after page load, so change its CSS so overlay isn't needed.)
+        add_css(`
+.confirm--dialog {
+    position: relative !important;
+}
+/* Anchor background image at top, so it doesn't shift when the confirmation dialog appears. */
+.bank-container {
+    background-position-y: top !important;
+}
+`);
     }
 
     // bribe for an extra ration
@@ -259,6 +272,19 @@ function gs_taustation_enhance() {
             $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
                 .after('<li class="area"><span style="padding-left: 2em">→ Start:</span>\n' + careers_shown + '\n</li>\n');
         }
+    }
+
+    function add_css(css){
+        // Ref: https://stackoverflow.com/questions/3922139/add-css-to-head-with-javascript
+        var head = document.getElementsByTagName('head')[0];
+        var s = document.createElement('style');
+        s.setAttribute('type', 'text/css');
+        if (s.styleSheet) {   // IE
+            s.styleSheet.cssText = css;
+        } else {              // the world
+            s.appendChild(document.createTextNode(css));
+        }
+        head.appendChild(s);
     }
 
     function navigation_preferences_definition() {
