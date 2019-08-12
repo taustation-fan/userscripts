@@ -10,10 +10,13 @@
 		"document":     false,
 		"localStorage": false,
 		"location":     false,
-		"window":       false
+		"window":       false,
+		"Core":         false,
+		"DOMException": false
 	},
 	"immed":     true,
 	"jquery":    true,
+	"loopfunc":  true,
 	"noarg":     true,
 	"quotmark":  "double",
 	"smarttabs": true,
