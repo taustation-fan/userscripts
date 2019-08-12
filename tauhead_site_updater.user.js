@@ -2,7 +2,7 @@
 // @name         TauHead Site Updater
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_site_updater.user.js
-// @version      1.0
+// @version      1.1
 // @description  Add buttons to in-game pages to update TauHead with data on auction-listings, items, stations, areas, NPCs and vendor-inventories
 // @match        https://alpha.taustation.space/*
 // @grant        none
@@ -106,16 +106,16 @@ function tSTauHeadHelper_main() {
         if ( "government-center" === path_parts[1] ) {
             tSTauHeadHelper_add_button({ action: "update_station_details", span: "other" });
         }
-        else if ( "storage" === path_parts[1] ) {
-            tSTauHeadHelper_add_button({ action: "update_items_from_storage", url: "update_items", text: "Update Items", span: "items" });
-        }
+        // else if ( "storage" === path_parts[1] ) {
+        //     tSTauHeadHelper_add_button({ action: "update_items_from_storage", url: "update_items", text: "Update Items", span: "items" });
+        // }
     }
     else if ( 2 === path_parts.length && "item" === path_parts[0] ) {
         tSTauHeadHelper_add_button({ action: "update_item", slug: path_parts[1], span: "items" });
     }
-    else if ( 2 === path_parts.length && "character" === path_parts[0] && "inventory" === path_parts[1] ) {
-        tSTauHeadHelper_add_button({ action: "update_items_from_inventory", url: "update_items", text: "Update Items", span: "items" });
-    }
+    // else if ( 2 === path_parts.length && "character" === path_parts[0] && "inventory" === path_parts[1] ) {
+    //     tSTauHeadHelper_add_button({ action: "update_items_from_inventory", url: "update_items", text: "Update Items", span: "items" });
+    // }
     else if ( 3 === path_parts.length && "character" === path_parts[0] && "details" === path_parts[1] ) {
         tSTauHeadHelper_add_button({ action: "update_npc", slug: path_parts[2], text: "Update NPC", span: "other" });
     }
@@ -502,56 +502,56 @@ var tSTauHeadHelper_actions = {
         tSTauHeadHelper_post({ request: data, response: response });
     },
 
-    update_items_from_inventory: function(data) {
-        let script = $(".content-section .inventory ~ script").html();
-        script = script.replace( /^\s*var\s+items\s*=\s*/, "" );
-        script = script.replace( /\s+var\s+friends\s+=[\s\S]*/, "" );
-        script = script.replace( /;\s*$/, "" );
-        let json = JSON.parse( script );
-        let carried_groups = json.carried_groups;
-        let carried        = json.carried;
-        let items          = [];
+    // update_items_from_inventory: function(data) {
+    //     let script = $(".content-section .inventory ~ script").html();
+    //     script = script.replace( /^\s*var\s+items\s*=\s*/, "" );
+    //     script = script.replace( /\s+var\s+friends\s+=[\s\S]*/, "" );
+    //     script = script.replace( /;\s*$/, "" );
+    //     let json = JSON.parse( script );
+    //     let carried_groups = json.carried_groups;
+    //     let carried        = json.carried;
+    //     let items          = [];
+    //
+    //     for ( let i=0; i<carried_groups.length; ++i ) {
+    //         let group       = carried_groups[i];
+    //         let group_items = carried[group];
+    //
+    //         for ( let j=0; j<group_items.length; ++j ) {
+    //             let item = group_items[j].item;
+    //
+    //             item.image = group_items[j].image;
+    //
+    //             items.push( item );
+    //         }
+    //     }
+    //
+    //     return tSTauHeadHelper_actions.update_items(data, items);
+    // },
 
-        for ( let i=0; i<carried_groups.length; ++i ) {
-            let group       = carried_groups[i];
-            let group_items = carried[group];
-
-            for ( let j=0; j<group_items.length; ++j ) {
-                let item = group_items[j].item;
-
-                item.image = group_items[j].image;
-
-                items.push( item );
-            }
-        }
-
-        return tSTauHeadHelper_actions.update_items(data, items);
-    },
-
-    update_items_from_storage: function(data) {
-        let script = $(".storage-container + script").html();
-        script = script.replace( /^\s*var\s+storage\s*=\s*/, "" );
-        script = script.replace( /\{\s+items:/, `{"items":` );
-        let json = JSON.parse( script );
-        let carried_groups = json.items.carried_groups;
-        let carried        = json.items.carried;
-        let items          = [];
-
-        for ( let i=0; i<carried_groups.length; ++i ) {
-            let group       = carried_groups[i];
-            let group_items = carried[group];
-
-            for ( let j=0; j<group_items.length; ++j ) {
-                let item = group_items[j].item;
-
-                item.image = group_items[j].image;
-
-                items.push( item );
-            }
-        }
-
-        return tSTauHeadHelper_actions.update_items(data, items);
-    },
+    // update_items_from_storage: function(data) {
+    //     let script = $(".storage-container + script").html();
+    //     script = script.replace( /^\s*var\s+storage\s*=\s*/, "" );
+    //     script = script.replace( /\{\s+items:/, `{"items":` );
+    //     let json = JSON.parse( script );
+    //     let carried_groups = json.items.carried_groups;
+    //     let carried        = json.items.carried;
+    //     let items          = [];
+    //
+    //     for ( let i=0; i<carried_groups.length; ++i ) {
+    //         let group       = carried_groups[i];
+    //         let group_items = carried[group];
+    //
+    //         for ( let j=0; j<group_items.length; ++j ) {
+    //             let item = group_items[j].item;
+    //
+    //             item.image = group_items[j].image;
+    //
+    //             items.push( item );
+    //         }
+    //     }
+    //
+    //     return tSTauHeadHelper_actions.update_items(data, items);
+    // },
 
     update_npc: function(data) {
         let char = $(".character-overview").first();
