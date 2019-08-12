@@ -127,7 +127,9 @@ function tSTauHeadHelper_main() {
         tSTauHeadHelper_add_button({ action: "log_auctions", span: "auction" });
     }
 
-    tSTauHeadHelper_render_buttons();
+    if ( Object.keys( tSTauHeadHelper_buttons ).length ) {
+        tSTauHeadHelper_render_buttons();
+    }
 }
 
 var tSTauHeadHelper_actions = {
