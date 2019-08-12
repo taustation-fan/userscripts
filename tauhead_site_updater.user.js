@@ -7,11 +7,14 @@
 // @match        https://alpha.taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
+// @require      https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // ==/UserScript==
 
 // ***
 // This script requires a current log-in to tauhead.com with appropriate user-rights granted.
 // ***
+
+/* globals userscript_preferences: false */
 
 var tauhead_domain = "https://www.tauhead.com";
 
@@ -90,41 +93,52 @@ $(document).ready(tSTauHeadHelper_main);
 function tSTauHeadHelper_main() {
     "use strict";
 
+    let config = userscript_preferences( site_updater_preferences() );
     let page_path  = window.location.pathname;
     let clean_path = page_path.replace( /^\//, "" );
     clean_path = clean_path.replace( /\/$/, "" );
     let path_parts = clean_path.split("/");
 
     if ( 2 === path_parts.length && "area" === path_parts[0] ) {
-        tSTauHeadHelper_add_button({ action: "add_area",     slug: path_parts[1], span: "area" });
-        tSTauHeadHelper_add_button({ action: "add_sub_area", slug: path_parts[1], span: "sub_area" });
-        tSTauHeadHelper_add_button({ action: "add_area",     slug: path_parts[1], url: "update_area",     text: "Update Area",     span: "area" });
-        tSTauHeadHelper_add_button({ action: "add_sub_area", slug: path_parts[1], url: "update_sub_area", text: "Update Sub-Area", span: "sub_area" });
+        if ( config.update_all ) {
+            tSTauHeadHelper_add_button({ action: "add_area",     slug: path_parts[1], span: "area" });
+            tSTauHeadHelper_add_button({ action: "add_sub_area", slug: path_parts[1], span: "sub_area" });
+            tSTauHeadHelper_add_button({ action: "add_area",     slug: path_parts[1], url: "update_area",     text: "Update Area",     span: "area" });
+            tSTauHeadHelper_add_button({ action: "add_sub_area", slug: path_parts[1], url: "update_sub_area", text: "Update Sub-Area", span: "sub_area" });
 
-        tSTauHeadHelper_add_button({ action: "add_area_npcs", slug: path_parts[1], span: "other" });
+            tSTauHeadHelper_add_button({ action: "add_area_npcs", slug: path_parts[1], span: "other" });
 
-        if ( "government-center" === path_parts[1] ) {
-            tSTauHeadHelper_add_button({ action: "update_station_details", span: "other" });
+            if ( "government-center" === path_parts[1] ) {
+                tSTauHeadHelper_add_button({ action: "update_station_details", span: "other" });
+            }
+            // else if ( "storage" === path_parts[1] ) {
+            //     tSTauHeadHelper_add_button({ action: "update_items_from_storage", url: "update_items", text: "Update Items", span: "items" });
+            // }
         }
-        // else if ( "storage" === path_parts[1] ) {
-        //     tSTauHeadHelper_add_button({ action: "update_items_from_storage", url: "update_items", text: "Update Items", span: "items" });
-        // }
     }
     else if ( 2 === path_parts.length && "item" === path_parts[0] ) {
-        tSTauHeadHelper_add_button({ action: "update_item", slug: path_parts[1], span: "items" });
+        if ( config.update_all || config.update_auctions_and_items ) {
+            tSTauHeadHelper_add_button({ action: "update_item", slug: path_parts[1], span: "items" });
+        }
     }
     // else if ( 2 === path_parts.length && "character" === path_parts[0] && "inventory" === path_parts[1] ) {
     //     tSTauHeadHelper_add_button({ action: "update_items_from_inventory", url: "update_items", text: "Update Items", span: "items" });
     // }
     else if ( 3 === path_parts.length && "character" === path_parts[0] && "details" === path_parts[1] ) {
-        tSTauHeadHelper_add_button({ action: "update_npc", slug: path_parts[2], text: "Update NPC", span: "other" });
+        if ( config.update_all ) {
+            tSTauHeadHelper_add_button({ action: "update_npc", slug: path_parts[2], text: "Update NPC", span: "other" });
+        }
     }
     else if ( 4 === path_parts.length && "area" === path_parts[0] && ( "character" === path_parts[2] || "corporation" === path_parts[2] ) ) {
-        tSTauHeadHelper_add_button({ action: "update_vendor_itinerary", area_slug: path_parts[1], span: "items" });
+        if ( config.update_all ) {
+            tSTauHeadHelper_add_button({ action: "update_vendor_itinerary", area_slug: path_parts[1], span: "items" });
+        }
     }
 
     if ( page_path.startsWith("/area/electronic-market") ) {
-        tSTauHeadHelper_add_button({ action: "log_auctions", span: "auction" });
+        if ( config.update_all || config.update_auctions_and_items ) {
+            tSTauHeadHelper_add_button({ action: "log_auctions", span: "auction" });
+        }
     }
 
     if ( Object.keys( tSTauHeadHelper_buttons ).length ) {
@@ -1113,3 +1127,24 @@ var lookup_slug_regexp = [
 //     //
 //     return placeholder_stim_name;
 // }
+
+function site_updater_preferences() {
+    return {
+        key: "tauhead_site_updater",
+        label: "TauHead Site Updater",
+        options: [
+            {
+                key:     "update_auctions_and_items",
+                label:   "Show UI for Auction Listings & Items",
+                type:    "boolean",
+                default: true
+            },
+            {
+                key:     "update_all",
+                label:   "Show UI for All Available Pages",
+                type:    "boolean",
+                default: false
+            },
+        ]
+    };
+}
