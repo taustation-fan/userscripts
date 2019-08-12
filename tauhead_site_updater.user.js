@@ -13,6 +13,104 @@
 // ***
 // This script requires a current log-in to tauhead.com with appropriate user-rights granted.
 // ***
+//
+// *** SETUP
+//
+// 1) Create an account at https://tauhead.com and verify the email address.
+// 2) Contact firefu via in-game mail asking for access rights
+//    (provide your TauHead username if it differs from your in-game username).
+// 3) Install this userscript using either TamperMonkey or GreaseMonkey addon.
+// 4) Ensure you are logged-in to both Tau Station and TauHead in the same browser.
+//
+// If you have been given additional access rights to update other parts of the site.
+// 5) Go the the in-game preferences page.
+// 6) In the "TauHead Site Updater" section, turn on the option "Show UI for All Available Pages".
+//
+// ***
+//
+// *** Updating Auction Listings
+//
+// 1) Visit the Public Market and scroll to the bottom of the page.
+// 2) Click the "Log Auctions" button.
+//    This will open a new browser tab/window and send the Auction Listings data to the TauHead server.
+//    If there are no errors, the new tab/window will automatically close.
+// 3) If there are more than 1 page of auction listings, you must visit all pages and click the
+//    "Log Auctions" button at the bottom of every page within 90 seconds.
+//
+//    In Case of Errors
+//
+//    If the new tab/window does not automatically close because of an error,
+//    it show should a message detailing the problem.
+//    The only typical causes of an error is either you are not logged-in to TauHead,
+//    or the auction listings includes an item which is not already in the TauHead database.
+//
+// 4) In the case of an item not being in the TauHead database, the page will provide a link to
+//    view the in-game page for that item in a new tab/window.
+//    You should click the link.
+// 5) On the item page, scroll to the bottom of the page and click the "Update Item" button.
+//    This will open a new tab/window to send the Item data to TauHead, and then the new
+//    tab/window will close.
+// 6) Once this completes, you can close the in-game Item tab/window.
+// 7) You can now click the "Save" button on the still-open tab/window containing the
+//    auction-listings form on TauHead.
+//    This tab/window will automatically close on successful submission of the form.
+//
+// ***
+//
+// *** Updating Other Data
+//
+// Buttons are added to the bottom of appropriate pages.
+//
+// When adding / updating areas, NPCs, and items with new or changed pictures, the pictures
+// may not immediately appear on the TauHead website.
+// They should get added automatically within 24 hours.
+//
+// ***
+//
+// When viewing a station area, the "Add Area" and "Add Sub-Area" buttons should only be used
+// for new areas which have not yet been added to the TauHead site.
+// Otherwise use the "Update Area" or "Update Sub-Area" buttons.
+//
+// "Update Area" should be used for "top-level" areas such as Bank, Port, or Ruins.
+// "Update Sub-Area" should be used for areas with a parent such as Docks (child of Port)
+// or Wrecks (child of Ruins).
+//
+// You should NOT use the Add/Update Area/Sub-Area buttons on a mobile device.
+// Some background images are not visible, so their URLs are not accessible.
+// Updating from a mobile device will remove these images from the TauHead area page.
+//
+// Before using the "Update Area NPCs" button, you must first click the "People" tab to load
+// the People list.
+//
+// ***
+//
+// When viewing an NPC profile page you can use the "Update NPC" button.
+//
+// Some NPCs have slightly different names on their profile page compared to in the People list
+// within an area.
+// In this circumstance there is no obviously correct choice, so either is acceptable.
+//
+//***
+//
+// When viewing a Vendor you can use the "Update Vendor Itinerary" button.
+//
+// Large lists of items may take several minutes to complete.
+// Occasionally a request may return a "Timed Out" error - this is unfortunate but is not a
+// cause for concern, as it will have no adverse affect on the TauHead database.
+//
+// ***
+//
+// When viewing an Item page you can use the "Update Item" button.
+//
+// ***
+//
+// When viewing the Government Centre you can use the "Update Station Details" button.
+//
+// This can be used to populate a new station's details.
+// Updating is only necessary if a Station's level, affiliation, law-level or Orwellian-level
+// changes, which is very rare.
+//
+// ***
 
 /* globals userscript_preferences: false */
 
