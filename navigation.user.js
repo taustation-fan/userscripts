@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.9.4
+// @version  1.9.5
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
@@ -112,6 +112,11 @@ function gs_taustation_enhance() {
         $('#game_navigation_areas a[href="/travel/area/market"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/vendors">Vendors</a> / <a href="/travel/area/electronic-market">Public</a> / <a href="/travel/area/storage">Storage</a> </li>');
         $('#game_navigation_areas a[href="/travel/area/port"]').parent('li').after(port_links);
         $('#game_navigation_areas a[href="/travel/area/ruins"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/the-wrecks">Wrecks</a> / <a href="/area/the-wilds">Wilds</a> </li>');
+        if ( options.hunt_mode) {
+            $('#game_navigation_areas a').each(function(index, elem){
+                $(elem).attr('href', $(elem).attr('href') + '#/people');
+            });
+        }
     }
 
     var is_fullpage_chat = false;
@@ -377,6 +382,12 @@ function gs_taustation_enhance() {
                     label:   "Remove color highlight from Shop button",
                     type:    "boolean",
                     default: true
+                },
+                {
+                    key:     "hunt_mode",
+                    label:   "Hunt mode",
+                    help:    "All navigation panel links point to People tab directly",
+                    type:    "boolean",
                 },
             ]
         };
