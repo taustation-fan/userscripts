@@ -1,14 +1,15 @@
 // ==UserScript==
-// @name         Tau Station: Combat Log
+// @name         Tau Station: Combat Log (development version)
 // @namespace    https://github.com/taustation-fan/userscripts/
-// @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/combat-log.user.js
-// @version      1.3.3
+// @downloadURL  https://github.com/taustation-fan/userscripts/raw/dev/combat-log-scratch/combat-log.user.js
+// @version      1.3.4
 // @description  Records a log of any combat you're involved in.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
-// @require      https://rawgit.com/taustation-fan/userscripts/master/taustation-tools-common.js
+// -require      https://rawgit.com/taustation-fan/userscripts/master/taustation-tools-common.js
+// @require      https://github.com/taustation-fan/userscripts/raw/dev/combat-log-scratch/taustation-tools-common.js
 // ==/UserScript==
 //
 // License: CC-BY-SA
@@ -24,6 +25,7 @@
 //  - v1.3: Add an icon to control UI (via taustation-tools-common.js's Icons code); also, improved in-combat detection logic.
 //  - v1.3.1: Fix for "attacker fled" scenario.
 //  - v1.3.3: switch to jquery-3.3.1.min.js
+//  - v1.3.4: Misc fixes to handle TauStation UX & UI changes.
 //
 
 //////////////////////////////
@@ -41,12 +43,10 @@ var tSCL_config = {
 // End: User Configuration.
 //////////////////////////////
 
-$(document).ready(tST_combat_log_main);
-
 //
 // UI variables.
 //
-var nodes = {};
+var nodes;
 
 //
 // localStorage-related variables.
@@ -57,8 +57,10 @@ var storage_key_prefix = "tSCL_"; // Actual prefix includes player name: e.g., "
 async function tST_combat_log_main() {
     'use strict';
 
+    nodes = {};
     storage_key_prefix = tST_get_storage_prefix(storage_key_prefix);
 
+    tST_add_base_UI();
     tSCL_add_UI();
 
     tSCL_log_combat_activity();
@@ -75,7 +77,7 @@ async function tST_combat_log_main() {
 
     function tSCL_add_UI() {
         // Add the section for this script's UI (vs. sibling scripts).
-        tST_region.append('<div id="tSCL-region" class="tST-section tST-control-bar">Combat Log\n</div>\n')
+        tST_region.append('<div id="tSCL-region" class="tST-section tST-control-bar">Combat Log\n</div>\n');
         var tSCL_area = $("#tSCL-region");
 
         // Add an icon that shows/hides the above UI, and can indicate info about the current combat log.
@@ -326,12 +328,6 @@ async function tST_combat_log_main() {
         var in_combat = false;
         var combat_round;
 
-        if (localStorage[storage_key_prefix + 'combat_round'] != undefined
-            && ! window.location.pathname.startsWith('/combat')) {
-            console.log('Combat Log: Still in combat? (URL path lacks "/combat/..."; Now in "' + window.location.pathname + '").\n' +
-                         '  -> Possible TODO: If a successful flee leaves /combat/, while unsuccessful doesn\'t leave /combat/, then have "left /combat/" trigger "combat ended".');
-        }
-
         // When being attacked:
         // (- Continue: hits, misses, etc.)
         //  - Ignore: "tried to flee", "too slow to get away!", "You have defeated {player} in combat!" (log looting, which happens on the next page)
@@ -341,7 +337,10 @@ async function tST_combat_log_main() {
         var once_entry_hash_list = [];
 
         // #region Determine if we're actively in combat.
-        {
+        if (localStorage[storage_key_prefix + 'combat_round'] != undefined
+            && ! window.location.pathname.startsWith('/combat')) {
+            debug('tSCL_process_combat_round(): Info: Combat has ended. (A combat round was active, but current URL path lacks "/combat/...".)');
+        } else {
             // Some "random encounter" blocks have info we want to log only once.
             if (random_encounter.length && ! random_encounter.hasClass('random-encounter--unavailable')
                                         && ! random_encounter.find('.random-encounter-cooldown').length) {
@@ -358,38 +357,47 @@ async function tST_combat_log_main() {
                     debug('tSCL_process_combat_round(): Info: Saw already-recorded random_encounter node.');
                 }
             }
+
+            // When attacking, the URL path contains "/combat/combat_room?..." while fighting, and "/area/foo" when you've fled.
+            // (Was: When attacking, the URL path contains "/combat/attack/..." while fighting, and "/combat?mid=..." when you've fled.)
+            if (window.location.pathname.startsWith("/combat")) {
+                debug('tSCL_process_combat_round(): In combat: URL path starts with "/combat".');
+                in_combat = true;
+            }
             // If we see a "combat area" block, we're in combat.
-            if (combat_area.length) {
+            else if (combat_area.length) {
                 debug('tSCL_process_combat_round(): Saw combat_area node.');
                 in_combat = true;
             }
             // If we see a clear message saying the current player attacked someone (or was attacked), we're in combat.
-            if (all_messages_text.match('(' + player_name + ' attacked | attacked ' + player_name + ')')) {
+            else if (all_messages_text.match('(' + player_name + ' attacked | attacked ' + player_name + ')')) {
                 debug('tSCL_process_combat_round(): In combat: Saw "' + player_name + ' attacked" or "attacked ' + player_name + '".');
                 in_combat = true;
             }
             // If URL contains "?...&weapon=[GUID]", we just used a weapon while attacking someone.
             // (True while in "/combat", and in other rooms (i.e., just won combat).)
-            if (window.location.search.includes('weapon=')) {
+            else if (window.location.search.includes('weapon=')) {
                 debug('tSCL_process_combat_round(): In combat: Saw "weapon=..." in URL.');
                 in_combat = true;
             }
-            // When attacking, the URL path contains "/combat/attack/..." while fighting, and "/combat?mid=..." when you've fled.
-            if (window.location.pathname.startsWith("/combat")) {
-                debug('tSCL_process_combat_round(): In combat: URL path starts with "/combat".');
-                in_combat = true; // Was: = ! being_attacked;  (???)
-            }
+
             // When attacking, we want to record the "loot" stage after combat has ended.
+            // (Not applicable to Syndicate Campaigns.)
             if (all_messages_text.match(combat_ending_messages_regex)) {
-                in_combat = ! being_attacked;
+                in_combat = (! window.location.pathname.startsWith('/area/the-wilds') // TODO: Not ideal -- e.g., should still apply to PvP in the Wilds.
+                             && ! being_attacked);
                 debug('tSCL_process_combat_round(): ' + (in_combat ? 'In' : 'Not in') + ' combat: Saw combat-ending text.');
             }
             // You can be attacked in any room -- but while defending, you can't move freely between rooms (unless you have fled).
-            if (localStorage[storage_key_prefix + 'combat_prev_room']
-                && localStorage[storage_key_prefix + 'combat_prev_room'] != window.location.pathname
-                && ! localStorage[storage_key_prefix + 'combat_prev_room'].startsWith('/combat')) {
-                debug('tSCL_process_combat_round(): Not in combat: Able to move freely between rooms (or just fled).');
-                in_combat = false;
+            if (! window.location.pathname.startsWith('/combat')
+                && localStorage[storage_key_prefix + 'combat_prev_room']
+                && localStorage[storage_key_prefix + 'combat_prev_room'] != window.location.pathname) {
+                if (! localStorage[storage_key_prefix + 'combat_prev_room'].startsWith('/combat')) {
+                    debug('tSCL_process_combat_round(): Not in combat: Able to move freely between rooms (or just fled).');
+                    in_combat = false;
+                } else {
+                    console.log('tSCL_process_combat_round(): TODO: Fix needed? Was in "/combat", now in a normal room; prior "minor fix" considered this still in combat.');
+                }
             } else {
                 debug('tSCL_process_combat_round(): In combat? Tracking room movement to detect if the player flees.');
                 localStorage[storage_key_prefix + 'combat_prev_room'] = window.location.pathname;
@@ -405,10 +413,9 @@ async function tST_combat_log_main() {
                 in_combat = false;
             }
 
-            // This is rare, but overrides any answer we got above.
-            if (all_messages_text.match('Internal error')) {   // Rare, but overriding: If this appears, assume combat was aborted by an error.
-                debug('tSCL_process_combat_round(): Combat aborted! Saw "Internal error" message -- site aborted combat.');
-                in_combat = false;
+            // This is rare, and unfortunately indeterminant.
+            if (all_messages_text.match('Internal error')) {   // Rare, but potentially overriding: combat may have been aborted by an error, or may be continuing.
+                debug('tSCL_process_combat_round(): Warning! Saw "Internal error" message. Need to see non-error page to detect current combat state.');
             }
         }
         // #endregion Determine if we're actively in combat.
@@ -537,7 +544,7 @@ async function tST_combat_log_main() {
             combat_log_scratch = combat_log_scratch.find('div.combat-session:last-of-type');
 
             // Provide a more descriptive title than "Combat session #n", if possible.
-            var session_title;
+            var session_title = '';
             var session_desc  = 'Combat';
 
             var main_content = $('#main-content');
@@ -624,9 +631,9 @@ async function tST_combat_log_main() {
         var main_content = $('#main-content');
         var msgs_to_show = [];
         var text_of_msgs = [];
-        for (var msg_type in { '.messages':'', '.character-messages':'', '.character-messages-desktop':'', '.character-messages-mobile':'' }) {
-            main_content.find(msg_type).each(add_msg_if_unique);
-        }
+
+        main_content.find('.messages, .character-messages, .character-messages-desktop, .character-messages-mobile')
+                    .each(add_msg_if_unique);
 
         for (var index in msgs_to_show) {
             var char_msgs = $(msgs_to_show[index]);
@@ -792,6 +799,7 @@ async function tST_combat_log_main() {
         combat_log_scratch.find('.combat-player--top')         .css( {'padding-top': '0.5em', 'padding-bottom': '0.5em'} );
         combat_log_scratch.find('.combat-player-stats--ul')    .css( {'padding-top': '0.5em', 'padding-bottom': '0.25em'} );
         combat_log_scratch.find('.combat-player-stats--item')  .css( {'margin-bottom': 0} );
+        combat_log_scratch.find('.combat-player--img img')     .css( {'display': 'block', 'max-width': '90%'} );
         combat_log_scratch.find('.combat-player-stats--value') .addClass('tST-hidden');
         combat_log_scratch.find('.combat-fields')              .css( {'min-width': 'auto'} );
 
@@ -876,3 +884,12 @@ function debug(msg) {
         console.log(msg);
     }
 }
+
+function report_runtime(func) {
+    var start = new Date();
+    func();
+    var delta = new Date() - start;
+    console.log('[Runtime] "' + func.name + '": ' + delta + ' ms');
+}
+
+$(document).ready(report_runtime(tST_combat_log_main));
