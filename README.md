@@ -37,15 +37,6 @@ Whenever your credits "on hand" are greater than the amount you'd always like to
 
 Note that this does *not* automatically deposit the credits. It simply fills the box for you.
 
-## Compact Storage
-
-`compact_storage.user.js` will merge duplicate items in "CORTECHS" -> "Storage"
-listing into a single row and update the quantity column accordingly.
-
-This way, your storage report will take only 2 rows to let you know that
-you have 145 Nanowires and 17 Paris Sabres at Yards of Gadani rather than
-taking 25 rows to tell you.
-
 ## Compact Stats
 
 `compact_stats.user.js` will make the panel with character stats - both general
