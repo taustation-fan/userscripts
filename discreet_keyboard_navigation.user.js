@@ -250,7 +250,7 @@
     let enable = location.pathname.endsWith("/area/discreet-work");
     if (!enable) {
         let mission = document.querySelector('#employment_panel a[href="/mission"]');
-        enable = (mission && mission.textContent === "Discreet Work");
+        enable = (mission && mission.textContent === "Show current");
     }
 
     if (enable) {
