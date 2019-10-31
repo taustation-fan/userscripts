@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         discreet_keyboard_navigation
 // @namespace    https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @version      1.5
+// @version      1.6
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
 // @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available on User Preferences page.
@@ -250,7 +250,7 @@
     let enable = location.pathname.endsWith("/area/discreet-work");
     if (!enable) {
         let mission = document.querySelector('#employment_panel a[href="/mission"]');
-        enable = (mission && mission.textContent === "Discreet Work");
+        enable = (mission && mission.textContent === "Show current");
     }
 
     if (enable) {
