@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         discreet_keyboard_navigation
 // @namespace    https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @version      1.6
+// @version      1.7
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
 // @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available on User Preferences page.
@@ -249,8 +249,21 @@
     // we don't have a page reload so the loop feature will still work.
     let enable = location.pathname.endsWith("/area/discreet-work");
     if (!enable) {
-        let mission = document.querySelector('#employment_panel a[href="/mission"]');
-        enable = (mission && mission.textContent === "Show current");
+        let missions = document.querySelectorAll('#employment_panel .employment-title');
+        // When on DW, whether on a story mission or not, we have a current
+        // venture showing: '<span class="employment-title">Discreet Work:
+        // </span> <a href="/mission">Show current</a>' Otherwise, we have
+        // '<span class="employment-title">Discreet Work: </span> <a
+        // href="/travel/area/discreet-work">Find discreet work</a>', but
+        // only when NOT on a story mission. I trust the URL link to be
+        // more reliable than the "Show current" text content, so will look
+        // for that to be absent.
+        for (let i = 0; i < missions.length; i++) {
+            if (missions[i].textContent.indexOf("Discreet Work") >= 0) {
+                enable = !missions[i].parentNode.querySelector('a[href="/travel/area/discreet-work"]');
+                break;
+            }
+        }
     }
 
     if (enable) {
