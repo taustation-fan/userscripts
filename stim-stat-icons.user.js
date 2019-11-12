@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tau Station: Stims: Show boosted-stat icons
 // @namespace    https://github.com/taustation-fan/userscripts/
-// @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/ships-log.user.js
+// @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/stim-stat-icons.user.js
 // @version      1.0
 // @description  Overlay icons on stims, indicating which stats are boosted by each stim.
 // @author       Mark Schurman (https://github.com/quasidart)
@@ -11,6 +11,7 @@
 // @match        https://alpha.taustation.space/area/vendors*
 // @match        https://alpha.taustation.space/character/inventory*
 // @match        https://alpha.taustation.space/combat*
+// @match        https://alpha.taustation.space/coretechs/storage/*
 // @match        https://alpha.taustation.space/item/*
 // @match        https://alpha.taustation.space/preferences*
 // @grant        none
@@ -27,14 +28,12 @@
 //  - v1.0: Initial release.
 //
 
-// TODO List: (things not yet implemented or ready)
-//  - Support user preferences (e.g.: layout/placement of icons)
-
 console.log('Stim Stat Icons: Loading script.');
 
 var local_config = {
-    debug:         localStorage.tST_debug              || false,
-    debug_verbose: localStorage.debug_MutationObserver || false,     // Used for react_when_updated() / MutationObserver logging -- noisy enough to warrant a separate debug flag.
+    debug:                      localStorage.tST_debug              || false,
+    debug_MutationObserver:     localStorage.debug_MutationObserver || false,  // Used for react_when_updated() / MutationObserver logging -- noisy enough to warrant a separate debug flag.
+    fake_stim_in_public_market: false,
 };
 
 var log_prefix = 'Stim Stat Icons: ';
@@ -74,22 +73,28 @@ function stim_stat_icons() {
     if (level.length) {
         level = Number.parseInt(level.text(), 10);
         player_tier = Math.floor((level - 1) / 5) + 1;
+        localStorage.setItem('player_tier', player_tier);
+    } else if (localStorage.hasOwnProperty('player_tier')) {
+        player_tier = Number.parseInt(localStorage.player_tier);
     }
 
     add_stim_stat_icons();
 }
 
-function add_stim_stat_icons(isModal) {
+function add_stim_stat_icons(isDialog) {
     // Add only the selectors we anticipate needing, to reduce unnecessary scanning.
     let stim_parent_selectors = 'div.slot';
     let img_frames_selector   = '.item[data-item-type=medical]';
 
-    let modal_parent_selector = 'section.modal:has(div.header-info:has(span.name)) ';
-    let modal_frame_selector  = '.item-detailed:has(.data-list .type span:contains("Medical"))';
+    let dialog_parent_selector = 'section.modal:has(div.header-info:has(span.name)) ';
+    let dialog_frame_selector  = '.item-detailed:has(.data-list .type span:contains("Medical"))';
+
+    let is_filter_container = false;
+    let filter_container_selector = 'div.slots';
 
     if (window.location.pathname.startsWith('/item/')) {
         stim_parent_selectors = '.item-individual';
-        img_frames_selector   = modal_frame_selector + ' .item-framed-img';
+        img_frames_selector   = dialog_frame_selector + ' .item-framed-img';
 
     } else if (window.location.pathname.startsWith('/combat/')) {
         stim_parent_selectors = '.combat-belt--content--inner';
@@ -97,19 +102,26 @@ function add_stim_stat_icons(isModal) {
 
     } else if (window.location.pathname.startsWith('/area/electronic-market')) {
         stim_parent_selectors = '.market-list--item';
-        img_frames_selector = '.market-item--content--verbose:has(.market-item-details-data dt:contains("Type") ~ dd:contains("Medical")) .item-framed-img';
-$('.market-list--item:first .market-item--content--item a').text('Mil T04-V031-8.13x5-0.035');
-let fake_stim = $('.market-list--item:first .market-item-details-data--row:has(dt:contains("Type"))');
-fake_stim.find('dt').text('Type');
-fake_stim.find('dd').text('Medical');
+        img_frames_selector   = '.market-item--content--verbose:has(.market-item-details-data dt:contains("Type") ~ dd:contains("Medical")) .item-framed-img';
+
+        if (local_config.fake_stim_in_public_market) {
+            $('.market-list--item:first .market-item--content--item a').text('Mil T04-V031-8.13x5-0.035');
+            let fake_stim = $('.market-list--item:first .market-item-details-data--row:has(dt:contains("Type"))');
+            fake_stim.find('dt').text('Type');
+            fake_stim.find('dd').text('Medical');
+        }
+    } else if (window.location.pathname.startsWith('/coretechs/storage')) {
+        is_filter_container = true;
+        dialog_parent_selector = '.dialog-coretech'
+        dialog_frame_selector  = undefined;
 
     } else if (! window.location.pathname.startsWith('/area/vendors')) {
         img_frames_selector += ' .item-framed-img'; // Absent in vendors' products list.
     }
 
-    if (isModal) {
-        stim_parent_selectors = modal_parent_selector + modal_frame_selector;
-        img_frames_selector = '.item-framed-img';   // Modal sections lack '.item[data-item-type=medical]'.
+    if (isDialog) {
+        stim_parent_selectors = dialog_parent_selector + dialog_frame_selector;
+        img_frames_selector   = '.item-framed-img';   // Modal sections lack '.item[data-item-type=medical]'.
     } else {
         add_stat_icons_css();   // We only need to add this when first run, not for in-page modal updates.
     }
@@ -129,19 +141,60 @@ fake_stim.find('dd').text('Medical');
 
         // If clicking on this brings up a modal details pane (inventory, store, etc.),
         // update stim details in that pane as well.
-        let all_slots = $('section[data-inventory-section="combat-belt"], ' +
-                          'section[data-inventory-section="carried"] .slots');
-        if (! isModal && all_slots.length) {
-            react_when_updated(all_slots,
-                               function (mutation) { return ($(mutation.target).find('section.modal').length); },
-                               function (domElement) {
-                                   let img_frame = $(domElement).find(modal_frame_selector);
-                                   if (img_frame.length) {
-                                       add_stat_icons_for_stim(img_frame, '.item-framed-img');
-                                   }
-                               },
-                               { childList: true, subtree: true });
+        if (! isDialog && ! is_filter_container) {
+            let dialog_pane_container = 'section[data-inventory-section="combat-belt"], ' +
+                                        'section[data-inventory-section="carried"] .slots';
+
+            start_dialog_observer(dialog_pane_container, dialog_frame_selector, false);
         }
+    }
+
+    // If the stims are in a dynamic container, it may not populate until after the initial
+    // backend query has finished, and may re-populate when a different filter is chosen,
+    // so attach an observer to the container.
+    if (is_filter_container) {
+        react_when_updated($(filter_container_selector),
+                           function (mutation) {
+                               if (mutation.addedNodes && mutation.addedNodes.length) {
+                                   return ($(mutation.target).find(img_frames_selector).length);
+                               } else {
+                                   return false;
+                               }  },
+                           function (domElement) {
+                               let img_frame = $(domElement).find(img_frames_selector);
+                               if (img_frame.length) {
+                                   add_stat_icons_for_stim($(domElement), '.item-framed-img');
+                               }
+                           },
+                           { childList: true, subtree: true });
+
+        // Also start a pop-over-dialog observer, for when the player clicks on an item.
+        let dialog_pane_container = 'body'; // Unfortunately (for perf), this pop-over dialog is added as a direct child of <body>.
+        start_dialog_observer(dialog_pane_container, dialog_frame_selector, true);
+    }
+}
+
+function start_dialog_observer(dialog_pane_container, dialog_frame_selector, isPopover) {
+    let all_slots = $(dialog_pane_container);
+    if (all_slots.length) {
+        react_when_updated(all_slots,
+                           function (mutation) {
+                               if (isPopover) {
+                                   return ($(mutation.target).hasClass('dialog--content--inner'));
+                               } else {
+                                   return ($(mutation.target).find('section.modal').length);
+                               }
+                           },
+                           function (domElement) {
+                               let img_frame = $(domElement);
+                               if (dialog_frame_selector) {
+                                   img_frame = img_frame.find(dialog_frame_selector);
+                               }
+                               if (img_frame.length) {
+                                   add_stat_icons_for_stim(img_frame, '.item-framed-img');
+                               }
+                           },
+                           { childList: true, subtree: true });
     }
 }
 
@@ -153,6 +206,9 @@ function add_stat_icons_for_stim(stim_parents, img_frames_selector) {
             stim_name_selector = '.combat-belt--content--desc';
         } else if (window.location.pathname.startsWith('/area/electronic-market')) {
             stim_name_selector = '.market-item--content--item a';
+        } else if (window.location.pathname.startsWith('/coretechs/storage') &&
+                   (this.tagName === 'DIV' && this.classList.contains("dialog-coretech"))) {
+            stim_name_selector = '.item-detailed-header .name';
         }
 
         let stim_frame = $(this);
@@ -179,7 +235,7 @@ function add_stat_icons_for_stim(stim_parents, img_frames_selector) {
 
             let stats_affected = get_stats_from_bitmask(stim_stats_bitmask);
 
-            if (options.show_boost_amount && stim_boost && player_tier) {
+            if (options.show_boost_amount && stim_boost && (player_tier || options.show_boost_for_all_tiers)) {
                 if (stim_tier === player_tier || options.show_boost_for_all_tiers) {
                     // Pick the highest boost value (in case multiple are present).
                     stim_boost = Number.parseFloat(stim_boost.replace(/x\d/g, '').split(/-/).sort().reverse()[0]);
@@ -277,6 +333,7 @@ function get_stats_from_bitmask(stim_stats_bitmask) {
     return stats_affected;
 }
 
+// Attempt to shift the overlaid-icon placement, to avoid covering part of the stims in the item image.
 function shift_to_avoid_overlay(icon_y, icon_x, stim_type, stats_affected) {
     let stats_only = (stats_affected || []).filter(function(value) { return (! value.includes(':')); });
 
@@ -577,9 +634,9 @@ function react_when_updated(jQuery, filter, Fn_of_node, config, timer) {
     if (jQuery.attr(key)) {
         debug(log_prefix + 'Another userscript is already setting up this observer.');
         if (Fn_of_node) {
-            debug_verbose(Fn_of_node);
+            debug_MutationObserver(Fn_of_node);
         } else {
-            debug_verbose(jQuery);
+            debug_MutationObserver(jQuery);
         }
         return;
     }
@@ -599,13 +656,13 @@ function react_when_updated(jQuery, filter, Fn_of_node, config, timer) {
 
     // Callback function to execute when mutations are observed
     var callback = function(mutationsList, cbObserver) {
-        debug_verbose(log_prefix + 'Processing mutationsList:');
+        debug_MutationObserver(log_prefix + 'Processing mutationsList:');
 
         for (var mutation of mutationsList) {
-            debug_verbose(log_prefix + ' - Saw mutation:'); debug_verbose(mutation);
+            debug_MutationObserver(log_prefix + ' - Saw mutation:'); debug_MutationObserver(mutation);
 
             if (mutation.target && (filter == undefined || filter(mutation))) {
-                debug_verbose(log_prefix + '    - Filter: matched.');
+                debug_MutationObserver(log_prefix + '    - Filter: matched.');
                 if (timer != undefined && stop_timer) {
                     window.clearTimeout(stop_timer);
                     stop_timer = undefined;
@@ -635,7 +692,7 @@ function react_when_updated(jQuery, filter, Fn_of_node, config, timer) {
                     stop_timer = window.setTimeout(() => stop_reacting_to_updates(cbObserver), timer);
                 }
             } else {
-                debug_verbose(log_prefix + '    - Filter: Didn\'t match.');
+                debug_MutationObserver(log_prefix + '    - Filter: Didn\'t match.');
             }
         }
     };
@@ -658,7 +715,7 @@ function react_when_updated(jQuery, filter, Fn_of_node, config, timer) {
 
 function stop_reacting_to_updates(observer) {
     observer.disconnect();
-    debug_verbose(log_prefix + 'Disconnected MutationObserver.');
+    debug_MutationObserver(log_prefix + 'Disconnected MutationObserver.');
 }
 
 function getHashForJQueryObject(jq_obj) {
@@ -697,8 +754,8 @@ function debug(msg) {
     }
 }
 
-function debug_verbose(msg) {
-    if (local_config.debug_verbose) {
+function debug_MutationObserver(msg) {
+    if (local_config.debug_MutationObserver) {
         console.log(msg);
     }
 }
