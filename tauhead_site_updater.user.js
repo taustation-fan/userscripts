@@ -452,8 +452,10 @@ var tSTauHeadHelper_actions = {
         response.mass = response.mass.replace( /\s+kg/, "" );
 
         // parse value
-        response.value = $(stats).find(".value .currency").text();
-        response.value = response.value.match( /^(\d+)/ )[1];
+        let value = $(stats).find(".value .currency").text();
+        if ( value && value.length ) {
+            response.value = value.match( /^(\d+)/ )[1];
+        }
 
         response.description = $(content).find(".item-detailed-description").text();
 
