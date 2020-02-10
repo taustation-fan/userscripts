@@ -94,6 +94,10 @@ and optional icon (useful for mobile) to perform discreet work steps.
 Parses the page to jump to the correct station areas and talk to the right
 people. Adds configuration options to the in-game User Preferences page.
 
+## Dangerous Discreet Abort
+
+When accepting Discreet Work, this script (`dangerous-discreet-work.js`) makes "Abort" button more "danger-like" as default state is positive action colored and often leads to accidental Abort.
+
 ## Storage Tracker
 
 `storage-tracker.user.js` augments the Public Market to show which items you
