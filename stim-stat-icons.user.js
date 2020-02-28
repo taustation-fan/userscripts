@@ -2,9 +2,10 @@
 // @name         Tau Station: Stims: Show boosted-stat icons
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/stim-stat-icons.user.js
-// @version      1.0
+// @version      1.2
 // @description  Overlay icons on stims, indicating which stats are boosted by each stim.
 // @author       Mark Schurman (https://github.com/quasidart)
+// @match        https://alpha.taustation.space/area/docks*
 // @match        https://alpha.taustation.space/area/electronic-market*
 // @match        https://alpha.taustation.space/area/storage*
 // @match        https://alpha.taustation.space/area/the-wilds*
@@ -25,10 +26,15 @@
 // These are quick-and-dirty one-off scripts, and do not reflect the author's style or quality of work when developing production-ready software.
 //
 // Changelist:
-//  - v1.0: Initial release.
+//  - v1.0: Initial version.
+//  - v1.1.1: Added support: Storage Management page
+//  - v1.1.2: Added support: Ship's storage
+//  - v1.2: Initial release (code cleanup, minor UI updates)
 //
-
-console.log('Stim Stat Icons: Loading script.');
+// TODO List: (things not yet implemented or ready)
+//  - After site's upcoming combat update, options.hide_mental_stats_during_combat shouldn't hide INT during combat.
+//
+'use strict';
 
 var local_config = {
     debug:                      localStorage.tST_debug              || false,
@@ -37,14 +43,6 @@ var local_config = {
 };
 
 var log_prefix = 'Stim Stat Icons: ';
-
-const icon_placement = {
-    Strength:     [ 'top', 'left' ],
-    Agility:      [ 'top', 'hcenter' ],
-    Stamina:      [ 'vcenter', 'left' ],
-    Intelligence: [ 'vcenter', 'right' ],
-    Social:       [ 'bottom', 'hcenter' ],
-};
 
 const default_icon_position = {
     Strength:     'top-left',
@@ -60,8 +58,6 @@ var options;
 var player_tier;
 
 function stim_stat_icons() {
-    'use strict';
-
     // To configure this script, visit the in-game Preferences page (/preferences).
     options = userscript_preferences( stim_stat_icons_preferences_definition() );
 
@@ -105,6 +101,7 @@ function add_stim_stat_icons(isDialog) {
         img_frames_selector   = '.market-item--content--verbose:has(.market-item-details-data dt:contains("Type") ~ dd:contains("Medical")) .item-framed-img';
 
         if (local_config.fake_stim_in_public_market) {
+            // For testing: Change the first public market entry to look like a Stim item.
             $('.market-list--item:first .market-item--content--item a').text('Mil T04-V031-8.13x5-0.035');
             let fake_stim = $('.market-list--item:first .market-item-details-data--row:has(dt:contains("Type"))');
             fake_stim.find('dt').text('Type');
@@ -132,8 +129,10 @@ function add_stim_stat_icons(isDialog) {
 
     // Don't do unnecessary work -- this won't scan for stat totals & parse the skills JSON, unless we need to use them.
     if (! stim_parents.length) {
-        debug(log_prefix + 'No stims found.');
+        console.log(log_prefix + 'No stims found.');
     } else {
+        console.log(log_prefix + 'Decorating stims.');
+
         // get_stat_totals();
 
         // skills_table = JSON.parse(localStorage.tSDS_skills);
@@ -225,6 +224,7 @@ function add_stat_icons_for_stim(stim_parents, img_frames_selector) {
         }
 
         let name = $(this).find(stim_name_selector).text();
+        // Extract the stim's type, Tier, stats bitmask, and boost amount(s). (For now, we don't show toxicity.)
         let matches = name.match(/([A-Za-z]+) T(\d+)-v(\d+)((?:-[\d\.]+(?:x\d)?)+)-/i);
         if (matches !== null) {
             let stim_type = matches[1];
@@ -259,7 +259,10 @@ function add_stat_icons_for_stim(stim_parents, img_frames_selector) {
                 }
             }
 
-            console.log(name.replace(/[ \t\r\n]+/g, ' ').trim() + ' -> { ' + stats_affected.join(', ') + ' }');
+            console.log(log_prefix + name.replace(/medical: */i, '')
+                                         .replace(/armor: */i, '[in Belt] ')
+                                         .replace(/[ \t\r\n]+/g, ' ').trim()
+                        + ' -> { ' + stats_affected.join(', ') + ' }');
 
             // Iterate through stats_affected, to add stat icons to the frame.
             stats_affected.forEach(function (stat_name) {
@@ -288,7 +291,7 @@ function add_stat_icons_for_stim(stim_parents, img_frames_selector) {
 
                 if (   options.hide_mental_stats_during_combat
                     && window.location.pathname.startsWith('/combat/')
-                    && (stat_name === 'Social' || stat_name === 'Intelligence')) {
+                    && (stat_name === 'Social' || stat_name === 'Intelligence')) { //TODO: After site's upcoming combat update, don't hide INT during combat.
                     icon_y = 'hidden';
                     icon_x = 'hidden';
                 }
@@ -300,18 +303,21 @@ function add_stat_icons_for_stim(stim_parents, img_frames_selector) {
             });
 
             // If we added any fa-* icons or text, we need to adjust them a little.
-            let text_icons = stim_frame.find('.stim-icon-text');    // '.stim-stat-intelligence, .stim-stat-social, [...]'
-//            let text_icons = stim_frame.filter(function() { $(this).children().length !== 0; });
+            let text_icons = stim_frame.find('.stim-icon-text');
             text_icons.each(function() {
                 let text_icon = $(this);
                 let container_height = text_icon.parent().css('height');
+                if (container_height.includes('%') || window.location.pathname.startsWith('/area/electronic-market')) {
+                    container_height = '166%'; // On Public Market page, items starts out collapsed, so .css('height') is (e.g.) "22%" instead of a pixel height.
+                }
                 let shrink_factor = 1.5;
                 if (text_icon.hasClass('stim-stat-intelligence')) {
                     shrink_factor = 1.3;
                 }
                 let font_size = `calc(${container_height} / ${shrink_factor})`;
 
-                text_icon.css('font-size', font_size);
+                text_icon.css({'font-size': font_size,
+                               'line-height': 'normal'});   // Line-height needed mainly in Public Market page.
             });
         }
       } catch (ex) {
@@ -376,7 +382,7 @@ const stim_special_tooltips = {
     warn:  'FYI: This stim does not match your tier,\n' +
            'and will be more toxic than normal.',
     bad:   'Warning: This stim is dangerous for you to use.',
-    boost: 'This stim boosts stats by up to {0}%,\n' +
+    boost: 'This stim recovers stats by up to {0} points,\n' +
            'depending on your Stims skills.',
 }
 
@@ -415,7 +421,7 @@ function insert_icon(stat_name, icon_y, icon_x, text_value, severity) {
     }
 
     if (severity) {
-        decoration = 'stim-severity-' + severity;
+        decoration += ' stim-severity-' + severity;
         title = stim_special_tooltips[severity];
     }
 
@@ -800,7 +806,7 @@ function stim_stat_icons_preferences_definition() {
             },
             {
                 key:     'hide_mental_stats_during_combat',
-                label:   'Show only physical-stat icons during combat',
+                label:   'Show only combat-stat icons during combat',
                 type:    'boolean',
                 default: 'true'
             },
@@ -878,6 +884,5 @@ function stim_stat_icons_preferences_definition() {
         ]
     };
 }
-
 
 $(document).ready(report_runtime(stim_stat_icons));
