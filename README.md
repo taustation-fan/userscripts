@@ -149,3 +149,29 @@ the localStorage, while the other one pastes all the emails from localStorage to
 current message window, after the existing text. The script utilizes [turndown library](https://github.com/domchristie/turndown)
 to convert the emails to their Markdown code and preserve the look and feel as much
 as possible.
+
+## Stim Stat Icons
+
+`stim-stat-icons.user.js` overlays icons on all stims, to let you understand at a glance
+what each stim does. You can also see what each icon means, by hovering your mouse over
+an icon. Here's an example screenshot:
+
+![Stims with overlaid icons](https://cdn.discordapp.com/attachments/674746680826003476/674747104924663828/unknown.png)
+
+The player can glance at them, and immediately know that:
+
+ 1. Stims #1 & #6 are not safe to use. (This character is Tier 4; Stim #1 is one Tier
+    below them _(somewhat more toxic)_, while Stim #6 is higher than their Tier _(much more toxic)_.)
+
+ 2. Stims #2 & #3 recover the most stat points; Stims #1, #4, and #5 recover the least.
+
+3. If they need to recover, say, Stamina (runner icon) and Intelligence (lightbulb),
+    they should use Stim #3.
+     - Physical stats use the icons from Tau Station's Gym page; Intelligence shows a
+       lightbulb, and Social uses a person (silhouette).
+     - The stat icons use the same color scheme that the Stim images use to indicate
+       the stats they affect. This is also the same color scheme used when training stats.
+       _(The one exception is Intelligence, where its training pages use a different color than Stims use.)_
+
+4. They may want to sell the Stims in slot #4 (and maybe #5), since their effects are
+    covered better by other stims.
