@@ -175,3 +175,12 @@ The player can glance at them, and immediately know that:
 
 4. They may want to sell the Stims in slot #4 (and maybe #5), since their effects are
     covered better by other stims.
+
+## Combat Safeguard
+
+`combat-safeguard.user.js` prevents you from entering combat if focus or stats are too low,
+as that would have a high chance of landing you in sickbay immediately.
+If your focus or any physical stat is below the limits (configurable in User Preferences),
+the "Attack" button(s) will be modified to show a taunt instead of entering combat.
+The safeguard applies to campaign combat, enter the sewers, look for trouble, and PvP.
+
