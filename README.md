@@ -188,3 +188,11 @@ If your focus or any physical stat is below the limits (configurable in User Pre
 the "Attack" button(s) will be modified to show a taunt instead of entering combat.
 The safeguard applies to campaign combat, enter the sewers, look for trouble, and PvP.
 
+## Automated Popup Dismisser
+
+`automated_popup_dismisser.user.js` just dismisses any pop-up screen in the game within 
+500 milliseconds after opening. This has been tested with stopping/starting career,
+starting/finishing repair and personal ship travel popups; if there is a popup that is
+not closed automatically by this script, please let Dotsent know. Also, this script is
+the simplest possible, thus it just repeats the search for a dimissal button every 500ms,
+which is likely processor-inefficient and might slow the browser down on some devices.
