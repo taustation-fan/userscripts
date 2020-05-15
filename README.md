@@ -169,7 +169,7 @@ The player can glance at them, and immediately know that:
 
  2. Stims #2 & #3 recover the most stat points; Stims #1, #4, and #5 recover the least.
 
-3. If they need to recover, say, Stamina (runner icon) and Intelligence (lightbulb),
+ 3. If they need to recover, say, Stamina (runner icon) and Intelligence (lightbulb),
     they should use Stim #3.
      - Physical stats use the icons from Tau Station's Gym page; Intelligence shows a
        lightbulb, and Social uses a person (silhouette).
@@ -196,3 +196,28 @@ starting/finishing repair and personal ship travel popups; if there is a popup t
 not closed automatically by this script, please let Dotsent know. Also, this script is
 the simplest possible, thus it just repeats the search for a dimissal button every 500ms,
 which is likely processor-inefficient and might slow the browser down on some devices.
+
+## General Monitor
+
+Your computer can proactively alert you (sound & popup) when you have new email.
+`general_monitor.user.js` can make your computer proactively alert you when your
+Tau Station stats have refilled, your ship arrives at a station, your Look for
+Trouble cooldown has finished, or for miscellaneous other events that show global
+or in-room timers. It can also show notifications when information changes -- for
+example, showing how much Experience and/or Credits you've gained since the last
+time you entered a safe area (or other specific rooms, or "any time it happens").
+
+This script adds a "💬" icon near the top of the page (or "💤" if a different tab is
+managing notifications); clicking the icon unhides a small UI box (see below),
+showing which notifications have pending alerts. This UI lets you enable/disable the
+different kinds of notifications, see which ones have pending alerts, and can show
+what time an alert is scheduled to appear (on mouse-hover / tap-and-hold); you can
+also have this tab "Take Control" of managing alerts, if another tab had control.
+This script also uses the Preferences page, for more detailed config options.
+
+![General Monitor's icon & UI](https://cdn.discordapp.com/attachments/710900084086145166/710963735996399616/unknown.png)
+
+One caveat: Notifications won't appear if the browser has been unloaded from
+memory. This isn't an issue on desktop computers, but is something that
+happens on Android & iOS devices when they (eventually) reclaim memory by
+suspending background apps.

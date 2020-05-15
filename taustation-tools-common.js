@@ -2,7 +2,7 @@
 // @name         taustation-tools-common
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js
-// @version      0.4
+// @version      0.4.1
 // @description  Common code shared by Tau Station userscripts.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -20,7 +20,7 @@
 //  - v0.2: New: Icons for client scripts (clicking icon shows/hides each script's UI)
 //  - v0.3: Plays better with icon_bar userscript, and supports combat page's new stripped-down UI (non-combat UI items now absent).
 //  - v0.4: Pulls player name from Combat UI when needed (since it lacks the sidebar), and moved icons to underneath GCT display (always present).
-//
+//  - v0.4.1: More adaptable placement of scripts' UI.
 
 //////////////////////////////
 // Begin: User Configuration. These can be configured in the userscripts that import this central script.
@@ -28,7 +28,8 @@
 
 // Temporarily disable stat tracking while any of the following pages are showing.
 var tST_config = {
-    'debug': false,
+    'debug':         localStorage.tST_debug         || false,
+    'debug_verbose': localStorage.tST_debug_verbose || false,     // Used for react_when_updated() / MutationObserver logging -- noisy enough to warrant controlling separately.
 
     icons: {
         'show_ui_on_hover':    false,   // True: Shows parent userscript UI when mouse hovers over its icon.
@@ -54,57 +55,111 @@ var player_name;
 
 var log_prefix = 'TauStation Tools (common): ';
 
-async function tST_main() {
+function tST_main() {
     add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
     tST_add_base_UI();
 }
 
 function tST_add_base_UI() {
-    var target;
-    var new_ui_html;
+    let container_target;
+    var new_ui;
 
-    // Add an area where the client scripts can place their icons.
+    // Add an area where the client scripts can place their UI panes.
+    tST_region = $("#tST-container");
+    if (! tST_region.length) {
+        container_target = get_parent_for_ui();
+
+        new_ui = '<div id="tST-container" class="tST-container tST-hidden" style="display: none;">\n</div>\n';
+
+        if (container_target.length) {
+            container_target.prepend(new_ui);
+        } else {
+            console.log(log_prefix + 'Warning: No container for scripts\' UI, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
+            $('body').prepend(new_ui);
+        }
+
+        tST_region = $("#tST-container");
+    }
+
+    // Add an area where the client scripts can place their icons. By default,
+    // add it to the GCT display in the banner. However, if that's hidden by
+    // a userscript, move it to the top of the player stats.
+    let target;
     tST_icons = $('#tST-icons-region');
     if (! tST_icons.length) {
-        target = $('.time-container');
+        let banner_is_hidden = false;
 
-        let timer_width = target.css('width'); // If target didn't match anything, this returns undefined.
-        timer_width = (timer_width ? 'width:' + timer_width + ';' : '');
+        new_ui = $('<ul id="tST-icons-region">\n</ul>\n');
 
-        // This uses "position:absolute;" to avoid shifting the page content
-        // downwards; add the area's current width so we can still center it.
-        new_ui_html = '<ul id="tST-icons-region" style="z-index:1; display:flex; padding:0;\n' +
-                      '    justify-content:center; position:absolute; ' + timer_width + '">\n</ul>\n';
+        let gct_in_banner = $('.banner, .coordinated-time, .time-container');
+        if (gct_in_banner.length) {
+            banner_is_hidden = !! gct_in_banner.filter(function() { return (this.style.display === 'none'); }).length;
+            if (! banner_is_hidden) {
+                // Set up notifiers, to tell us if we need to move the icons region to keep it visible.
+                react_when_updated(gct_in_banner,
+                                   function (mutation) { return mutation.target.style.display === 'none'; },
+                                   function () {
+                                       move_icons_to_sidebar();   
+                                   },
+                                   { attributes: true, attributeFilter: [ 'style' ] },
+                                   5); // 5 seconds (in case of a long-running userscript before us).
 
+                target = $('.time-container');
+            }
+        }
+   
         if (target.length) {
+            let timer_width = target.css('width');
+            timer_width = (timer_width ? 'width:' + timer_width + ';' : '');
+
+            // This uses "position:absolute;" to avoid shifting the page content
+            // downwards; add the area's current width so we can still center it.
+            new_ui.attr('style', 'z-index:1; display:flex; padding:0;\n' +
+                                '    justify-content:center; position:absolute; ' + timer_width + '"');
+
             target.parent().addClass('tST-icons-adjustment');
-            target.append(new_ui_html);
+            target.append(new_ui);
         } else {
-            console.log(log_prefix + 'Warning: No container for scripts\' icons, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
-            $('body').insert(new_ui_html);
+            // Put it above our script UI's container, if we found a suitable location earlier.
+            if (container_target.length) {
+                move_icons_to_sidebar(new_ui);
+            } else {
+                console.log(log_prefix + 'Warning: No container for scripts\' icons, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
+                $('body').prepend(new_ui);
+            }
         }
 
         tST_icons = $('#tST-icons-region');
     }
+}
 
-    // Also, add an area where the client scripts can place their UI panes.
-    tST_region = $("#tST-container");
-    if (! tST_region.length) {
-        target = $('.stats-container');
-        if (! target.length) {
-            target = $('#content-container');
+function get_parent_for_ui() {
+    let target = $('.side-bar');
+    if (! target.length) { target = $('.stats-container'); }
+    // Combat screen doesn't have a stats container, but does still have a sidebar.
+    if (! target.length) { target = $('.combat-sidebar'); }
+    if (! target.length) { target = $('#content-container'); }
+
+    return target;
+}
+
+// Place (or move) the icons UI region atop the stats container, to keep it visible.
+function move_icons_to_sidebar(icons_ui) {
+    if (! icons_ui || ! icons_ui.length) {
+        icons_ui = $('#tST-icons-region');
+    }
+
+    let sidebar = get_parent_for_ui();
+    if (sidebar.length) {
+        // First: Check if we're placing it, or moving an already-placed node.
+        if (icons_ui.parent().length) {
+            icons_ui = icons_ui.detach();
+            icons_ui.removeAttr('style');   // Its display-under-GCT styles aren't applicable any more.
         }
 
-        new_ui_html = '<div id="tST-container" class="tST-container tST-hidden" style="display: none;">\n</div>\n';
-
-        if (target.length) {
-            target.before(new_ui_html);
-        } else {
-            console.log(log_prefix + 'Warning: No container for scripts\' UI, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
-            $('body').insert(new_ui_html);
-        }
-
-        tST_region = $("#tST-container");
+        // Next: Apply new styles, and [re-]attach it to the page.
+        icons_ui.attr('style', 'display:flex; padding-left:0; justify-content:space-evenly;');
+        sidebar.prepend(icons_ui);
     }
 }
 
@@ -162,7 +217,7 @@ function tST_add_base_UI() {
             if (should_update_tooltip) {
                 update_icon_title(icon_id, 'Click icon to hide pane below.');
             }
-    
+
             $(container_name).removeClass('tST-hidden');
             $(container_name).show();
 
@@ -222,12 +277,13 @@ function tST_add_base_UI() {
         if (! player_name) {
             player_name = $('#player-name').text();
         }
+
         if (! player_name) {
             // If in combat, we have to pull this from the Combat UI (since it lacks the sidebar).
             player_name = $('.combat-player--name:first').text().replace(/^(You |Player )/, '');
         }
-            if (player_name.length > 0) {
-                // If the user is part of a Syndicate or has VIP, drop the "[foo]" prefix/suffix.
+        if (player_name.length > 0) {
+            // If the user is part of a Syndicate or has VIP, drop the "[foo]" prefix/suffix.
             script_prefix += player_name.replace(/^(\[...\] )?([^[ ]+)( \[...\])?/, '$2').trim() + "_";
         }
         return script_prefix;
@@ -248,7 +304,13 @@ function tST_add_base_UI() {
             console.log(msg);
         }
     }
-    
+
+    function tST_debug_verbose(msg) {
+        if (tST_config.debug_verbose) {
+            console.log(msg);
+        }
+    }
+
     // Note: This works for form <input id="foo" value="copied text" /> elements,
     //       but does not work for arbitrary HTML elements.
     function copy_to_clipboard(idElement, hide_alert) {
@@ -265,6 +327,142 @@ function tST_add_base_UI() {
         if (! hide_alert) {
             console.log(log_prefix + 'Copied the following text to the clipboard:\n' + msg);
         }
+    }
+
+    // Trigger a handler when nodes of interest are updated. For details about the datatypes
+    // named below, see: https://dom.spec.whatwg.org/#interface-mutationobserver
+    //
+    // Parameters:
+    //  - jQuery      A valid jQuery object (collection of matching nodes) to be monitored.
+    //                If the collection is empty (no nodes matched the jQuery selector), this function exits cleanly.
+    //  - filter      A function(MutationRecord) {...} block that returns True for changes we're interested in.
+    //  - Fn_of_node  A function(Node) {...} block to run against each matching DOM Node.
+    //                (Note: The function's input parameter is a DOM Node, not a jQuery-wrapped node.)
+    //  - config      [Optional] A MutationObserverInit object listing the types of mutations to observe.
+    //                (For legal values, search the web for MutationObserverInit / "mutation observer options".)
+    //                Default: { childList: true, subtree: true }
+    //  - timeout     [Optional] Maximum time (in seconds) to wait between updates; resets when a matching update is detected.
+    //                If this timeout expires without detecting a matching update, the code will stop detecting changes.
+    //                Default: No timeout -- does not stop monitoring for updates.
+    //
+    // Example usage:
+    //     // When the page's "People" tab is shown, add links to all item names in its table.
+    //     react_when_updated(
+    //             // We want to monitor the "People" tab area of this page.
+    //             $('.tab-content-people'),
+    //
+    //             // Filter: Ignore all changes, unless the affected node is a <tbody>.
+    //             function (mutation) { return mutation.target.nodeName.toLowerCase() == 'tbody'; },
+    //
+    //             // Run the following code against each matching <tbody> DOM Node.
+    //             function (DOM_node) {
+    //                 // For a) each item field that b) does not contain "None", linkify the item name.
+    //                 $($DOM_node).find('td:not(:first-of-type):not(:contains("None"))').each(function () {
+    //                     linkify_equipment_element(this);
+    //                 });
+    //             },
+    //
+    //             // Detect updates to the "People" tab's direct children & descendants.
+    //             { childList: true, subtree: true },
+    //
+    //             // We only need to process changes when the "People" tab is first shown; after that, no further changes occur.
+    //             2); // 2 seconds (a little extra time).
+    //     }
+    //
+    function react_when_updated(jQuery, filter, Fn_of_node, config, timer) {
+        if (! jQuery.length) {
+            return;
+        }
+
+        // Make sure only one script instance adds this observer.
+        let key = 'observer_' + (Fn_of_node ? getHashForString(Fn_of_node.toString()) : getHashForJQueryObject(jQuery));
+        let nonce = String(Math.random() * 0x0FFFFFFFFFFFFFFF);
+
+        if (jQuery.attr(key)) {
+            tST_debug(log_prefix + 'Another userscript is already setting up this observer.');
+            if (Fn_of_node) {
+                tST_debug_verbose(Fn_of_node);
+            } else {
+                tST_debug_verbose(jQuery);
+            }
+            return;
+        }
+
+        jQuery.attr(key, nonce); // Otherwise, set this, and set up the observer, but _don't_ attach the observer unless our value is still present (below).
+
+        if (timer != undefined) {
+            timer *= 1000; // Convert to milliseconds.
+        }
+
+        // Options for the observer (which mutations to observe)
+        if (! config) {
+            config = { childList: true, subtree: true };
+        }
+
+        var stop_timer = undefined;
+
+        // Callback function to execute when mutations are observed
+        var callback = function(mutationsList, cbObserver) {
+            tST_debug_verbose(log_prefix + 'Processing mutationsList:');
+
+            for (var mutation of mutationsList) {
+                tST_debug_verbose(log_prefix + ' - Saw mutation:'); tST_debug_verbose(mutation);
+
+                if (mutation.target && (filter == undefined || filter(mutation))) {
+                    tST_debug_verbose(log_prefix + '    - Filter: matched.');
+                    if (timer != undefined && stop_timer) {
+                        window.clearTimeout(stop_timer);
+                        stop_timer = undefined;
+                    }
+
+                    // Call the provided function on all applicable nodes.
+                    let processed_added = false;
+                    let processed_target = false;
+
+                    if (config.childList || config.subtree) {
+                        mutation.addedNodes.forEach(function (node) {
+                            Fn_of_node(node);
+                        });
+                        processed_added = true;
+                    }
+
+                    if (config.attributes || config.characterData) {
+                        Fn_of_node(mutation.target);
+                        processed_target = true;
+                    }
+
+                    if (! processed_added && ! processed_target) {
+                        tST_debug(log_prefix + 'Warning: Caught wanted observation, but didn\'t process any nodes! Please verify values being provided to react_when_updated()\'s "config" parameter.')
+                    }
+
+                    if (timer != undefined) {
+                        stop_timer = window.setTimeout(() => stop_reacting_to_updates(cbObserver), timer);
+                    }
+                } else {
+                    tST_debug_verbose(log_prefix + '    - Filter: Didn\'t match.');
+                }
+            }
+        };
+
+        // Create an observer instance linked to the callback function
+        var observer = new MutationObserver(callback);
+
+        if (timer != undefined) {
+            stop_timer = window.setTimeout(() => stop_reacting_to_updates(observer), timer);
+        }
+
+        // Make sure we still "own" attaching this observer.
+        if (jQuery.attr(key) === nonce) {
+            // Start observing the target node for configured mutations.
+            jQuery.each(function () { observer.observe(this, config); });
+        } else {
+            tST_debug(log_prefix + 'Another userscript owns setting up this observer; bowing out in favor of it.');
+        }
+    }
+
+    function stop_reacting_to_updates(observer) {
+        observer.disconnect();
+        tST_debug_verbose(log_prefix + 'Disconnected MutationObserver.');
     }
 
 //
@@ -348,14 +546,14 @@ function tST_add_base_UI() {
             return time_value.toString().replace(/^0*(\d{2})(\d{3})$/g, "/$1:$2");
         }
     }
-    
+
     function get_gct_time_delta(time_start, time_end) {
         var time_delta = gct_numeric_to_time(gct_time_to_numeric(time_end) - gct_time_to_numeric(time_start));
         return 'D' + time_delta.replace(/^0*(\.|([1-9][0-9]*\.))/, '$2')
                                .replace(/^0*(\/|([1-9][0-9]*\/))/, '$1');
     }
-    
-//
+
+    //
 // #endregion Helper methods: Interact with GCT-based time from the web page.
 ////////////////////
 
@@ -387,6 +585,13 @@ function tST_add_base_UI() {
             filename += '-' + get_gct_time_for_filename();
         }
         download_to_file(output_html, filename, 'text/html');
+    }
+
+    function download_data_to_file(raw_data, filename, append_timestamp) {
+        if (append_timestamp) {
+            filename += '-' + get_gct_time_for_filename();
+        }
+        download_to_file(raw_data, filename, 'application/json');
     }
 
     // Function to download data to a file.
@@ -430,10 +635,22 @@ function text_nodes_only() {
 // Computes a simple hash value for a string. 
 // Ref: https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
 function getHashForJQueryObject(jq_obj) {
-    var hash = 0, i, chr, text;
-    if (jq_obj.length === 0) return hash;
+    var text;
 
-    text = jq_obj.text() || "";
+    if (jq_obj.length !== 0) {
+        text = jq_obj.text() || "";
+    }
+
+    return getHashForString(text);
+}
+
+function getHashForString(text) {
+    var hash = 0, i, chr;
+
+    if (! text) {
+        return hash;
+    }
+
     // Remove newlines; also, remove any timers from the text, so the hash results in a consistent value.
     text = text.replace(/\r?\n/g, '').replace(/D[0-9]*\.?[0-9]*\/[0-9]+:[0-9]+/g, '');
 
@@ -444,10 +661,6 @@ function getHashForJQueryObject(jq_obj) {
     }
     return hash;
 };
-
-//
-// #endregion Helper methods: Simplify jQuery code.
-////////////////////
 
 //
 // #endregion Helper methods: Simplify jQuery code.
