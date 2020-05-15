@@ -20,7 +20,7 @@
 //  - v0.2: New: Icons for client scripts (clicking icon shows/hides each script's UI)
 //  - v0.3: Plays better with icon_bar userscript, and supports combat page's new stripped-down UI (non-combat UI items now absent).
 //  - v0.4: Pulls player name from Combat UI when needed (since it lacks the sidebar), and moved icons to underneath GCT display (always present).
-//  - v0.4.1: (Work in progress) More adaptable placement of scripts' UI.
+//  - v0.4.1: More adaptable placement of scripts' UI.
 
 //////////////////////////////
 // Begin: User Configuration. These can be configured in the userscripts that import this central script.
@@ -55,18 +55,36 @@ var player_name;
 
 var log_prefix = 'TauStation Tools (common): ';
 
-async function tST_main() {
+function tST_main() {
     add_css_link('https://rawgit.com/taustation-fan/userscripts/master/taustation-tools.css');
     tST_add_base_UI();
 }
 
 function tST_add_base_UI() {
-    var target;
+    let container_target;
     var new_ui;
+
+    // Add an area where the client scripts can place their UI panes.
+    tST_region = $("#tST-container");
+    if (! tST_region.length) {
+        container_target = get_parent_for_ui();
+
+        new_ui = '<div id="tST-container" class="tST-container tST-hidden" style="display: none;">\n</div>\n';
+
+        if (container_target.length) {
+            container_target.prepend(new_ui);
+        } else {
+            console.log(log_prefix + 'Warning: No container for scripts\' UI, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
+            $('body').prepend(new_ui);
+        }
+
+        tST_region = $("#tST-container");
+    }
 
     // Add an area where the client scripts can place their icons. By default,
     // add it to the GCT display in the banner. However, if that's hidden by
     // a userscript, move it to the top of the player stats.
+    let target;
     tST_icons = $('#tST-icons-region');
     if (! tST_icons.length) {
         let banner_is_hidden = false;
@@ -81,7 +99,7 @@ function tST_add_base_UI() {
                 react_when_updated(gct_in_banner,
                                    function (mutation) { return mutation.target.style.display === 'none'; },
                                    function () {
-                                       move_icons_to_stats_container();   
+                                       move_icons_to_sidebar();   
                                    },
                                    { attributes: true, attributeFilter: [ 'style' ] },
                                    5); // 5 seconds (in case of a long-running userscript before us).
@@ -102,9 +120,9 @@ function tST_add_base_UI() {
             target.parent().addClass('tST-icons-adjustment');
             target.append(new_ui);
         } else {
-            target = $('.stats-container');
-            if (target.length) {
-                move_icons_to_stats_container(new_ui);
+            // Put it above our script UI's container, if we found a suitable location earlier.
+            if (container_target.length) {
+                move_icons_to_sidebar(new_ui);
             } else {
                 console.log(log_prefix + 'Warning: No container for scripts\' icons, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
                 $('body').prepend(new_ui);
@@ -113,36 +131,26 @@ function tST_add_base_UI() {
 
         tST_icons = $('#tST-icons-region');
     }
+}
 
-    // Also, add an area where the client scripts can place their UI panes.
-    tST_region = $("#tST-container");
-    if (! tST_region.length) {
-        target = $('.stats-container');
-        if (! target.length) {
-            target = $('#content-container');
-        }
+function get_parent_for_ui() {
+    let target = $('.side-bar');
+    if (! target.length) { target = $('.stats-container'); }
+    // Combat screen doesn't have a stats container, but does still have a sidebar.
+    if (! target.length) { target = $('.combat-sidebar'); }
+    if (! target.length) { target = $('#content-container'); }
 
-        new_ui = '<div id="tST-container" class="tST-container tST-hidden" style="display: none;">\n</div>\n';
-
-        if (target.length) {
-            target.before(new_ui);
-        } else {
-            console.log(log_prefix + 'Warning: No container for scripts\' UI, and couldn\'t find ideal spot to put it. Will insert it at the top of the page body.' )
-            $('body').prepend(new_ui);
-        }
-
-        tST_region = $("#tST-container");
-    }
+    return target;
 }
 
 // Place (or move) the icons UI region atop the stats container, to keep it visible.
-function move_icons_to_stats_container(icons_ui) {
+function move_icons_to_sidebar(icons_ui) {
     if (! icons_ui || ! icons_ui.length) {
         icons_ui = $('#tST-icons-region');
     }
 
-    let stats_container = $('.stats-container');
-    if (stats_container.length) {
+    let sidebar = get_parent_for_ui();
+    if (sidebar.length) {
         // First: Check if we're placing it, or moving an already-placed node.
         if (icons_ui.parent().length) {
             icons_ui = icons_ui.detach();
@@ -151,7 +159,7 @@ function move_icons_to_stats_container(icons_ui) {
 
         // Next: Apply new styles, and [re-]attach it to the page.
         icons_ui.attr('style', 'display:flex; padding-left:0; justify-content:space-evenly;');
-        stats_container.prepend(icons_ui);
+        sidebar.prepend(icons_ui);
     }
 }
 

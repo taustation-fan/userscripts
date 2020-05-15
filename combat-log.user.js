@@ -2,7 +2,7 @@
 // @name         Tau Station: Combat Log (development version)
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/dev/combat-log-scratch/combat-log.user.js
-// @version      1.3.4.1
+// @version      1.3.4.2
 // @description  Records a log of any combat you're involved in.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/*
@@ -27,6 +27,7 @@
 //  - v1.3.3: switch to jquery-3.3.1.min.js
 //  - v1.3.4: Misc fixes to handle TauStation UX & UI changes.
 //  - v1.3.4.1: Code analysis fixes; shouldn't change functionality at all.
+//  - v1.3.4.2: Updated taustation-tools-common.js, and rev'ed this version # so GM/TM will pull latest child script.
 //
 
 //////////////////////////////
