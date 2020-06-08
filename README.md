@@ -169,7 +169,7 @@ The player can glance at them, and immediately know that:
 
  2. Stims #2 & #3 recover the most stat points; Stims #1, #4, and #5 recover the least.
 
- 3. If they need to recover, say, Stamina (runner icon) and Intelligence (lightbulb),
+ 3. If they need to recover, say, Agility (runner icon) and Intelligence (lightbulb),
     they should use Stim #3.
      - Physical stats use the icons from Tau Station's Gym page; Intelligence shows a
        lightbulb, and Social uses a person (silhouette).
