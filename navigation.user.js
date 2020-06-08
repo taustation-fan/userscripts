@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://alpha.taustation.space/*
-// @version  1.10.0
+// @version  1.10.1
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
@@ -23,8 +23,11 @@ function gs_taustation_enhance() {
     // Store reference to core chat field to avoid repeatedly querying the DOM
     let chat_field;
 
+    let added_sublinks = false;
+
     // show area links for the most common sub-areas
     if ( options.show_sub_area_nav_links ) {
+        added_sublinks = true;
         add_sub_area_nav_links();
     }
 
@@ -108,27 +111,43 @@ function gs_taustation_enhance() {
 
     // Make it easy to change between the careers you've chosen.
     if ( options.show_change_career_links ) {
+        added_sublinks = true;
         show_change_career_links();
+    }
+
+    if (added_sublinks) {
+        add_nav_sub_links_css();
     }
 
 
     function add_sub_area_nav_links() {
         var current_station = $(".description-container .station").text();
-        var port_links = '<li class="area "> <a style="padding-left: 2em" href="/travel/area/shipping-bay">Shipping</a> / <a href="/travel/area/docks">Docks</a>';
+        var port_links = '<li class="area "> <span style="padding-left: 2em"> <a class="nav-sub-link" href="/travel/area/shipping-bay">Shipping</a> / <a class="nav-sub-link" href="/travel/area/docks">Docks</a>';
         if ( current_station.match(/jump gate/i) !== null ) {
-            port_links += ' / <a href="/travel/area/interstellar-shuttles">Interstellar</a>';
+            port_links += ' / <a class="nav-sub-link" href="/travel/area/interstellar-shuttles">Interstellar</a>';
         }
-        port_links += ' / <a href="/travel/area/local-shuttles">Shuttles</a> </li>';
+        port_links += ' / <a class="nav-sub-link" href="/travel/area/local-shuttles">Shuttles</a> </li>';
 
-        $('#game_navigation_areas a[href="/travel/area/inn"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/bar">Bar</a> / <a href="/area/hotel-rooms/enter-room">Room</a> / <a href="/travel/area/lounge">Lounge</a> </li>');
-        $('#game_navigation_areas a[href="/travel/area/market"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/vendors">Vendors</a> / <a href="/travel/area/electronic-market">Public</a> / <a href="/travel/area/storage">Storage</a> </li>');
+        $('#game_navigation_areas a[href="/travel/area/inn"]').parent('li').after('<li class="area "> <span style="padding-left: 2em"> <a class="nav-sub-link" href="/travel/area/bar">Bar</a> / <a class="nav-sub-link" href="/area/hotel-rooms/enter-room">Room</a> / <a class="nav-sub-link" href="/travel/area/lounge">Lounge</a> </li>');
+        $('#game_navigation_areas a[href="/travel/area/market"]').parent('li').after('<li class="area "> <span style="padding-left: 2em"> <a class="nav-sub-link" href="/travel/area/vendors">Vendors</a> / <a class="nav-sub-link" href="/travel/area/electronic-market">Public</a> / <a class="nav-sub-link" href="/travel/area/storage">Storage</a> </li>');
         $('#game_navigation_areas a[href="/travel/area/port"]').parent('li').after(port_links);
-        $('#game_navigation_areas a[href="/travel/area/ruins"]').parent('li').after('<li class="area "> <a style="padding-left: 2em" href="/travel/area/the-wrecks">Wrecks</a> / <a href="/area/the-wilds">Wilds</a> </li>');
+        $('#game_navigation_areas a[href="/travel/area/ruins"]').parent('li').after('<li class="area "> <span style="padding-left: 2em"> <a class="nav-sub-link" href="/travel/area/the-wrecks">Wrecks</a> / <a class="nav-sub-link" href="/area/the-wilds">Wilds</a> </li>');
         if ( options.hunt_mode) {
             $('#game_navigation_areas a').each(function(index, elem){
                 $(elem).attr('href', $(elem).attr('href') + '#/people');
             });
         }
+    }
+
+    // Mimic the highlight shown for top-level-area links.
+    function add_nav_sub_links_css() {
+        add_css(`
+.area a.nav-sub-link:hover,
+.area a.nav-sub-link:focus {
+    box-shadow: 0 0 0.188em 0.25em #83f1fd;
+    color: #08a1ec;
+}
+`);
     }
 
     var is_fullpage_chat = false;
@@ -246,48 +265,72 @@ function gs_taustation_enhance() {
         }
     }
 
-    //TODO: Add "Hide Tasks"-style UI to Careers page, to select which careers this shows (instead of using constants at top of file).
-    //TODO: Move to sidebar's [Employment] section? (May also need to confirm that sidebar's [Areas] section includes Employment area.)
     function show_change_career_links() {
         // If no careers have been selected (see show_careers above),
         // don't display this addition.
-        var careers_selected = false;
+        var careers_selected = 0;
         for (var x in options.show_careers) {
-            careers_selected = careers_selected | options.show_careers[x];
+            // This script initially used an early version of userscript-preferences' boolean_array field; when
+            // that code changed, this field's data was left with a bogus string property named "undefined".
+            if (x === undefined || x === 'undefined') {
+                continue;
+            }
+
+            if (options.show_careers[x]) {
+                careers_selected++;
+            }
         }
         if (! careers_selected) {
             return;
         }
 
-        if ($('#employment_panel').find('.employment-title').length) {
+        //TODO: Improve this selector, if/when a site update changes the Employment section's items to have different classes, or its "Career" line indicates "career active?" (vs. none active) using something besides fragile, user-visible text.
+        if ($('#employment_panel a[href="/travel/area/job-center"]:not(:contains("Choose a career"))').length) {
             // A career is currently active: Show the link to leave your career.
             $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
-                .after('<li class="area"><span style="padding-left: 2em">→</span> <a href="/character/quit-career">Change career</a></li>\n');
+                .after('<li class="area"><span style="padding-left: 1.6em">→</span> <a class="nav-sub-link" href="/character/quit-career">Change career</a></li>\n');
         } else if (!window.location.pathname.startsWith('/area/career-advisory')) {
             // No careers are currently active, but we can only change careers
             // inside Career Advisory: Show a link to Career Advisory. (Same as
             // the page's "start a career" link, but in the same place on-page
             // as the career-change links above & below.)
             $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
-                .after('<li class="area"><span style="padding-left: 2em">→ Go to</span> <a href="/area/career-advisory">Career Advisory</a></li>\n');
+                .after('<li class="area"><span style="padding-left: 1.6em">→ Go to</span> <a class="nav-sub-link" href="/area/career-advisory">Career Advisory</a></li>\n');
         } else {
             // No careers are currently active: Show only the careers that the
             // player has chosen to pursue (see show_careers above).
             var careers = [];
             var prefix  = '/area/career-advisory/start-career/';
-            if (options.show_careers.trader)             { careers.push('<a href="' + prefix + 'trader">Trader</a>'); }
-            if (options.show_careers.opportunist)        { careers.push('<a href="' + prefix + 'opportunist">Opportunist</a>'); }
-            if (options.show_careers.embassy_staff)      { careers.push('<a href="' + prefix + 'embassy-staff">Embassy</a>'); }
-            if (options.show_careers.cloning_specialist) { careers.push('<a href="' + prefix + 'cloning-specialist">Cloning</a>'); }
-            if (options.show_careers.operative)          { careers.push('<a href="' + prefix + 'operative">Operative</a>'); }
-            if (options.show_careers.port_technician)    { careers.push('<a href="' + prefix + 'port-technician">Port Tech</a>'); }
+            if (options.show_careers.trader)             { careers.push('<a class="nav-sub-link" href="' + prefix + 'trader">Trader</a>'); }
+            if (options.show_careers.opportunist)        { careers.push('<a class="nav-sub-link" href="' + prefix + 'opportunist">Opportunist</a>'); }
+            if (options.show_careers.embassy_staff)      { careers.push('<a class="nav-sub-link" href="' + prefix + 'embassy-staff">Embassy</a>'); }
+            if (options.show_careers.cloning_specialist) { careers.push('<a class="nav-sub-link" href="' + prefix + 'cloning-specialist">Cloning</a>'); }
+            if (options.show_careers.operative)          { careers.push('<a class="nav-sub-link" href="' + prefix + 'operative">Operative</a>'); }
+            if (options.show_careers.port_technician)    { careers.push('<a class="nav-sub-link" href="' + prefix + 'port-technician">Port Tech</a>'); }
 
-            // People typically have only 1-2 careers (so far); the list we
-            // end up with should be short, so just show it on one line.
-            // (For 3+ careers, two or more lines would look better.)
-            var careers_shown = careers.join(' / ');
+            // If the player has only 1-2 careers, show them on one line.
+            // For 3+ careers, use two or more lines.
+            var careers_shown = '';
+            if (careers_selected < 3) {
+                careers_shown = careers.join(' / ');
+            } else {
+                let start_next_line = (careers_selected % 2);
+                for (let ii = 0; ii < careers_selected; ii++) {
+                    careers_shown += careers[ii];
+                    // Append a separator, unless it's the last item.
+                    if (ii + 1 < careers_selected) {
+                        // If odd, the first line has 1 career, and successive lines have 2 careers;
+                        // if even, each line has 2 careers.
+                        if ((ii+1) % 2 === start_next_line) {
+                            careers_shown += ' /<br><span style="padding-left: 4em;"/>';
+                         } else {
+                             careers_shown += ' / ';
+                         }
+                    }
+                }
+            }
             $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
-                .after('<li class="area"><span style="padding-left: 2em">→ Start:</span>\n' + careers_shown + '\n</li>\n');
+                .after('<li class="area"><span style="padding-left: 1.6em">→ Start:</span>\n' + careers_shown + '\n</li>\n');
         }
     }
 
@@ -447,14 +490,14 @@ function gs_taustation_enhance() {
                     label:   "Show careers",
                     help:    "Only used if above setting is true",
                     type:    "boolean_array",
-                    options: [
-                        { key: "trader",             label: "Trader" },
-                        { key: "opportunist",        label: "Opportunist" },
-                        { key: "embassy_staff",      label: "Embassy Staff" },
-                        { key: "cloning_specialist", label: "Cloning Specialist" },
-                        { key: "operative",          label: "Operative" },
-                        { key: "port_technician",    label: "Port Technician" },
-                    ]
+                    options: new Map( [
+                        [ "trader",             "Trader" ],
+                        [ "opportunist",        "Opportunist" ],
+                        [ "embassy_staff",      "Embassy Staff" ],
+                        [ "cloning_specialist", "Cloning Specialist" ],
+                        [ "operative",          "Operative" ],
+                        [ "port_technician",    "Port Technician" ],
+                    ] )
                 },
                 {
                     key:     "show_sub_area_nav_links",
