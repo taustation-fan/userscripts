@@ -2,7 +2,7 @@
 // @name         Tau Station: Stims: Show boosted-stat icons
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/stim-stat-icons.user.js
-// @version      1.2
+// @version      1.2.1
 // @description  Overlay icons on stims, indicating which stats are boosted by each stim.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://alpha.taustation.space/area/docks*
@@ -30,6 +30,7 @@
 //  - v1.1.1: Added support: Storage Management page
 //  - v1.1.2: Added support: Ship's storage
 //  - v1.2: Initial release (code cleanup, minor UI updates)
+//  - v1.2.1: Switch to Font Awesome 5
 //
 // TODO List: (things not yet implemented or ready)
 //  - After site's upcoming combat update, options.hide_mental_stats_during_combat shouldn't hide INT during combat.
@@ -398,9 +399,9 @@ function insert_icon(stat_name, icon_y, icon_x, text_value, severity) {
     let decoration = 'stim-text-container';
 
     if (stat_name === 'Intelligence') {
-        fa_icon = 'fa-lightbulb-o';
+        fa_icon = 'fa-lightbulb';
     } else if (stat_name === 'Social') {
-        fa_icon = 'fa-user-o';
+        fa_icon = 'fa-user';
     } else if (stat_name === 'Boost') {
         icon_text = text_value;
         decoration += ' stim-boost-border';
@@ -412,7 +413,7 @@ function insert_icon(stat_name, icon_y, icon_x, text_value, severity) {
     }
 
     if (fa_icon) {
-        icon_text = `<span class="fa ${fa_icon}" />\n`;
+        icon_text = `<span class="far ${fa_icon}" />\n`;
     }
 
     let icon_class = 'stim-stat-icon';
