@@ -2,10 +2,10 @@
 // @name         Tau Station: General Monitor
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/general_monitor.user.js
-// @version      0.8
+// @version      0.9
 // @description  Monitors the page, reacting based on the information available (including scheduling notifications, updating item text based on player details, etc.).
 // @author       Mark Schurman (https://github.com/quasidart)
-// @match        https://alpha.taustation.space/*
+// @match        https://taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://github.com/taustation-fan/userscripts/raw/master/taustation-tools-common.js

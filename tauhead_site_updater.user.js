@@ -2,9 +2,9 @@
 // @name         TauHead Site Updater
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_site_updater.user.js
-// @version      1.1
+// @version      1.2
 // @description  Add buttons to in-game pages to update TauHead with data on auction-listings, items, stations, areas, NPCs and vendor-inventories
-// @match        https://alpha.taustation.space/*
+// @match        https://taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js

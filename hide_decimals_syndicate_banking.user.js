@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Hide all decimals in donations amounts at syndicate Banking overview
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @author       Dot_sent
-// @match        https://alpha.taustation.space/syndicates
+// @match        https://taustation.space/syndicates
 // @grant        none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==

@@ -2,13 +2,13 @@
 // @name         Tau Combat Safeguard
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/combat-safeguard.user.js
-// @version      1.0
+// @version      1.1
 // @description  Tau Station: prevent entering combat when stats or focus are too low
 // @author       SandwichMaker <traktofon@gmail.com>
-// @match        https://alpha.taustation.space/preferences
-// @match        https://alpha.taustation.space/area/the-wrecks*
-// @match        https://alpha.taustation.space/area/the-wilds*
-// @match        https://alpha.taustation.space/character/details/*
+// @match        https://taustation.space/preferences
+// @match        https://taustation.space/area/the-wrecks*
+// @match        https://taustation.space/area/the-wilds*
+// @match        https://taustation.space/character/details/*
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://github.com/taustation-fan/userscripts/raw/master/userscript-preferences.js
 // @grant        none

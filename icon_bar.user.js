@@ -3,8 +3,8 @@
 // @namespace   https://github.com/taustation-fan
 // @description Extension to add quick-link icons to the icon bar at taustation.space
 // @downloadURL https://github.com/taustation-fan/userscripts/raw/master/icon_bar.user.js
-// @match       https://alpha.taustation.space/*
-// @version     4.1
+// @match       https://taustation.space/*
+// @version     4.2
 // @author      duelafn
 // @require     https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // ==/UserScript==

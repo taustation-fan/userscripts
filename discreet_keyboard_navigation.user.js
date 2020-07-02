@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         discreet_keyboard_navigation
 // @namespace    https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @version      1.7
+// @version      1.8
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
 // @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available on User Preferences page.
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @match        https://alpha.taustation.space/area/*
-// @match        https://alpha.taustation.space/character/*
-// @match        https://alpha.taustation.space/preferences
+// @match        https://taustation.space/area/*
+// @match        https://taustation.space/character/*
+// @match        https://taustation.space/preferences
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // @grant        none

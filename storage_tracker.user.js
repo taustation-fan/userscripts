@@ -2,16 +2,16 @@
 // @name         Storage Tracker
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/storage_tracker.user.js
-// @version      1.9.1
+// @version      1.9.2
 // @description  Track Storage items & Shipped items, and show owned items in Public Market
-// @match        https://alpha.taustation.space/area/electronic-market*
-// @match        https://alpha.taustation.space/area/shipping-bay*
-// @match        https://alpha.taustation.space/area/storage*
-// @match        https://alpha.taustation.space/area/the-wilds*
-// @match        https://alpha.taustation.space/area/vendors/*
-// @match        https://alpha.taustation.space/character/inventory*
-// @match        https://alpha.taustation.space/coretechs/storage*
-// @match        https://alpha.taustation.space/preferences*
+// @match        https://taustation.space/area/electronic-market*
+// @match        https://taustation.space/area/shipping-bay*
+// @match        https://taustation.space/area/storage*
+// @match        https://taustation.space/area/the-wilds*
+// @match        https://taustation.space/area/vendors/*
+// @match        https://taustation.space/character/inventory*
+// @match        https://taustation.space/coretechs/storage*
+// @match        https://taustation.space/preferences*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://github.com/taustation-fan/userscripts/raw/master/userscript-preferences.js

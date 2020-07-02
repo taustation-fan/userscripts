@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Tau Station Bank Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Automatically fill the bank deposit box with your extra cash
 // @author       Marco Fontani <MFONTANI@cpan.org>
-// @match        https://alpha.taustation.space/area/bank*
+// @match        https://taustation.space/area/bank*
 // @grant        none
 // ==/UserScript==
 

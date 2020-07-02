@@ -2,10 +2,10 @@
 // @name         Tau Station: Combat Log
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/combat-log.user.js
-// @version      1.3.3
+// @version      1.3.4
 // @description  Records a log of any combat you're involved in.
 // @author       Mark Schurman (https://github.com/quasidart)
-// @match        https://alpha.taustation.space/*
+// @match        https://taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://rawgit.com/taustation-fan/userscripts/master/taustation-tools-common.js

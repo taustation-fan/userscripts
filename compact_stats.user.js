@@ -2,8 +2,8 @@
 // @name     taustation_compact_stats
 // @namespace https://github.com/dot-sent
 // @description Extension to compact the left stats block at taustation.space
-// @match https://alpha.taustation.space/*
-// @version  1
+// @match https://taustation.space/*
+// @version  2
 // @grant    GM_addStyle
 // @author Dot_sent
 // @require http://code.jquery.com/jquery-3.3.1.min.js

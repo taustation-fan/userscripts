@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Tau Station Gift Helper
 // @namespace    https://github.com/dot-sent
-// @version      0.1
+// @version      0.2
 // @description  Provides extensive functionality to enable gifting through chat
 // @author       Dot_sent
-// @match        https://alpha.taustation.space/*
+// @match        https://taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==
@@ -19,13 +19,13 @@ function add_user_to_recipients_list(user_to_add){
 };
 
 function redirect_to_inventory(user_to_add){
-//    console.log('Redirecting to: ' + 'https://alpha.taustation.space/character/inventory?gift_to_user=' + user_to_add);
-    window.location.href='https://alpha.taustation.space/character/inventory?gift_to_user=' + user_to_add;
+//    console.log('Redirecting to: ' + 'https://taustation.space/character/inventory?gift_to_user=' + user_to_add);
+    window.location.href='https://taustation.space/character/inventory?gift_to_user=' + user_to_add;
 };
 
 function redirect_to_shipping_bay(user_to_add){
-//    console.log('Redirecting to: ' + 'https://alpha.taustation.space/area/shipping-bay?gift_to_user=' + user_to_add);
-    window.location.href='https://alpha.taustation.space/area/shipping-bay?gift_to_user=' + user_to_add;
+//    console.log('Redirecting to: ' + 'https://taustation.space/area/shipping-bay?gift_to_user=' + user_to_add);
+    window.location.href='https://taustation.space/area/shipping-bay?gift_to_user=' + user_to_add;
 }
 
 function add_shipping_options(){
@@ -39,9 +39,9 @@ function add_shipping_options(){
                     add_user_to_recipients_list($(this).attr('data-username'));
                 });
             } else {
-                $(parent_ul).append('<li class="send-stuff-link"><a href="https://alpha.taustation.space/area/shipping-bay?gift_to_user=' + username + '">Send stuff</a></li>');
+                $(parent_ul).append('<li class="send-stuff-link"><a href="https://taustation.space/area/shipping-bay?gift_to_user=' + username + '">Send stuff</a></li>');
             }
-            $(parent_ul).append('<li class="add-friend-link"><a href="https://alpha.taustation.space/contact?contact_type=friend&new_contact_name=' + username + '">Add friend</a></li>');
+            $(parent_ul).append('<li class="add-friend-link"><a href="https://taustation.space/contact?contact_type=friend&new_contact_name=' + username + '">Add friend</a></li>');
         }
     });
 }

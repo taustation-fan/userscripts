@@ -2,9 +2,9 @@
 // @name         Tau Sort Inventory Gear
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/sort_inventory_gear.user.js
-// @version      1.2
+// @version      1.3
 // @description  Tau Sort Inventory Gear
-// @match        https://alpha.taustation.space/*
+// @match        https://taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==

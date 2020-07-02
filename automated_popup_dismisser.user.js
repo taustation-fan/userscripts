@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Automated Popup Dismisser
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  Automatically closes any pop-up windows related to started/finished repair etc.
 // @author       Dotsent
-// @match        https://alpha.taustation.space/*
+// @match        https://taustation.space/*
 // @grant        none
 // ==/UserScript==
 

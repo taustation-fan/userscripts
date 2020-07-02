@@ -2,19 +2,19 @@
 // @name         Tau Station: Stims: Show boosted-stat icons
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/stim-stat-icons.user.js
-// @version      1.2.1
+// @version      1.2.2
 // @description  Overlay icons on stims, indicating which stats are boosted by each stim.
 // @author       Mark Schurman (https://github.com/quasidart)
-// @match        https://alpha.taustation.space/area/docks*
-// @match        https://alpha.taustation.space/area/electronic-market*
-// @match        https://alpha.taustation.space/area/storage*
-// @match        https://alpha.taustation.space/area/the-wilds*
-// @match        https://alpha.taustation.space/area/vendors*
-// @match        https://alpha.taustation.space/character/inventory*
-// @match        https://alpha.taustation.space/combat*
-// @match        https://alpha.taustation.space/coretechs/storage/*
-// @match        https://alpha.taustation.space/item/*
-// @match        https://alpha.taustation.space/preferences*
+// @match        https://taustation.space/area/docks*
+// @match        https://taustation.space/area/electronic-market*
+// @match        https://taustation.space/area/storage*
+// @match        https://taustation.space/area/the-wilds*
+// @match        https://taustation.space/area/vendors*
+// @match        https://taustation.space/character/inventory*
+// @match        https://taustation.space/combat*
+// @match        https://taustation.space/coretechs/storage/*
+// @match        https://taustation.space/item/*
+// @match        https://taustation.space/preferences*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js

@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Tau Discreet Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Add links to areas while on discreet work
 // @author       Marco Fontani <MFONTANI@cpan.org>
-// @match        https://alpha.taustation.space/*
+// @match        https://taustation.space/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==

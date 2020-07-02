@@ -3,8 +3,8 @@
 // @namespace https://github.com/moritz/
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
-// @match https://alpha.taustation.space/*
-// @version  1.10.1
+// @match https://taustation.space/*
+// @version  1.10.2
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js

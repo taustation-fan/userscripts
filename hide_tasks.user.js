@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         taustation_hide_tasks
 // @namespace    https://github.com/dot-sent
-// @version      0.3
+// @version      0.4
 // @description  Hide irrelevant career tasks
 // @author       Dot_sent
-// @match        https://alpha.taustation.space/area/*
+// @match        https://taustation.space/area/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_addStyle

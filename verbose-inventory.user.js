@@ -3,9 +3,9 @@
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://rawgit.com/taustation-fan/userscripts/master/verbose-inventory.user.js
 // @description  For taustation.space: Show full item descriptions in the player's inventory & storage areas.
-// @match        https://alpha.taustation.space/character/inventory
-// @match        https://alpha.taustation.space/area/storage
-// @version      1.1
+// @match        https://taustation.space/character/inventory
+// @match        https://taustation.space/area/storage
+// @version      1.2
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // ==/UserScript==

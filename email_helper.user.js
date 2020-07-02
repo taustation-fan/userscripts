@@ -2,10 +2,10 @@
 // @name         Tau Station Email Helper
 // @namespace    http://tampermonkey.net/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/email_helper.user.js
-// @version      0.2
+// @version      0.3
 // @description  Provides multi-email forwarding functionality to Tau Station email system
 // @author       Sergey Kudriavtsev <https://github.com/dot-sent>
-// @match        https://alpha.taustation.space/email/*
+// @match        https://taustation.space/email/*
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://unpkg.com/turndown/dist/turndown.js
