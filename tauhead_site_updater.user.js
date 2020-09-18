@@ -2,7 +2,7 @@
 // @name         TauHead Site Updater
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/tauhead_site_updater.user.js
-// @version      1.2
+// @version      1.3
 // @description  Add buttons to in-game pages to update TauHead with data on auction-listings, items, stations, areas, NPCs and vendor-inventories
 // @match        https://taustation.space/*
 // @grant        none
@@ -1059,7 +1059,7 @@ function string_to_slug(str) {
 
 function strip_url(img) {
     if (img) {
-        img = img.replace( /.*url\("https:\/\/alpha\.taustation\.space/, "" );
+        img = img.replace( /.*url\("https:\/\/taustation\.space/, "" );
         img = img.replace( /"\)$/, "" );
     }
     else {
