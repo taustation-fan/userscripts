@@ -2,7 +2,7 @@
 // @name         Tau Station Email Helper
 // @namespace    http://tampermonkey.net/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/email_helper.user.js
-// @version      0.3
+// @version      0.4
 // @description  Provides multi-email forwarding functionality to Tau Station email system
 // @author       Sergey Kudriavtsev <https://github.com/dot-sent>
 // @match        https://taustation.space/email/*
@@ -104,9 +104,9 @@ $(document).ready(function() {
         initForwardButton(emailId, emails.hasOwnProperty(emailId));
     });
 
-    var $emailComposeButtonsContainer = $('#email .form-action-container');
+    var $emailComposeButtonsContainer = $('#email .form-action-container, #email .form-submission');
     if ($emailComposeButtonsContainer.length) {
-        $emailComposeButtonsContainer.prepend('<a href="#" class="btn-control normal btn-clear-paste-forward">Clear forwards</a> <a href="#" class="btn-control normal btn-paste-forward">Paste emails (' + Object.keys(emails).length + ') to forward</a>');
+        $emailComposeButtonsContainer.prepend('<a href="#" class="btn-control normal btn-clear-paste-forward">Clear forwards</a> <a href="#" class="btn-control normal btn-paste-forward" style="margin-right: 5px;">Paste emails (' + Object.keys(emails).length + ') to forward</a>');
         $emailComposeButtonsContainer.find('.btn-paste-forward').on('click', function(evt){
             evt.preventDefault();
             var emailKeys = Object.keys(emails).sort();
