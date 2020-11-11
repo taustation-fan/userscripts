@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.12.2
+// @version      1.12.3
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://taustation.space/*
