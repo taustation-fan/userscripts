@@ -263,7 +263,7 @@ function linkify_item_name(text, fn_update_item_name) {
     var retval = '';
     if (text) {
         text = text.trim();
-        var target = (linkify_config.open_links_in_new_tab ? ' target="_blank"' : '');
+        var target = (linkify_config.open_links_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : '');
         var slug   = get_slug(text);
         if (! slug || slug === placeholder_stim_name) {
             return;
