@@ -2,13 +2,15 @@
 // @name         Tau Station Email Helper
 // @namespace    http://tampermonkey.net/
 // @downloadURL  https://github.com/taustation-fan/userscripts/raw/master/email_helper.user.js
-// @version      0.4
+// @version      0.5
 // @description  Provides multi-email forwarding functionality to Tau Station email system
 // @author       Sergey Kudriavtsev <https://github.com/dot-sent>
 // @match        https://taustation.space/email/*
+// @match        https://taustation.space/preferences
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @require      https://unpkg.com/turndown/dist/turndown.js
+// @require      https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
 // ==/UserScript==
 
 var localStorageKey = 'emailsToForward';
@@ -90,8 +92,39 @@ function initForwardButton(emailId, forwardStatus){
     } //TODO: 'else' block?
 }
 
+
+
 $(document).ready(function() {
     'use strict';
+
+    function pref_specs() {
+        return {
+            key: 'email_helper',
+            label: 'Email Helper',
+            options: [
+                {
+                    key: 'signature1',
+                    label: 'Signature line 1',
+                    type: 'text',
+                    default: '',
+                },
+                {
+                    key: 'signature2',
+                    label: 'Signature line 2',
+                    type: 'text',
+                    default: '',
+                },
+                {
+                    key: 'signature3',
+                    label: 'Signature line 3',
+                    type: 'text',
+                    default: '',
+                },
+            ],
+        };
+    }
+    let options = userscript_preferences( pref_specs() );
+    console.log(options.signature);
 
     var emails = {};
     if (localStorage.hasOwnProperty(localStorageKey)) {
@@ -118,5 +151,16 @@ $(document).ready(function() {
             evt.preventDefault();
             clearLS();
         });
+        if (document.getElementById('message').value.length == 0) {
+            if (options.signature1 != '') {
+                document.getElementById('message').value += '\r\n\r\n--  \r\n' + options.signature1;
+            }
+            if (options.signature2 != '') {
+                document.getElementById('message').value += '  \r\n' + options.signature2;
+            }
+            if (options.signature3 != '') {
+                document.getElementById('message').value += '  \r\n' + options.signature3;
+            }
+        }
     }
 });
