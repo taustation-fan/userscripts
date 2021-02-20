@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.12.3
+// @version      1.13
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://taustation.space/*
@@ -27,10 +27,12 @@
 //  - v1.11.*: Minor updates (special-case slugs, slug generator fine-tuning)
 //  - v1.11.5: Update for "/syndicate/campaign-result" page (which replaced modal overlay dialog).
 //  - v1.12.0: Switch config to use userscript-preferences.js
+//  - v1.13: Switch to https://tracker.tauguide.de/ as data source
 //
 
 // TODO List: (things not yet implemented or ready)
-//
+// - the Trau Tracker offers an API for retrieving items by name, see https://github.com/taustation-fan/universal-tau-tracker/blob/master/API.md#retrieving-a-single-item
+//    using this API, we could avoid most of the name -> slug guessing going on in get_slug()
 
 // Action Items: (things ready & waiting for action)
 //
@@ -408,7 +410,7 @@ function get_item_data(slug, fn_finish_caller_tasks) {
     count_ajax_queries++;
     last_slug_queried = slug;
 
-    $.getJSON('https://www.tauhead.com/item/' + slug)
+    $.getJSON('https://tracker.tauguide.de/v1/item/by-slug/' + slug)
         .done(function (data, status, xhr) {
             if (data) {
                 // If not a weapon or armor, this will add the item w/ an empty value (to prevent further AJAX queries for it).
@@ -442,14 +444,14 @@ function get_item_data(slug, fn_finish_caller_tasks) {
 function format_item_data(piercing, impact, energy) {
     if (typeof piercing === 'object') {
         var data = piercing;
-        if (data.hasOwnProperty('item_component_weapon')) {
-            piercing = (data.item_component_weapon.piercing_damage || 0) * 1;
-            impact   = (data.item_component_weapon.impact_damage   || 0) * 1;
-            energy   = (data.item_component_weapon.energy_damage   || 0) * 1;
-        } else if (data.hasOwnProperty('item_component_armor')) {
-            piercing = (data.item_component_armor.piercing || 0) * 1;
-            impact   = (data.item_component_armor.impact   || 0) * 1;
-            energy   = (data.item_component_armor.energy   || 0) * 1;
+        if (data.hasOwnProperty('energy_defense')) {
+            piercing = (data.piercing_defense || 0) * 1;
+            impact   = (data.impact_defense   || 0) * 1;
+            energy   = (data.energy_defense   || 0) * 1;
+        } else if (data.hasOwnProperty('energy_damage')) {
+            piercing = (data.piercing_damage || 0) * 1;
+            impact   = (data.impact_damage   || 0) * 1;
+            energy   = (data.energy_damage   || 0) * 1;
         } else {
             // Not a weapon or armor; for now, we don't care about it.
             return '';
