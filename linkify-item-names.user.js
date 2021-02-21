@@ -427,9 +427,9 @@ function get_item_data(slug, fn_finish_caller_tasks) {
         .always(function (jqXHR, textStatus) {
             // When the last AJAX query returns, report the total # of queries for this page load.
             if (last_slug_queried == slug) {
-                console.log(log_prefix + 'Sent ' + count_ajax_queries + ' AJAX queries to TauHead.com.')
+                console.log(log_prefix + 'Sent ' + count_ajax_queries + ' AJAX queries to tracker.tauguide.de')
                 if (missing_slugs.length) {
-                    console.log(log_prefix + 'TauHead.com is missing the following items:\n' +
+                    console.log(log_prefix + 'tracker.tauguide.de is missing the following items:\n' +
                                 '  ' + missing_slugs.join(', '));
                 }
             }
