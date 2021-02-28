@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.13
+// @version      1.13.1
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://taustation.space/*
@@ -28,6 +28,7 @@
 //  - v1.11.5: Update for "/syndicate/campaign-result" page (which replaced modal overlay dialog).
 //  - v1.12.0: Switch config to use userscript-preferences.js
 //  - v1.13: Switch to https://tracker.tauguide.de/ as data source
+//  - v1.13.1: Minor update (convert em-dash in get_slug)
 //
 
 // TODO List: (things not yet implemented or ready)
@@ -323,6 +324,7 @@ function get_slug(text) {
                            .replace(/\xE9/g,       'e')  // é (small E ACUTE)
                            .replace(/\u014d/g,     'o')  // ō (small O WITH MACRON)
                            .replace(/ ?\u2013 ?/g, '-')  // – (EN DASH)
+                           .replace(/ ?\u2014 ?/g, '-')  // — (EM DASH)
                            .replace(/\u2019/g,     '')   // ’ (RIGHT SINGLE QUOTATION MARK)
                            .replace(/\u2122/g,     'tm');// ™ (TRADE MARK SIGN)
 
