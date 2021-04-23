@@ -17,6 +17,7 @@
 // links without the user needing to reload the page.
 // These speed up discreet missions ever so slightly.
 
+var base_area_url = ""https://taustation.space/area";
 (function() {
     'use strict';
     var places;
@@ -33,7 +34,24 @@
                     places[name] = location;
                 }
             });
+            // add some extra links for sub-area text that doesn't match up with sidebar navigation properly,
+            // because why allow elegant solutions.
+            places["Bar"] = base_area_url + "/bar";
+            places["Hotel Room"] = base_area_url + "/hotel-rooms";
+            places["Rooms"] = base_area_url + "/hotel-rooms";
+            places["Lounge"] = base_area_url + "/lounge";
+            places["Vendors"] = base_area_url + "/vendors";
+            places["Public"] = base_area_url + "/electronic-market";
+            places["Public Market"] = base_area_url + "/electronic-market";
+            places["Storage"] = base_area_url + "/storage";
+            places["Shipping Bay"] = base_area_url + "/shipping-bay";
+            places["Docks"] = base_area_url + "/docks";
+            places["Local Shuttles"] = base_area_url + "/local-shuttles";
+            places["Wrecks"] = base_area_url + "/the-wrecks";
+            places["Careers"] = base_area_url + "/career-advisory";
+            places["Government Center"] = base_area_url + "/government-center";
         }
+
         $('.narrative-direction:not([data-discreethelper="done"]), .mission-updates').each(function(idx,nd) {
             var text = $(nd).html();
             // "tag" as already looked at
