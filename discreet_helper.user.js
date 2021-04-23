@@ -17,10 +17,10 @@
 // links without the user needing to reload the page.
 // These speed up discreet missions ever so slightly.
 
-var base_area_url = ""https://taustation.space/area";
 (function() {
     'use strict';
     var places;
+    var base_area_url = "https://taustation.space/area";
     function refresh_directions() {
         if (!$('.narrative-direction, .mission-updates').length) {
             return;
