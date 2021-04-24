@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         discreet_keyboard_navigation
 // @namespace    https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @version      1.8
+// @version      1.9
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
 // @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available on User Preferences page.
@@ -31,6 +31,7 @@
 
     // stop trigger-happy fingers from following a link twice before page reload
     let followed_link = false;
+
     // If we are adding an icon, we need more room!
     if (options.add_discreet_icon) {
         let head = document.getElementsByTagName('head')[0];
@@ -46,34 +47,74 @@
         head.appendChild(s);
     }
 
-    // narrative directions: capture the name of the next location to visit
-    var dh_narrative_directions = [
-        /^\s*New goals:\s*Talk to .*? in (.*?) on .*?\s*$/,
-        /^New goals: Return to .*? in (.*?) on .*? to collect your reward\.$/,
-        /^From your CORETECHS you see that (.*?) is the place to find .*\.$/,
-        /^Go to .*? who is in (.*)\.$/,
-        /^A hunch tells you to go to the (.*?) to find .*\.$/,
-        /^You're pretty sure you can find .*? in (.*)\.$/,
-        /^You check your CORETECHS for the location of .*?. Seems like the place to look is (.*)\.$/,
-        /^You ask a passerby if they know where to find .*?. They direct you to (.*)\.$/,
-        // These next two are probably obsolete, but may not have been removed from all stations.
-        /^New goals: Return to .*? in (.*?) to collect your reward\.$/,
-        /^\s*New goals:\s*Talk to .*? in (.*?)\s*$/,
-    ];
+    var places = { };
+    function save_place(name, url) {
+        // Check for existing "people" in case some other script added it in
+        if (url.indexOf("#/people") < 0) { url = url + "#/people"; }
+        places[name] = "<a href='" + url + "'>" + name + "</a>";
+    }
 
-    // _discreet_target: loop over narrative directions and return the next location to visit
-    function _discreet_target(ns) {
-        if (!ns) { return null; }
-        for (let i = 0; i < ns.length; i++) {
-            for (let j = 0; j < dh_narrative_directions.length; j++) {
-                console.log("Test '" + dh_narrative_directions[j] + "' against '" + ns[i].textContent + "'")
-                let rv = dh_narrative_directions[j].exec(ns[i].textContent);
-                if (rv != null) {
-                    return rv[1];
-                }
+    // Preload locations which don't appear in the side navigation:
+    save_place('Bar',               '/travel/area/bar');
+    save_place('Careers',           '/travel/area/career-advisory');
+    save_place('Docks',             '/travel/area/docks');
+    save_place('Government Center', '/travel/area/government-center');
+    save_place('Hotel Room',        '/travel/area/hotel-rooms');
+    save_place('Interstellar',      '/travel/area/interstellar-shuttles');
+    save_place('Local Shuttles',    '/travel/area/local-shuttles');
+    save_place('Lounge',            '/travel/area/lounge');
+    save_place('Public Market',     '/travel/area/electronic-market');
+    save_place('Rooms',             '/travel/area/hotel-rooms');
+    save_place('Shipping Bay',      '/travel/area/shipping-bay');
+    save_place('Side Jobs',         '/travel/area/side-jobs');
+    save_place('Storage',           '/travel/area/storage');
+    save_place('Vendors',           '/travel/area/vendors');
+    save_place('Wilds',             '/travel/area/the-wilds');
+    save_place('Wrecks',            '/travel/area/the-wrecks');
+
+    function get_places() {
+        // Run through side navigation for directly reachable locations and any localized names:
+        document.querySelectorAll('#game_navigation_areas a').forEach(function(a) {
+            let url = a.getAttribute('href');
+            let span = a.querySelector('span');
+            if (span && span.textContent.length) {
+                save_place(span.textContent, url);
+            }
+        });
+    }
+
+    function _add_links(div) {
+        div.setAttribute('data-discreethelper', 'done');
+        if (div.querySelector('a')) { return; }
+        let html = div.innerHTML;
+        for (const name in places) {
+            let val = html.replace(name, places[name]);
+            if (val != html) {
+                html = val;
+                console.log("Discreet Keyboard Nav: '", name, "' => ", places[name]);
             }
         }
-        return null;
+        div.innerHTML = html;
+    }
+
+    function add_links(node) {
+        if (node.className.indexOf("narrative-direction") >= 0 || node.className.indexOf("mission-updates") >= 0) {
+            if (!node.getAttribute('data-discreethelper')) {
+                _add_links(node);
+            }
+        }
+        else {
+            node.querySelectorAll('.narrative-direction:not([data-discreethelper="done"])').forEach(_add_links);
+            node.querySelectorAll('.mission-updates:not([data-discreethelper="done"])').forEach(_add_links);
+        }
+    }
+
+    function on_change(changes, observer) {
+        changes.forEach(function(change) {
+            if (change.type == 'childList') {
+                change.addedNodes.forEach(add_links);
+            }
+        });
     }
 
     function goto_url(url) {
@@ -93,7 +134,7 @@
         }
 
         // People page with a mission NPC
-        node = document.querySelector('a.has-mission')
+        node = document.querySelector('a.has-mission');
         if (node) {
             goto_url(node.getAttribute('href'));
             return;
@@ -109,11 +150,9 @@
         }
 
         // Go to location from mission update
-        if (goto_area(_discreet_target(document.querySelectorAll('.narrative-direction')))) {
-            return;
-        }
-        if (goto_area(_discreet_target(document.querySelectorAll('.mission-updates')))) {
-            return;
+        ns = document.querySelectorAll('.narrative-direction a, .mission-updates a');
+        if (ns && ns.length > 0) {
+            goto_url(ns[ns.length - 1].getAttribute('href'));
         }
 
         // "Accept" mission button on main discreet-work page
@@ -126,8 +165,8 @@
         // You go back, Jack, do it again
         if (options.loop_after_completion) {
             ns = document.querySelectorAll('.mission-updates');
-            for (let i = 0; i < ns.length; i++) {
-                if (ns[i].textContent.match(/You have completed the "Discreet Work"/)) {
+            for (let i = 0; i < ns.length; i += 1) {
+                if (ns[i].textContent.match(/You\s+have\s+completed\s+the\s+"Discreet\s+Work"/)) {
                     goto_url('/travel/area/discreet-work');
                     return;
                 }
@@ -142,36 +181,17 @@
             return;
         }
 
-        console.log("No discreet mission actions found.")
-    }
-
-    // goto_area: loop over navigation links and go to the requested location
-    function goto_area(name) {
-        if (name) {
-            let ns = document.querySelectorAll('.nav-links .areas a');
-            for (let i = 0; i < ns.length; i++) {
-                let a = ns[i];
-                if (a.textContent === name) {
-                    let href = a.getAttribute('href');
-                    if (href.indexOf("#/people") < 0) {
-                        href = href + "#/people";
-                    }
-                    goto_url(href);
-                    return true;
-                }
-            }
-        }
-        return false;
+        console.log("No discreet mission actions found.");
     }
 
     // tag(name, attr, content...) : shortcut for building HTML
     function tag() {
         let ele = document.createElement(arguments[0]);
         if (arguments.length > 1 && arguments[1]) {
-            for (let a in arguments[1]) { ele.setAttribute(a, arguments[1][a]); }
+            for (const a in arguments[1]) { ele.setAttribute(a, arguments[1][a]); }
         }
         if (arguments.length > 2) {
-            for (let i = 2; i < arguments.length; i++) {
+            for (let i = 2; i < arguments.length; i += 1) {
                 if (typeof arguments[i] === "string") {
                     ele.insertAdjacentText('beforeend', arguments[i]);
                 } else {
@@ -258,7 +278,7 @@
         // only when NOT on a story mission. I trust the URL link to be
         // more reliable than the "Show current" text content, so will look
         // for that to be absent.
-        for (let i = 0; i < missions.length; i++) {
+        for (let i = 0; i < missions.length; i += 1) {
             if (missions[i].textContent.indexOf("Discreet Work") >= 0) {
                 enable = !missions[i].parentNode.querySelector('a[href="/travel/area/discreet-work"]');
                 break;
@@ -278,21 +298,34 @@
                 // icon looks better at the end of the character indicator icons row
                 // -- but we need to make sure there's room for all icons present.)
                 let num_visible_icons = 0;
-                let icons_in_row = document.querySelector(".avatar-links:last-of-type").children;
-                for (var ii = 0; ii < icons_in_row.length; ii++) {
-                    if (! icons_in_row[ii].hasAttribute("hidden")) {
-                        num_visible_icons++;
+                let avatar_links = document.querySelector(".avatar-links:last-of-type");
+                if (avatar_links) {
+                    let icons_in_row = avatar_links.children;
+                    for (let ii = 0; ii < icons_in_row.length; ii++) {
+                        if (! icons_in_row[ii].hasAttribute("hidden")) {
+                            num_visible_icons++;
+                        }
                     }
-                }
-                let new_width = (100 / num_visible_icons) + "%";
-                for (ii = 0; ii < icons_in_row.length; ii++) {
-                    if (! icons_in_row[ii].hasAttribute("hidden")) {
-                        icons_in_row[ii].style.width = new_width;
-                        icons_in_row[ii].style.minWidth = "24px";
+                    let new_width = (100 / num_visible_icons) + "%";
+                    for (let ii = 0; ii < icons_in_row.length; ii++) {
+                        if (! icons_in_row[ii].hasAttribute("hidden")) {
+                            icons_in_row[ii].style.width = new_width;
+                            icons_in_row[ii].style.minWidth = "24px";
+                        }
                     }
                 }
             }
         }
+
+        get_places();
+
+        // Watch for changes to the .mission-flow div, add links as soon as
+        // children are added.
+        var observer = new MutationObserver(on_change);
+        document.querySelectorAll(".mission-flow").forEach(function(div) {
+            add_links(div);
+            observer.observe(div, { 'childList': true, 'subtree': true });
+        });
 
         // Listen for bound key-combination then perform a step
         document.addEventListener('keydown', (event) => {
