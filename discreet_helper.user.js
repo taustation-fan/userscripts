@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tau Discreet Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  Add links to areas while on discreet work
 // @author       Marco Fontani <MFONTANI@cpan.org>
 // @match        https://taustation.space/*
@@ -50,6 +50,9 @@
             places["Wrecks"] = base_area_url + "/the-wrecks";
             places["Careers"] = base_area_url + "/career-advisory";
             places["Government Center"] = base_area_url + "/government-center";
+            places["Interstellar"] = base_area_url + "/interstellar-shuttles";
+            places["Side Jobs"] = base_area_url + "/side-jobs";
+            places["Wilds"] = base_area_url + "/the-wilds";
         }
 
         $('.narrative-direction:not([data-discreethelper="done"]), .mission-updates').each(function(idx,nd) {
