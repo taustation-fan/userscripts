@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         discreet_keyboard_navigation
 // @namespace    https://github.com/taustation-fan/userscripts/raw/master/discreet_keyboard_navigation.user.js
-// @version      1.9
+// @version      1.10
 // @author       Dean Serenevy <dean@serenevy.net>
 // @license      CC0 - https://creativecommons.org/publicdomain/zero/1.0/
 // @description  Add keyboard shortcut and optional icon to perform discreet work steps. Some options available on User Preferences page.
@@ -48,6 +48,7 @@
     }
 
     var places = { };
+    var place_names;
     function save_place(name, url) {
         // Check for existing "people" in case some other script added it in
         if (url.indexOf("#/people") < 0) { url = url + "#/people"; }
@@ -81,20 +82,23 @@
                 save_place(span.textContent, url);
             }
         });
+        place_names = Object.keys(places);
+        place_names.sort(function(a, b){ return b.length - a.length; });
     }
 
     function _add_links(div) {
         div.setAttribute('data-discreethelper', 'done');
         if (div.querySelector('a')) { return; }
         let html = div.innerHTML;
-        for (const name in places) {
+        place_names.some(function(name) {
             let val = html.replace(name, places[name]);
             if (val != html) {
-                html = val;
                 console.log("Discreet Keyboard Nav: '", name, "' => ", places[name]);
+                div.innerHTML = val;
+                return true;
             }
-        }
-        div.innerHTML = html;
+            return false;
+        });
     }
 
     function add_links(node) {

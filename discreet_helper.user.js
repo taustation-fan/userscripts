@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tau Discreet Helper
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  Add links to areas while on discreet work
 // @author       Marco Fontani <MFONTANI@cpan.org>
 // @match        https://taustation.space/*
@@ -20,6 +20,7 @@
 (function() {
     'use strict';
     var places;
+    var place_names;
     var base_area_url = "https://taustation.space/area";
     function refresh_directions() {
         if (!$('.narrative-direction, .mission-updates').length) {
@@ -53,6 +54,9 @@
             places["Interstellar"] = base_area_url + "/interstellar-shuttles";
             places["Side Jobs"] = base_area_url + "/side-jobs";
             places["Wilds"] = base_area_url + "/the-wilds";
+
+            place_names = Object.keys(places);
+            place_names.sort(function(a, b){ return b.length - a.length; });
         }
 
         $('.narrative-direction:not([data-discreethelper="done"]), .mission-updates').each(function(idx,nd) {
@@ -62,12 +66,14 @@
             if (text.match(/<a/)) {
                 return;
             }
-            for (var k in places) {
+            place_names.some(function(k) {
                 if (text.indexOf(k) !== -1) {
                     text = text.replace(k, "<a href='" + places[k] + "#/people'>" + k + "</a>");
                     console.log("Discreet Helper: ", text);
+                    return true;
                 }
-            }
+                return false;
+            });
             $(nd).html(text);
         });
     }
