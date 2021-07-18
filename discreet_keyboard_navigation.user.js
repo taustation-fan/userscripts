@@ -62,6 +62,7 @@
     save_place('Government Center', '/travel/area/government-center');
     save_place('Hotel Room',        '/travel/area/hotel-rooms');
     save_place('Interstellar',      '/travel/area/interstellar-shuttles');
+    save_place('Star Shuttles',     '/travel/area/interstellar-shuttles');
     save_place('Local Shuttles',    '/travel/area/local-shuttles');
     save_place('Lounge',            '/travel/area/lounge');
     save_place('Public Market',     '/travel/area/electronic-market');
