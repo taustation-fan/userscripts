@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.14.0
+// @version      1.14.1
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://taustation.space/*
@@ -30,6 +30,7 @@
 //  - v1.13: Switch to https://tracker.tauguide.de/ as data source
 //  - v1.13.1: Minor update (convert em-dash in get_slug)
 //  - v1.14.0: Quick hack for syndicate campaigns after the new UI update.
+//  - v1.14.1: Switch to alt-text because of generic images.
 //
 
 // TODO List: (things not yet implemented or ready)
@@ -200,14 +201,11 @@ function linkify_item_images(dom_elements)
         img_elements.each(function()
         {
             var img_element = this;
-            var img_link = img_element.src;
-            var item_link = img_link.replace("static/images/", "").replace(".png", "");
-            var item_slug = item_link.substring(item_link.lastIndexOf('/') + 1);
-            //$(img_element).replaceWith("<a href=" + item_link + ">" + item_slug + "</a>");
+            var item_text = img_element.alt;
 
             // If this needs to contact tauguide.de, it will complete asynchronously,
             // therefore it needs to handle updating the output (not us).
-            linkify_item_name(item_slug, function(item_html) {
+            linkify_item_name(item_text, function(item_html) {
                 $(img_element).replaceWith(item_html);
             });
         });
