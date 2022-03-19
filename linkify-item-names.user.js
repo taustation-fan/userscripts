@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.13.1
+// @version      1.14.0
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://taustation.space/*
@@ -29,6 +29,7 @@
 //  - v1.12.0: Switch config to use userscript-preferences.js
 //  - v1.13: Switch to https://tracker.tauguide.de/ as data source
 //  - v1.13.1: Minor update (convert em-dash in get_slug)
+//  - v1.14.0: Quick hack for syndicate campaigns after the new UI update.
 //
 
 // TODO List: (things not yet implemented or ready)
@@ -64,7 +65,7 @@ async function linkify_all_item_names() {
     }
 
     if (window.location.pathname.startsWith('/area/the-wilds')
-        && $('.syndicate-campaigns').length > 0) {
+        && $('.syndicate_campaign').length > 0) {
         linkify_items_in_syndicate_campaign_opponents_list();
     }
 
@@ -138,10 +139,10 @@ function linkify_items_in_people_tab() {
 }
 
 function linkify_items_in_syndicate_campaign_opponents_list() {
-    var items_listed = $('.campaign-dl-armor dd, .campaign-dl-weapon dd');
-    if (items_listed.length) {
+    var items_listed = $('.opponent--items--item');
+    if (items_listed.length > 0) {
         console.log(log_prefix + 'Linkifying Syndicate Campaign opponents\' equipment.');
-        linkify_item_element(items_listed);
+        linkify_item_images(items_listed);
     }
 }
 
@@ -185,6 +186,34 @@ function check_slugs_vs_item_links() {
 // #region Common workers.
 //
 
+// Use images as they are more stable than text elements.
+// Basically copied from linkify_item_element below.
+function linkify_item_images(dom_elements)
+{
+    var jq_elements = $(dom_elements);
+
+    // Ignore any elements that already contain a link.
+    if ((jq_elements.find('a').length) == 0)
+    {
+        // Get images and replace each one with a link.
+        var img_elements = jq_elements.contents().filter("img");
+        img_elements.each(function()
+        {
+            var img_element = this;
+            var img_link = img_element.src;
+            var item_link = img_link.replace("static/images/", "").replace(".png", "");
+            var item_slug = item_link.substring(item_link.lastIndexOf('/') + 1);
+            //$(img_element).replaceWith("<a href=" + item_link + ">" + item_slug + "</a>");
+
+            // If this needs to contact tauguide.de, it will complete asynchronously,
+            // therefore it needs to handle updating the output (not us).
+            linkify_item_name(item_slug, function(item_html) {
+                $(img_element).replaceWith(item_html);
+            });
+        });
+    }
+}
+
 function linkify_item_element(dom_elements) {
     var jq_elements = $(dom_elements);
 
@@ -206,7 +235,7 @@ function linkify_item_element(dom_elements) {
                 item_text  = matches[2];
             }
 
-            // If this needs to contact TauHead, it will complete asynchronously,
+            // If this needs to contact tauguide.de, it will complete asynchronously,
             // therefore it needs to handle updating the output (not us).
             linkify_item_name(item_text, function(item_html) {
                 if (item_count) {
@@ -277,7 +306,7 @@ function linkify_item_name(text, fn_update_item_name) {
         var fn_apply_link_and_data = function() {
             var extra = localStorage[ls_prefix + slug] || "";
 
-            retval = '<a ' + target + ' href="/item/' + slug + '">' + text + '</a>' + extra;
+            retval = '<a ' + target + ' href="/item/' + slug + '">' + (extra == "" ? text : extra) + '</a>';
             fn_update_item_name(retval);
         }
 
@@ -402,7 +431,7 @@ var count_ajax_queries = 0;
 var last_slug_queried  = undefined;
 var missing_slugs      = [];
 
-// Query TauHead.com's API to get the JSON data for a single item.
+// Query tauguide.de's API to get the JSON data for a single item.
 function get_item_data(slug, fn_finish_caller_tasks) {
     // Allow us to disable AJAX for subsequent attempts (on this page) if a suitably-bad error occurs.
     if (! ajax_enabled) {
@@ -425,7 +454,7 @@ function get_item_data(slug, fn_finish_caller_tasks) {
                 missing_slugs.push(slug);
             }
         })
-        // Continue updating the item name, even if TauHead has no data for it (yet).
+        // Continue updating the item name, even if tauguide.de has no data for it (yet).
         .always(function (jqXHR, textStatus) {
             // When the last AJAX query returns, report the total # of queries for this page load.
             if (last_slug_queried == slug) {
