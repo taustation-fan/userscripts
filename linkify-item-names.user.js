@@ -2,7 +2,7 @@
 // @name         Tau Station: Linkify Item Names
 // @namespace    https://github.com/taustation-fan/userscripts/
 // @downloadURL  https://raw.githubusercontent.com/taustation-fan/userscripts/master/linkify-item-names.user.js
-// @version      1.14.1
+// @version      1.14.2
 // @description  Automatically convert each item name into a link to that item's details page.
 // @author       Mark Schurman (https://github.com/quasidart)
 // @match        https://taustation.space/*
@@ -17,20 +17,21 @@
 // These are quick-and-dirty one-off scripts, and do not reflect the author's style or quality of work when developing production-ready software.
 //
 // Changelist:
-//  - v0.1: Handle items in an area's People list, and in "player details" pages.
-//  - v0.2: Handle Syndicate Campaigns -- list of opponents (Ruins->Wilds page), and the final loot summary.
-//  - v1.0: Published at GitHub.
-//  - v1.02: [Dotsent] Skim/save details from "/item/$slug", and append summary to linkified item names.
-//  - v1.10: Dynamically query TauHead.com API for not-yet-saved weapon & armor details.
+//  - v0.1:    Handle items in an area's People list, and in "player details" pages.
+//  - v0.2:    Handle Syndicate Campaigns -- list of opponents (Ruins->Wilds page), and the final loot summary.
+//  - v1.0:    Published at GitHub.
+//  - v1.02:   [Dotsent] Skim/save details from "/item/$slug", and append summary to linkified item names.
+//  - v1.10:   Dynamically query TauHead.com API for not-yet-saved weapon & armor details.
 //  - v1.10.*: Minor fixes (character description handling, slug generation).
-//  - v1.11: For 2019-02-05 TauStation Update: Handle renamed items; also, in "/coretechs/storage", flags items with mismatched slugs (to call out subsequently renamed items, so they can be special-cased in this script using lookup_slug / lookup_slug_regexp).
+//  - v1.11:   For 2019-02-05 TauStation Update: Handle renamed items; also, in "/coretechs/storage", flags items with mismatched slugs (to call out subsequently renamed items, so they can be special-cased in this script using lookup_slug / lookup_slug_regexp).
 //  - v1.11.*: Minor updates (special-case slugs, slug generator fine-tuning)
 //  - v1.11.5: Update for "/syndicate/campaign-result" page (which replaced modal overlay dialog).
 //  - v1.12.0: Switch config to use userscript-preferences.js
-//  - v1.13: Switch to https://tracker.tauguide.de/ as data source
+//  - v1.13:   Switch to https://tracker.tauguide.de/ as data source
 //  - v1.13.1: Minor update (convert em-dash in get_slug)
 //  - v1.14.0: Quick hack for syndicate campaigns after the new UI update.
 //  - v1.14.1: Switch to alt-text because of generic images.
+//  - v1.14.2: Syndicate rewards page and dev-toggleable short/long format.
 //
 
 // TODO List: (things not yet implemented or ready)
@@ -77,7 +78,7 @@ async function linkify_all_item_names() {
         }
     }
 
-    if (window.location.pathname.startsWith('/syndicate/campaign-result')) {
+    if (window.location.pathname.startsWith('/coretechs/syndicate/campaign-result')) {
         linkify_items_in_syndicate_campaign_rewards();
     }
 
@@ -148,10 +149,12 @@ function linkify_items_in_syndicate_campaign_opponents_list() {
 }
 
 function linkify_items_in_syndicate_campaign_rewards() {
-    var items_listed = $('.reward-column');
-    if (items_listed.length) {
+    var items_listed = $(document.getElementById("syndicate-rewards-expand-details").children);
+    if (items_listed.length > 0) {
         console.log(log_prefix + 'Linkifying Syndicate Campaign rewards.');
-        linkify_item_element(items_listed);
+        items_listed.each(function () {
+            linkify_item_element($(this.children[1]));
+        });
     }
 }
 
@@ -205,9 +208,11 @@ function linkify_item_images(dom_elements)
 
             // If this needs to contact tauguide.de, it will complete asynchronously,
             // therefore it needs to handle updating the output (not us).
-            linkify_item_name(item_text, function(item_html) {
-                $(img_element).replaceWith(item_html);
-            });
+            linkify_item_name(
+                item_text,
+                function(item_html) { $(img_element).replaceWith(item_html); },
+                true
+            );
         });
     }
 }
@@ -289,7 +294,7 @@ function flag_unexpected_item_links(jq_elements) {
     });
 }
 
-function linkify_item_name(text, fn_update_item_name) {
+function linkify_item_name(text, fn_update_item_name, use_short = false) {
     var retval = '';
     if (text) {
         text = text.trim();
@@ -304,7 +309,17 @@ function linkify_item_name(text, fn_update_item_name) {
         var fn_apply_link_and_data = function() {
             var extra = localStorage[ls_prefix + slug] || "";
 
-            retval = '<a ' + target + ' href="/item/' + slug + '">' + (extra == "" ? text : extra) + '</a>';
+            var display_text = "";
+            if (use_short)
+            {
+                display_text = (extra == "" ? text : extra);
+            }
+            else
+            {
+                display_text = text + " " + extra;
+            }
+
+            retval = '<a ' + target + ' href="/item/' + slug + '">' + display_text + '</a>';
             fn_update_item_name(retval);
         }
 
