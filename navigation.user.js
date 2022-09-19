@@ -157,7 +157,8 @@ function gs_taustation_enhance() {
             {text: "Shuttles", link: "/travel/area/local-shuttles"},
             {text: "Shipping", link: "/travel/area/shipping"},
         ];
-        if ( current_station.match(/jump gate/i) !== null ) {
+        if ( current_station.match(/jump gate/i) !== null )
+        {
             portSubs.splice(2, 0, {text: "Interstellar", link: "/travel/area/interstellar-shuttles"});
         }
         insert_into_navigation_pane_after_index(portIndex, portSubs);
@@ -171,7 +172,8 @@ function gs_taustation_enhance() {
 
         window.FrameState.navigation.areas = window.FrameState.navigation.areas.flat();
 
-        if ( options.hunt_mode) {
+        if ( options.hunt_mode)
+        {
             window.FrameState.navigation.areas.map(({text, link}) => {
                 var newLink = link + "#/people";
                 return {text, newLink};
