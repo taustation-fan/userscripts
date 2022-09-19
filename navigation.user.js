@@ -133,11 +133,13 @@ function gs_taustation_enhance() {
 
         var current_station = window.FrameState.location.station;
 
+        // TODO(Xierumeng): Because of limited space and I don't know how to change the navigation panel
+        // the script will only make some of the subareas available (based on a user request poll)
         var innIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Inn");
         var innSubs = [
-            {text: "Bar", link: "/travel/area/bar"},
+            //{text: "Bar", link: "/travel/area/bar"},
             {text: "Room", link: "/area/hotel-rooms/enter-room"},
-            {text: "Lounge", link: "/travel/area/lounge"}
+            //{text: "Lounge", link: "/travel/area/lounge"},
         ];
         insert_into_navigation_pane_after_index(innIndex, innSubs);
 
@@ -145,7 +147,7 @@ function gs_taustation_enhance() {
         var marketSubs = [
             {text: "Public", link: "/travel/area/public-market"},
             {text: "Storage", link: "/travel/area/storage"},
-            {text: "Vendors", link: "/travel/area/vendors"}
+            {text: "Vendors", link: "/travel/area/vendors"},
         ];
         insert_into_navigation_pane_after_index(marketIndex, marketSubs);
 
@@ -153,7 +155,7 @@ function gs_taustation_enhance() {
         var portSubs = [
             {text: "Docks", link: "/travel/area/docks"},
             {text: "Shuttles", link: "/travel/area/local-shuttles"},
-            {text: "Shipping", link: "/travel/area/shipping"}
+            {text: "Shipping", link: "/travel/area/shipping"},
         ];
         if ( current_station.match(/jump gate/i) !== null ) {
             portSubs.splice(2, 0, {text: "Interstellar", link: "/travel/area/interstellar-shuttles"});
@@ -162,8 +164,8 @@ function gs_taustation_enhance() {
 
         var ruinsIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Ruins")
         var ruinsSubs = [
-            //{text: "Wrecks", link: "/travel/area/the-wrecks"},
-            {text: "Wilds", link: "/travel/area/the-wilds"}
+            {text: "Wrecks", link: "/travel/area/the-wrecks"},
+            {text: "Wilds", link: "/travel/area/the-wilds"},
         ];
         insert_into_navigation_pane_after_index(ruinsIndex, ruinsSubs);
 
