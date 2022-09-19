@@ -133,8 +133,8 @@ function gs_taustation_enhance() {
 
         var current_station = window.FrameState.location.station;
 
-        // TODO(Xierumeng): Because of limited space and I don't know how to change the navigation panel
-        // the script will only make some of the subareas available (based on a user request poll)
+        // TODO: Xierumeng: Because of limited space and I don't know how to change the navigation panel
+        // the script will only make some of the subareas available (based on a user request poll I ran)
         var innIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Inn");
         var innSubs = [
             //{text: "Bar", link: "/travel/area/bar"},
