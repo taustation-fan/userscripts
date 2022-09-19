@@ -8,6 +8,16 @@ use them.
 Some of the scripts have optional features which you can enable by removing
 the comments sign `//` from the start of the line.
 
+## New UI
+
+As Tau Station is being actively updated with new UI, most of these scripts are currently broken.
+We are working on fixing them but they may break again as the UI changes. Sorry for the inconvenience.
+
+Scripts working as of 2022-09-18:
+
+* Navigation: Links to sub-areas only (note that Bar and Lounge have been removed as user requests)
+* Linkify Item Names: Wilds area only during Syndicate Campaigns
+
 # Scripts
 
 ## Navigation
