@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://taustation.space/*
-// @version  1.10.2
+// @version  1.11.0
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
@@ -120,21 +120,63 @@ function gs_taustation_enhance() {
     }
 
 
-    function add_sub_area_nav_links() {
-        var current_station = $(".description-container .station").text();
-        var port_links = '<li class="area "> <span style="padding-left: 2em"> <a class="nav-sub-link" href="/travel/area/shipping-bay">Shipping</a> / <a class="nav-sub-link" href="/travel/area/docks">Docks</a>';
-        if ( current_station.match(/jump gate/i) !== null ) {
-            port_links += ' / <a class="nav-sub-link" href="/travel/area/interstellar-shuttles">Interstellar</a>';
-        }
-        port_links += ' / <a class="nav-sub-link" href="/travel/area/local-shuttles">Shuttles</a> </li>';
+    function insert_into_navigation_pane_after_index(index, areas)
+    {
+        window.FrameState.navigation.areas.splice(index + 1, 0, areas);
+    }
 
-        $('#game_navigation_areas a[href="/travel/area/inn"]').parent('li').after('<li class="area "> <span style="padding-left: 2em"> <a class="nav-sub-link" href="/travel/area/bar">Bar</a> / <a class="nav-sub-link" href="/area/hotel-rooms/enter-room">Room</a> / <a class="nav-sub-link" href="/travel/area/lounge">Lounge</a> </li>');
-        $('#game_navigation_areas a[href="/travel/area/market"]').parent('li').after('<li class="area "> <span style="padding-left: 2em"> <a class="nav-sub-link" href="/travel/area/vendors">Vendors</a> / <a class="nav-sub-link" href="/travel/area/electronic-market">Public</a> / <a class="nav-sub-link" href="/travel/area/storage">Storage</a> </li>');
-        $('#game_navigation_areas a[href="/travel/area/port"]').parent('li').after(port_links);
-        $('#game_navigation_areas a[href="/travel/area/ruins"]').parent('li').after('<li class="area "> <span style="padding-left: 2em"> <a class="nav-sub-link" href="/travel/area/the-wrecks">Wrecks</a> / <a class="nav-sub-link" href="/area/the-wilds">Wilds</a> </li>');
-        if ( options.hunt_mode) {
-            $('#game_navigation_areas a').each(function(index, elem){
-                $(elem).attr('href', $(elem).attr('href') + '#/people');
+    function add_sub_area_nav_links()
+    {
+        if (!window.FrameState) {
+            return;
+        }
+
+        var current_station = window.FrameState.location.station;
+
+        // TODO: Xierumeng: Because of limited space and I don't know how to change the navigation panel
+        // the script will only make some of the subareas available (based on a user request poll I ran)
+        var innIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Inn");
+        var innSubs = [
+            //{text: "Bar", link: "/travel/area/bar"},
+            {text: "Room", link: "/area/hotel-rooms/enter-room"},
+            //{text: "Lounge", link: "/travel/area/lounge"},
+        ];
+        insert_into_navigation_pane_after_index(innIndex, innSubs);
+
+        var marketIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Market");
+        var marketSubs = [
+            {text: "Public", link: "/travel/area/public-market"},
+            {text: "Storage", link: "/travel/area/storage"},
+            {text: "Vendors", link: "/travel/area/vendors"},
+        ];
+        insert_into_navigation_pane_after_index(marketIndex, marketSubs);
+
+        var portIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Port")
+        var portSubs = [
+            {text: "Docks", link: "/travel/area/docks"},
+            {text: "Shuttles", link: "/travel/area/local-shuttles"},
+            {text: "Shipping", link: "/travel/area/shipping"},
+        ];
+        if ( current_station.match(/jump gate/i) !== null )
+        {
+            portSubs.splice(2, 0, {text: "Interstellar", link: "/travel/area/interstellar-shuttles"});
+        }
+        insert_into_navigation_pane_after_index(portIndex, portSubs);
+
+        var ruinsIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Ruins")
+        var ruinsSubs = [
+            {text: "Wrecks", link: "/travel/area/the-wrecks"},
+            {text: "Wilds", link: "/travel/area/the-wilds"},
+        ];
+        insert_into_navigation_pane_after_index(ruinsIndex, ruinsSubs);
+
+        window.FrameState.navigation.areas = window.FrameState.navigation.areas.flat();
+
+        if ( options.hunt_mode)
+        {
+            window.FrameState.navigation.areas.map(({text, link}) => {
+                var newLink = link + "#/people";
+                return {text, newLink};
             });
         }
     }
