@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://taustation.space/*
-// @version  1.11.0
+// @version  1.11.1
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
@@ -122,7 +122,10 @@ function gs_taustation_enhance() {
 
     function insert_into_navigation_pane_after_index(index, areas)
     {
-        window.FrameState.navigation.areas.splice(index + 1, 0, areas);
+        if (index >= 0)
+        {
+            window.FrameState.navigation.areas.splice(index + 1, 0, areas);
+        }
     }
 
     function add_sub_area_nav_links()
@@ -155,7 +158,7 @@ function gs_taustation_enhance() {
         var portSubs = [
             {text: "Docks", link: "/travel/area/docks"},
             {text: "Shuttles", link: "/travel/area/local-shuttles"},
-            {text: "Shipping", link: "/travel/area/shipping"},
+            {text: "Shipping", link: "/travel/area/shipping-bay"},
         ];
         if ( current_station.match(/jump gate/i) !== null )
         {
