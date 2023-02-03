@@ -4,7 +4,7 @@
 // @description Navigation extension for taustation.space
 // @downloadURL https://rawgit.com/taustation-fan/userscripts/master/navigation.user.js
 // @match https://taustation.space/*
-// @version  1.11.1
+// @version  1.11.2
 // @grant    none
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require https://rawgit.com/taustation-fan/userscripts/master/userscript-preferences.js
@@ -140,36 +140,36 @@ function gs_taustation_enhance() {
         // the script will only make some of the subareas available (based on a user request poll I ran)
         var innIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Inn");
         var innSubs = [
-            //{text: "Bar", link: "/travel/area/bar"},
+            //{text: "Bar", link: "/area/bar"},
             {text: "Room", link: "/area/hotel-rooms/enter-room"},
-            //{text: "Lounge", link: "/travel/area/lounge"},
+            //{text: "Lounge", link: "/area/lounge"},
         ];
         insert_into_navigation_pane_after_index(innIndex, innSubs);
 
         var marketIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Market");
         var marketSubs = [
-            {text: "Public", link: "/travel/area/public-market"},
-            {text: "Storage", link: "/travel/area/storage"},
-            {text: "Vendors", link: "/travel/area/vendors"},
+            {text: "Public", link: "/area/public-market"},
+            {text: "Storage", link: "/area/storage"},
+            {text: "Vendors", link: "/area/vendors"},
         ];
         insert_into_navigation_pane_after_index(marketIndex, marketSubs);
 
         var portIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Port")
         var portSubs = [
-            {text: "Docks", link: "/travel/area/docks"},
-            {text: "Shuttles", link: "/travel/area/local-shuttles"},
-            {text: "Shipping", link: "/travel/area/shipping-bay"},
+            {text: "Docks", link: "/area/docks"},
+            {text: "Shuttles", link: "/area/local-shuttles"},
+            {text: "Shipping", link: "/area/shipping-bay"},
         ];
         if ( current_station.match(/jump gate/i) !== null )
         {
-            portSubs.splice(2, 0, {text: "Interstellar", link: "/travel/area/interstellar-shuttles"});
+            portSubs.splice(2, 0, {text: "Interstellar", link: "/area/interstellar-shuttles"});
         }
         insert_into_navigation_pane_after_index(portIndex, portSubs);
 
         var ruinsIndex = window.FrameState.navigation.areas.findIndex(o => o.text === "Ruins")
         var ruinsSubs = [
-            {text: "Wrecks", link: "/travel/area/the-wrecks"},
-            {text: "Wilds", link: "/travel/area/the-wilds"},
+            {text: "Wrecks", link: "/area/the-wrecks"},
+            {text: "Wilds", link: "/area/the-wilds"},
         ];
         insert_into_navigation_pane_after_index(ruinsIndex, ruinsSubs);
 
@@ -330,16 +330,16 @@ function gs_taustation_enhance() {
         }
 
         //TODO: Improve this selector, if/when a site update changes the Employment section's items to have different classes, or its "Career" line indicates "career active?" (vs. none active) using something besides fragile, user-visible text.
-        if ($('#employment_panel a[href="/travel/area/job-center"]:not(:contains("Choose a career"))').length) {
+        if ($('#employment_panel a[href="/area/job-center"]:not(:contains("Choose a career"))').length) {
             // A career is currently active: Show the link to leave your career.
-            $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
+            $('#game_navigation_areas a[href="/area/job-center"]').parent('li')
                 .after('<li class="area"><span style="padding-left: 1.6em">→</span> <a class="nav-sub-link" href="/character/quit-career">Change career</a></li>\n');
         } else if (!window.location.pathname.startsWith('/area/career-advisory')) {
             // No careers are currently active, but we can only change careers
             // inside Career Advisory: Show a link to Career Advisory. (Same as
             // the page's "start a career" link, but in the same place on-page
             // as the career-change links above & below.)
-            $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
+            $('#game_navigation_areas a[href="/area/job-center"]').parent('li')
                 .after('<li class="area"><span style="padding-left: 1.6em">→ Go to</span> <a class="nav-sub-link" href="/area/career-advisory">Career Advisory</a></li>\n');
         } else {
             // No careers are currently active: Show only the careers that the
@@ -374,7 +374,7 @@ function gs_taustation_enhance() {
                     }
                 }
             }
-            $('#game_navigation_areas a[href="/travel/area/job-center"]').parent('li')
+            $('#game_navigation_areas a[href="/area/job-center"]').parent('li')
                 .after('<li class="area"><span style="padding-left: 1.6em">→ Start:</span>\n' + careers_shown + '\n</li>\n');
         }
     }

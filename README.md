@@ -13,9 +13,18 @@ the comments sign `//` from the start of the line.
 As Tau Station is being actively updated with new UI, most of these scripts are currently broken.
 We are working on fixing them but they may break again as the UI changes. Sorry for the inconvenience.
 
-Scripts working as of 2022-09-18:
+Scripts working as of:
 
-* Navigation: Links to sub-areas only (note that Bar and Lounge have been removed as user requests)
+2023-02-03:
+
+* Navigation:
+   * Links to sub-areas only (note that Bar and Lounge have been removed as user requests)
+   * Bug: Room no longer lets you into your hotel room
+   * Bug: Area travel does not fully refresh the page, erasing the added sub-areas
+   * I have no idea how to fix this, or if it's even fixable at all. Most likely will have to look at the React code, which I have no experience with. - Xierumeng
+
+2022-09-18:
+
 * Linkify Item Names: Wilds area only during Syndicate Campaigns
 
 # Scripts
